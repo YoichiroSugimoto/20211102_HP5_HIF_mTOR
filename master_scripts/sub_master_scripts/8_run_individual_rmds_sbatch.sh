@@ -7,12 +7,12 @@
 #SBATCH --partition=cpu
 
 ## Run with the following commands
-# sbatch --dependency=afterok:25477895 /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/master_scripts/sub_master_scripts/8_run_individual_rmds_sbatch.sh
+# sbatch --dependency=afterok:25477895 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/8_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
 conda activate five_prime_seq_for_VHL_loss_v0.2.1
 
-cd /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/R/s8-analysis-of-translation
+cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/s8-analysis-of-translation
 
 Rscript ../run_rmd.R s8-1-1-gene-level-translation-analysis.rmd
 Rscript ../run_rmd.R s8-1-2-tx-level-translation-analysis.rmd

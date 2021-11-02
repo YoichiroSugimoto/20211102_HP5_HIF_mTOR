@@ -7,12 +7,12 @@
 #SBATCH --partition=cpu
 
 ## Run with the following commands
-# sbatch --dependency=afterok:24925466 /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/master_scripts/sub_master_scripts/5_run_individual_rmds_sbatch.sh
+# sbatch --dependency=afterok:24925466 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/5_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
 conda activate five_prime_seq_for_VHL_loss_v0.2.1
 
-cd /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/R/s5-tss-validation
+cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/s5-tss-validation
 
 Rscript ../run_rmd.R s5-1-validation-of-TSS.rmd
 

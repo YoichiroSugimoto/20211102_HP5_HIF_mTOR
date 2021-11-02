@@ -7,12 +7,12 @@
 #SBATCH --partition=cpu
 
 ## Run with the following commands
-# sbatch --dependency=afterok:24925462 /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/master_scripts/sub_master_scripts/4_run_individual_rmds_sbatch.sh
+# sbatch --dependency=afterok:24925462 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/4_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
 conda activate run_dpi_v2
 
-cd /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/R/s4-tss-definition
+cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/s4-tss-definition
 
 Rscript ../run_rmd.R s4-1-1-tss-definition_v3.rmd
 Rscript ../run_rmd.R s4-1-2-tss-definition_v2.rmd

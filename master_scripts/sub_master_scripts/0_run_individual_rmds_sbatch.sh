@@ -7,13 +7,13 @@
 #SBATCH --partition=cpu
 
 ## Run with the following commands
-# sbatch /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/master_scripts/sub_master_scripts/0_run_individual_rmds_sbatch.sh
+# sbatch /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/0_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
 conda activate five_prime_seq_for_VHL_loss_v0.2.1
 
 ## Preprocessing annotations
-cd /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/R/sp-preparing-annotation
+cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/sp-preparing-annotation
 
 Rscript ../run_rmd.R sp-1-parse_gene_annotation.rmd
 Rscript ../run_rmd.R sp-2-preparation_of_STAR_index.rmd

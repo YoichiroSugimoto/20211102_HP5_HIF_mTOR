@@ -7,14 +7,14 @@
 #SBATCH --partition=cpu
 
 ## Run with the following commands
-# sbatch /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/master_scripts/sub_master_scripts/9_run_individual_rmds_sbatch.sh
+# sbatch /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/9_run_individual_rmds_sbatch.sh
 # or
-# sbatch --dependency=afterok:25498947 /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/master_scripts/sub_master_scripts/9_run_individual_rmds_sbatch.sh
+# sbatch --dependency=afterok:25498947 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/9_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
 conda activate five_prime_seq_for_VHL_loss_v0.2.1
 
-cd /camp/home/sugimoy/home/CAMP_HPC/projects/20210219_HP5_VHL_mTOR/R/s9-integrative-analysis
+cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/s9-integrative-analysis
 
 Rscript ../run_rmd.R s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.rmd
 Rscript ../run_rmd.R s9-1-2-transcriptional-and-translational-regulation_VHL.rmd
