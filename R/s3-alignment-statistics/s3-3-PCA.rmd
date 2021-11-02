@@ -1,0 +1,146 @@
+---
+title: "s3-3 PCA"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+Principle component analysis will be performed to evaluate the reproducibility of HP5.
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor packages
+library("DESeq2")
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+## Input annotation
+annot.dir <- file.path("../../annotation/")
+
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+## Input files
+results.dir <- file.path("../../results")
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+s2.2.4.gene.count.dir <- file.path(s2.2.processed.bam.dir, "s2-2-4-gene-count")
+s2.2.4.1.gene.count.total.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-1-gene-count-total")
+s2.2.4.2.gene.count.dedup.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-2-gene-count-dedup")
+
+s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
+
+```
+
+
+```{r read start count data}
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+total.count.file <- file.path(s2.2.4.1.gene.count.total.dir, "total_gene_count_table.csv")
+total.count.dt <- fread(total.count.file)
+
+```
+
+
+# PCA for HP5 of RCC-4 VHL
+
+
+```{r non-deduplicated data}
+
+sl.sample.names <- grep(
+    "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA",
+    sample.names,
+    value = TRUE
+)
+
+sl.sample.dt <- sample.dt[sample_name %in% sl.sample.names]
+
+count.dt <- total.count.dt[biotype == "protein_coding"]
+count.df <- count.dt[, sl.sample.names, with = FALSE] %>% as.data.frame
+rownames(count.df) <- count.dt[, gene_id]
+
+dds <- DESeqDataSetFromMatrix(
+    countData = count.df,
+    colData = sl.sample.dt,
+    design = ~ 1
+)
+dds <- estimateSizeFactors(dds)
+
+vsd <- vst(dds, blind = TRUE)
+
+plotPCA(vsd, intgroup = "fraction", ntop = round(nrow(assay(vsd)) / 4)) +
+    theme(
+        aspect.ratio = 1
+    ) +
+    ggsci::scale_color_aaas(name = "Fraction")
+
+print(paste0("The number of tx analysed: ", round(nrow(assay(vsd))/4)))
+
+
+```
+
+# Sanity check
+
+
+```{r sanity check}
+
+
+dds2 <- dds[matrixStats::rowMins(counts(dds)) > 0, ]
+
+vsd2 <- vst(dds2, blind = TRUE)
+
+plotPCA(vsd2, intgroup = "fraction", ntop = round(nrow(assay(vsd2)) / 4)) +
+    theme(
+        aspect.ratio = 1
+    ) +
+    ggsci::scale_color_aaas(name = "Fraction") +
+    ggtitle("This is for sanity check")
+
+print(paste0("The number of tx analysed (for sanity check): ", round(nrow(assay(vsd2))/4)))
+
+
+```
+
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```
+
+
+

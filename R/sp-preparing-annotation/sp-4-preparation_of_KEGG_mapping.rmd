@@ -1,0 +1,181 @@
+---
+title: "sp-4 KEGG and gene ID mapping"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor database package
+library("org.Hs.eg.db")
+library("limma")
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+kegg.dir <- file.path(annot.dir, "hg38_annotation/KEGG")
+
+create.dirs(
+    c(
+        kegg.dir
+    )
+)
+
+```
+
+# Download and export KEGG id and gene id mapping
+
+
+```{r download key kegg pathways}
+
+kegg.link <- getGeneKEGGLinks(species = "hsa")
+
+kegg.gene.id.dt <- AnnotationDbi::select(
+         org.Hs.eg.db,
+         key = kegg.link$GeneID,
+         keytype = "ENTREZID",
+         columns = c("ENSEMBL", "SYMBOL"),
+         multiVals = "list"
+         ) %>%
+    data.table %>%
+    {.[!duplicated(ENSEMBL)]}
+
+setnames(kegg.gene.id.dt, old = "ENTREZID", new = "GeneID")
+
+kegg.pathway.name <- getKEGGPathwayNames(species = "hsa")
+
+kegg.data.dt <- merge(
+    x = data.table(kegg.pathway.name),
+    y = data.table(kegg.link),
+    by = "PathwayID"
+) %>%
+    merge(
+        kegg.gene.id.dt,
+        by = "GeneID",
+        allow.cartesian = TRUE
+    ) 
+
+kegg.data.dt[, `:=`(
+    Description = gsub(" \\- Homo sapiens \\(human\\)", "", Description)
+)]
+
+setnames(
+    kegg.data.dt,
+    old = c("GeneID", "PathwayID", "Description", "ENSEMBL", "SYMBOL"),
+    new = c("ENTREZID", "KEGG_id", "KEGG_description", "gene_id", "gene_name")
+)
+
+fwrite(
+    kegg.data.dt,
+    file.path(kegg.dir, "KEGG-gene_id-link.csv")
+)
+
+```
+
+# KEGG Brite
+
+
+```{r kegg brite}
+
+
+library("KEGGREST")
+
+brite.tf <- "br:hsa03000"
+
+all.brite.link.dt <- keggLink("brite", "hsa") %>%
+    {data.table(stack(.))}
+
+sl.brite.entries <- c(
+    "Transcription factors" = "03000",
+    "Transcription machinery" = "03021",
+    "Messenger RNA biogenesis" = "03019",
+    "Spliceosome" = "03041",
+    "Ribosome" = "03011",
+    "Ribosome biogenesis" = "03009",
+    "Transfer RNA biogenesis" = "03016",
+    "Translation factors" = "03012",
+    "Chaperones and folding catalysts" = "03110",
+    "Membrane trafficking" = "04131",
+    "Ubiquitin system" = "04121",
+    "Proteasome" = "03051",
+    "DNA replication proteins" = "03032",
+    "Chromosome and associated proteins" = "03036",
+    "DNA repair and recombination proteins" = "03400",
+    "Mitochondrial biogenesis" = "03029"
+)
+
+extractBriteGeneMapping <- function(brite.id, brite.name){
+
+    brite.id.map.dt <-
+        AnnotationDbi::select(
+                           org.Hs.eg.db,
+                           key = gsub(
+                               "hsa:",
+                               "",
+                               all.brite.link.dt[
+                                   values == paste0("br:hsa", brite.id), ind
+                               ]),
+                           keytype = "ENTREZID",
+                           columns = c("ENSEMBL", "SYMBOL"),
+                           multiVals = "list"
+                       ) %>%
+        data.table
+
+    brite.id.map.dt[, BRITE_name := brite.name]
+
+    return(brite.id.map.dt)
+}
+
+brite.gene.link.dt <- mapply(
+    extractBriteGeneMapping,
+    sl.brite.entries,
+    names(sl.brite.entries),
+    SIMPLIFY = FALSE
+) %>% rbindlist
+
+setnames(
+    brite.gene.link.dt,
+    old = c("ENSEMBL"),
+    new = c("gene_id")
+)
+
+fwrite(
+    brite.gene.link.dt,
+    file.path(kegg.dir, "KEGG_BRITE-gene_id-link.csv")
+)
+
+
+```
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

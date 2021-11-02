@@ -1,0 +1,372 @@
+---
+title: "s8-2 Identification of differentially translated mRNA isoforms"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+Significantly differentially translated mRNA isoforms compared to other isoforms of same gene will be identified.
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor
+library("DRIMSeq")
+library("stageR")
+library("DEXSeq")
+## Specify the number of CPUs to be used
+processors <- 24
+library("BiocParallel")
+BPPARAM = MulticoreParam(processors)
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/20190812_PM18011_1_sample-data.csv")
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+
+s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
+s3.4.poly.size.factor.dir <- file.path(s3.alignment.stats.dir, "polysome_size_factor")
+
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.2.dte.iso.dir <- file.path(s8.dir, "s8-2-differentially-translated-isoforms")
+
+create.dirs(c(
+    s8.2.dte.iso.dir
+))
+
+```
+
+
+# Read raw and normalized count table
+
+```{r read start count data}
+
+count.per.tss.file <- file.path(s4.1.7.count.per.tss.dir, "count-per-confident-tss.csv")
+count.per.tss.dt <- fread(count.per.tss.file)
+
+## Only polysome proflied sequence data are eported
+poly.count.per.tss.dt <- count.per.tss.dt[
+  , c("tss_name", grep("polysome_", colnames(count.per.tss.dt), value = TRUE)),
+    with = FALSE
+]
+colnames(poly.count.per.tss.dt) <- colnames(poly.count.per.tss.dt) %>%
+    gsub("polysome_", "", .)
+poly.count.per.tss.dt[, gene_id := str_split_fixed(tss_name, "_", n = 2)[, 1]]
+
+## Only analyze transcripts from genes in primary.tx.dt
+poly.count.per.tss.dt <- poly.count.per.tss.dt[
+    gene_id %in% unique(primary.tx.dt[, gene_id])
+]
+
+## Read normalization factor
+poly.sizefactor.dt <- fread(
+    file = file.path(
+        s3.4.poly.size.factor.dir,
+        "library_size_factor_by_ERCC.csv"
+    )
+)
+
+
+```
+
+
+# Data pre-processing
+
+
+```{r data preprocessing}
+
+annot.cols <- c("gene_id", "gene_name", "biotype")
+
+poly.count.per.tss.with.meta.dt <- merge(
+  primary.tx.dt[!duplicated(gene_id), annot.cols, with = FALSE],
+  poly.count.per.tss.dt[, c("tss_name", "gene_id", rownames(poly.coldata.df)), with = FALSE],
+  by = "gene_id",
+  all.y = TRUE
+)
+
+## Ignore free fraction
+poly.count.per.tss.with.meta.dt <- poly.count.per.tss.with.meta.dt[
+    , !grepl("ribo0", colnames(poly.count.per.tss.with.meta.dt)), with = FALSE
+]
+
+```
+
+# Analysis of differentially translated mRNA isoforms
+
+## data setup for DEXSeq analysis
+
+```{r dexseq set up}
+
+countDt2Df <- function(count.dt, annot.cols){
+    count.df <- as.data.frame(count.dt)
+    rownames(count.df) <- count.df[, "tss_name"]
+    annot.df <- count.df[, c("tss_name", annot.cols)]
+    count.df <- dropColumnDf(count.df, drop.vec = c("tss_name", annot.cols))
+    return(list(count.df = count.df, annot.df = annot.df))
+}
+
+deseq2.poly.in.list <- countDt2Df(poly.count.per.tss.with.meta.dt, annot.cols = annot.cols)
+
+poly.coldata.df <- poly.coldata.df[colnames(deseq2.poly.in.list$count.df), ]
+
+if(!all(colnames(deseq2.poly.in.list$count.df) == rownames(poly.coldata.df))){
+    stop("colnames of count.df does not match with rownames of poly.coldata.df")
+} else {"OK"}
+
+annot.dt <- data.table(deseq2.poly.in.list$annot.df)
+setkey(annot.dt, tss_name)
+
+```
+
+
+## Define DTE analysis function
+
+
+```{r dte function}
+
+
+analyzeDtIsoforms <- function(sample.base.name,
+                              count.dt,
+                              annot.dt,
+                              input.sample.data.df,
+                              dexseq.exp.design,
+                              s8.2.dte.iso.dir,
+                              ref.column.name = "tss_name",
+                              BPPARAM){
+
+    input.sample.data.df <-
+        input.sample.data.df[
+            grepl("^ribo[[:digit:]]$", input.sample.data.df[, "fraction"]),
+            ]
+    
+    print("List of samples analyzed:")
+    print(input.sample.data.df)
+    
+    ## Parse formula
+    char.formula.elements <- str_split(as.character(dexseq.exp.design)[2], " \\+ ")[[1]]
+    formula.reduced.model <- formula(
+        paste(
+            "~",
+            paste(char.formula.elements[1:length(char.formula.elements) - 1],
+                  collapse  = " + ")
+        ))
+
+    print(paste("Analyzing", sample.base.name))
+    print(
+        paste(
+            "With the full model formula of",
+            Reduce(paste, deparse(dexseq.exp.design))
+        ))
+    print(
+        paste(
+            "With the reduced model formula of",
+            Reduce(paste, deparse(formula.reduced.model))
+        ))
+    
+    ## Apply DRIMSeq filtering as in PMID: 30356428
+    count.df <- cbind(
+        data.frame(
+            gene_id = str_split_fixed(count.dt[, get(ref.column.name)], "_", n = 2)[, 1],
+            feature_id = count.dt[, get(ref.column.name)]
+        ),
+        count.dt[, rownames(input.sample.data.df), with = FALSE]
+    )
+
+    replicate.n <- input.sample.data.df[input.sample.data.df$fraction == "ribo1", ] %>%
+        nrow
+    min.rep <- (replicate.n / 2) %>%
+        round %>%
+        {min(., 3)}
+
+    ## min.rep <- 6
+    
+    drimseq.count.data <- dmDSdata(
+        counts = count.df,
+        samples = data.frame(sample_id = rownames(input.sample.data.df)) %>%
+            cbind(., input.sample.data.df)
+    ) %>%
+        dmFilter(
+            min_samps_feature_expr = min.rep,
+            min_feature_expr = 10, # TSS has at least 10 count in min.rep samples
+            min_samps_feature_prop = min.rep,
+            min_feature_prop = 0.05, # TSS expression ratio is at least 0.05% in min.rep samples
+            min_samps_gene_expr = min.rep,
+            min_gene_expr = 10 # Gene should have count 10 or more in min.rep samples
+        )
+
+    dxd <- DEXSeqDataSet(
+        countData = as.matrix(counts(drimseq.count.data)[,-c(1:2)]),
+        sampleData = input.sample.data.df,
+        design = dexseq.exp.design,
+        groupID = counts(drimseq.count.data)$gene_id,
+        featureID = counts(drimseq.count.data)$feature_id
+    ) %>%
+        estimateSizeFactors %>%
+    estimateDispersions(BPPARAM = BPPARAM, quiet = TRUE) %>%
+    testForDEU(
+        reducedModel = formula.reduced.model,
+        BPPARAM = BPPARAM
+    )
+        
+    dxd.res <- DEXSeqResults(dxd)
+    res.dt <- data.table(as.data.frame(dxd.res))
+
+    setnames(
+        res.dt,
+        old = c("groupID", "featureID"),
+        new = c("gene_id", ref.column.name)
+    )
+
+    res.dt <- res.dt[, c(
+        ref.column.name, "pvalue", "padj"
+    ), with = FALSE]
+
+    ## Control gene-wise and tx-wise FDR
+    per.gene.qval <- perGeneQValue(dxd.res)
+    tx.p.mat <- matrix(dxd.res$pvalue, ncol = 1)
+    dimnames(tx.p.mat) <- list(dxd.res$featureID, "transcript")
+
+    tx2gene.df <- as.data.frame(dxd.res[, c("featureID", "groupID")])
+
+    stageRObj <- stageRTx(
+        pScreen = per.gene.qval,
+        pConfirmation = tx.p.mat,
+        pScreenAdjusted = TRUE,
+        tx2gene = tx2gene.df
+    ) %>%
+        stageWiseAdjustment(
+            method = "dtu",
+            alpha = 0.1
+        )
+
+    gene.tx.padj.dt <- data.table(getAdjustedPValues(
+        stageRObj,
+        order = FALSE,
+        onlySignificantGenes = FALSE
+    ))
+
+    setnames(
+        gene.tx.padj.dt,
+        old = c("geneID", "txID", "gene", "transcript"),
+        new = c("gene_id", ref.column.name, "gene_FDR", "tx_FDR")
+    )
+
+    res.dt <- merge(
+        gene.tx.padj.dt,
+        res.dt,
+        by = ref.column.name
+    )
+    
+    if(nrow(annot.dt) != 0){
+        res4export.dt <- merge(
+            annot.dt,
+            res.dt,
+            by = c(ref.column.name, "gene_id")
+        )
+    } else {
+        res4export.dt <- res.dt
+    }
+
+    dte.isoform.for.export.file <- file.path(
+        s8.2.dte.iso.dir,
+        paste0(
+            gsub("_NA_\\[\\[\\:digit\\:\\]\\]", "", sample.base.name) %>%
+           {gsub("\\(\\[\\[\\:digit\\:\\]\\]_NA\\|\\(3\\|4\\)_Torin1\\)", "__NAvsTorin1", .)},
+            ".csv"
+        )
+    )
+    
+    fwrite(res4export.dt, file = dte.isoform.for.export.file)
+    
+    return()
+}
+
+```
+
+
+# Identification of differentially translated mRNA isoforms within a gene
+
+## RCC-4 noVHL
+
+```{r analysis of differentially translated isoforms in RCC4 noVHL}
+
+
+sample.base.name <- "RCC4_noVHL_EIF4E2_NA_[[:digit:]]_NA"
+
+analyzeDtIsoforms(
+    sample.base.name = sample.base.name,
+    count.dt = poly.count.per.tss.dt,
+    annot.dt = annot.dt,
+    input.sample.data.df = poly.coldata.df %>%
+        .[grepl(sample.base.name, rownames(poly.coldata.df)), ],
+    dexseq.exp.design = ~ sample + exon + fraction:exon,
+    s8.2.dte.iso.dir = s8.2.dte.iso.dir,
+    ref.column.name = "tss_name",
+    BPPARAM = BPPARAM
+)
+
+```
+
+
+## RCC-4 VHL
+
+```{r analysis of differentially translated isoforms in RCC4 VHL}
+
+sample.base.name <- "RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA"
+
+analyzeDtIsoforms(
+    sample.base.name = sample.base.name,
+    count.dt = poly.count.per.tss.dt,
+    annot.dt = annot.dt,
+    input.sample.data.df = poly.coldata.df %>%
+        .[grepl(sample.base.name, rownames(poly.coldata.df)), ],
+    dexseq.exp.design = ~ sample + exon + fraction:exon,
+    s8.2.dte.iso.dir = s8.2.dte.iso.dir,
+    ref.column.name = "tss_name",
+    BPPARAM = BPPARAM
+)
+
+```
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

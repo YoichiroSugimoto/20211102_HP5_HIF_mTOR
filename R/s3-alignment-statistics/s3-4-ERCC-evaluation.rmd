@@ -1,0 +1,240 @@
+---
+title: "s3-4 Evaluation of ERCC control"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+ERCC spike-in RNA was added to polysome fractionated samples.
+Library normalization factors will be calculated based on the reads counts of ERCC RNAs.
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor
+library("DESeq2")
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+## Input annotation
+annot.dir <- file.path("../../annotation/")
+
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+## Input files
+results.dir <- file.path("../../results")
+s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
+s3.4.poly.size.factor.dir <- file.path(s3.alignment.stats.dir, "polysome_size_factor")
+
+create.dirs(c(s3.4.poly.size.factor.dir))
+
+```
+
+
+```{r read start count data}
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+ercc.count.dt <- file.path(
+    s3.alignment.stats.dir,
+    "ERCC_count_per_sample.csv"
+) %>% fread
+
+```
+
+
+
+# Calculate sum of reads from ERCC RNAs
+
+
+```{r ercc count and each fraction}
+
+## Sample with ERCC data are selected here
+sl.sample.names <- sample.dt[
+    ERCC == "Yes",
+    sample_name
+]
+
+m.ercc.count.dt <- melt(
+    ercc.count.dt,
+    id.vars = "ERCC_id",
+    variable.name = "sample_name",
+    value.name = "count"
+)
+
+m.ercc.count.dt[
+  , seqgroup := ifelse(grepl("^ERCC", ERCC_id), "ERCCs", ERCC_id)
+]
+
+ercc.sum.count.dt <- m.ercc.count.dt[
+  , .(sum_count = sum(count)), by = list(sample_name, seqgroup)
+]
+
+d.ercc.sum.count.dt <- dcast(
+    ercc.sum.count.dt,
+    sample_name ~ seqgroup,
+    value.var = "sum_count"
+)
+
+```
+
+
+# Calculate library size factor based on read counts of ERCC RNAs
+
+
+```{r calculate normalization factor based on ERCC}
+
+dds <- DESeqDataSetFromMatrix(
+    countData = ercc.count.dt[
+        grepl("^ERCC-", ERCC_id), sl.sample.names, with = FALSE
+    ],
+    colData = sample.dt[sample_name %in% sl.sample.names],
+    design = ~ 1
+) %>%
+    estimateSizeFactors
+
+sizefactor.dt <- sizeFactors(dds) %>%
+    data.frame %>%
+    data.table(keep.rownames = TRUE)
+
+setnames(
+    sizefactor.dt,
+    old = c("rn", "."),
+    new = c("sample_name", "size_factor")
+)
+
+sample.count.with.sizefactor.dt <- merge(
+    sample.dt,
+    sizefactor.dt,
+    by = "sample_name",
+    all = TRUE
+) %>%
+    merge(
+        y = d.ercc.sum.count.dt,
+        by = "sample_name",
+        all = TRUE
+    )
+
+```
+
+
+# Comparison of DESeq2 calculated size factors and total read counts from ERCC RNAs
+
+
+The analysis below indicates that the choice between using DESeq2 calculated size factors and total read counts of ERCC spike-in RNAs does not have a significant impact on the downstream analyses.
+Thus, I decided to use the DESeq2 calculated size factors.
+
+
+```{r ERCC total vs DESeq2 size factors}
+
+ercc.total.size.factor.lm <- lm(
+    ERCCs ~ size_factor,
+    data = sample.count.with.sizefactor.dt[sample_name %in% sl.sample.names]
+)
+
+sample.count.with.sizefactor.dt[
+    sample_name %in% sl.sample.names,
+    residual2lm_ERCC_sizefactor := resid(ercc.total.size.factor.lm)
+]
+
+poly.sample.count.with.sizefactor.dt <- sample.count.with.sizefactor.dt[
+    grepl("^ribo", fraction)
+]
+
+poly.sample.count.with.sizefactor.dt[, `:=`(
+    size_factor_by_count_sum = ERCCs / mean(ERCCs)
+)]
+
+ggplot(
+    data = poly.sample.count.with.sizefactor.dt,
+    aes(
+        x = ERCCs,
+        y = size_factor,
+        color = TSO
+    )
+) +
+    geom_point() +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1
+    )
+
+ggplot(
+    data = poly.sample.count.with.sizefactor.dt,
+    aes(
+        x = size_factor_by_count_sum,
+        y = size_factor,
+        color = TSO
+    )
+) +
+    geom_point() +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1
+    )
+
+
+```
+
+
+
+# Export size factors
+
+
+```{r export predicted size factors}
+
+poly.sample.count.with.sizefactor.dt[
+   , .(sample_name, size_factor, size_factor_by_count_sum)
+] %>%
+    fwrite(
+        file = file.path(
+            s3.4.poly.size.factor.dir,
+            "library_size_factor_by_ERCC.csv"
+            )
+    )
+
+
+```
+
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```
+
+
+

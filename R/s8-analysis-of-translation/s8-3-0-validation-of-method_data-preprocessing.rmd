@@ -1,0 +1,500 @@
+---
+title: "s8-3-0 Validation of method (data preprocessing)"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor database package
+library("org.Hs.eg.db")
+## Data visualization packages
+library("ggrepel")
+library("cowplot")
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("../s8-analysis-of-translation/functions", full.names = TRUE), source, chdir = TRUE)
+source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss") 
+
+s6.dir <- file.path(results.dir, "s6-differential-regulation-analysis")
+s6.1.dir <- file.path(s6.dir, "s6-1-differentially-expressed-genes")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+create.dirs(
+    c(
+        s8.3.dir
+    )
+)
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+all.primary.tx.dt <- file.path(
+    annot.ps.dir,
+    "all_GENCODE_RefSeq_transcript_info.csv"
+) %>% fread
+
+```
+
+# KEGG information extraction
+
+The information from [KEGG summary page](https://www.genome.jp/kegg-bin/show_brite?query=01100&htext=br08901.keg&option=-a&node_proc=br08901_org&proc_enabled=map) was used.
+
+
+## Metabolism related genes
+
+
+```{r metabolism related genes}
+
+kegg.dir <- file.path(annot.dir, "hg38_annotation/KEGG")
+
+## Genes involved in metabolism were defined by KEGG pathway
+kegg.data.dt <- file.path(
+    kegg.dir, "KEGG-gene_id-link.csv"
+) %>%
+    fread
+
+nucleotide.metabolisms <- c(
+    "Purine metabolism",
+    "Pyrimidine metabolism"    
+)
+
+amino.acids.metabolisms <- c(
+    ## Amino acid metabolism
+    "Alanine, aspartate and glutamate metabolism",
+    "Glycine, serine and threonine metabolism",
+    "Cysteine and methionine metabolism",
+    "Valine, leucine and isoleucine degradation",
+    "Valine, leucine and isoleucine biosynthesis",
+    "Lysine biosynthesis",
+    "Lysine degradation",
+    "Arginine biosynthesis",
+    "Arginine and proline metabolism",
+    "Histidine metabolism",
+    "Tyrosine metabolism",
+    "Phenylalanine metabolism",
+    "Tryptophan metabolism",
+    "Phenylalanine, tyrosine and tryptophan biosynthesis"#,
+    ## Metabolism of other amino acids
+    ## "beta-Alanine metabolism",
+    ## "Taurine and hypotaurine metabolism",
+    ## "Phosphonate and phosphinate metabolism",
+    ## "Selenocompound metabolism",
+    ## "Cyanoamino acid metabolism",
+    ## "D-Glutamine and D-glutamate metabolism",
+    ## "D-Arginine and D-ornithine metabolism",
+    ## "D-Alanine metabolism",
+    ## "Glutathione metabolism"
+)
+
+kegg.metabolic.gene.dt <- kegg.data.dt[
+    KEGG_description %in% c(
+                              "Glycolysis / Gluconeogenesis",
+                              "Pentose phosphate pathway",
+                              "Citrate cycle (TCA cycle)",
+                              "Fatty acid biosynthesis",
+                              "Fatty acid elongation",
+                              "Fatty acid degradation",
+                              "Oxidative phosphorylation",
+                              nucleotide.metabolisms,
+                              amino.acids.metabolisms
+                          )
+] %>%
+    {.[, `:=`(
+         GO_name = case_when(
+             KEGG_description == "Glycolysis / Gluconeogenesis" ~ "Glycolysis",
+             KEGG_description == "Pentose phosphate pathway" ~ "Pentose phosphate pathway",
+             KEGG_description == "Citrate cycle (TCA cycle)" ~ "TCA cycle",
+             KEGG_description %in% c(
+                                       "Fatty acid biosynthesis",
+                                       "Fatty acid elongation"
+                                   ) ~ "Fatty acid biosynthesis",
+             KEGG_description == "Fatty acid degradation" ~ "Fatty acid degradation",
+             KEGG_description == "Oxidative phosphorylation" ~ "Oxphos",
+             KEGG_description %in% nucleotide.metabolisms ~ "Nucleotide metabolism",
+             KEGG_description %in% amino.acids.metabolisms ~ "Amino acid metabolism"
+         )  %>%
+             factor(levels = c(
+                        "Glycolysis",
+                        "Pentose phosphate pathway",
+                        "TCA cycle",
+                        "Fatty acid biosynthesis",
+                        "Fatty acid degradation",
+                        "Oxphos",
+                        "Nucleotide metabolism",
+                        "Amino acid metabolism"
+                    ))        
+     )]} %>%
+    {cbind(., data.table(GO_group = "Metabolism"))}
+
+kegg.metabolic.gene.dt[!duplicated(KEGG_description)][
+    order(GO_name, KEGG_description)
+][
+    , .(KEGG_id, KEGG_description, GO_name)
+]
+
+## Sanity check
+kegg.metabolic.gene.dt[GO_name == "Fatty acid biosynthesis", unique(KEGG_description)]
+kegg.metabolic.gene.dt[GO_name == "Nucleotide metabolism", unique(KEGG_description)]
+kegg.metabolic.gene.dt[GO_name == "Amino acid metabolism", unique(KEGG_description)]
+
+print("The following terms were not found in human database")
+amino.acids.metabolisms[!(amino.acids.metabolisms %in% kegg.metabolic.gene.dt[GO_name == "Amino acid metabolism", unique(KEGG_description)])]
+
+kegg.metabolic.gene.dt <- merge(
+    kegg.metabolic.gene.dt,
+    primary.tx.dt[!duplicated(gene_id), .(gene_id, chromosome_name)],
+    by = "gene_id"
+)
+
+kegg.metabolic.gene.dt <- kegg.metabolic.gene.dt[chromosome_name != "chrM"]
+kegg.metabolic.gene.dt[, term_name := GO_name]
+
+```
+
+## Gene expression regulation
+
+
+```{r gene expression regulation}
+
+kegg.brite.link.dt <- file.path(
+    kegg.dir,
+    "KEGG_BRITE-gene_id-link.csv"
+) %>%
+    fread
+
+kegg.brite.link.dt <- merge(
+    kegg.brite.link.dt,
+    primary.tx.dt[!duplicated(gene_id), .(gene_id, chromosome_name)],
+    by = "gene_id"
+)
+
+kegg.brite.link.dt[, `:=`(
+    term_name = case_when(
+        BRITE_name == "Ribosome" & grepl("^MRP", SYMBOL) ~ "Mitochondrial ribosome",
+        BRITE_name == "Ribosome" & SYMBOL == "DAP3" ~ "Mitochondrial ribosome",
+        BRITE_name == "Ribosome" & grepl("^RNA", SYMBOL) ~ NA_character_,
+        BRITE_name == "Ribosome" ~ "Cytoplasmic ribosome",
+        chromosome_name == "chrM" ~ NA_character_,
+        TRUE ~ BRITE_name
+    )
+)]
+
+```
+
+## Merge KEGG data
+
+
+```{r merge kegg, fig.width = 7, fig.height = 7}
+
+kegg.all.dt <- rbind(
+    kegg.metabolic.gene.dt[, .(gene_id, term_name)],
+    kegg.brite.link.dt[!is.na(term_name), .(gene_id, term_name)]
+)
+
+all.sl.terms <- c(
+    "Transcription factors" = "Gene expression",
+    "Transcription machinery" = "Gene expression",
+    "Messenger RNA biogenesis" = "Gene expression",
+    "Spliceosome" = "Gene expression",
+    "Cytoplasmic ribosome" = "Gene expression",
+    "Mitochondrial ribosome" = "Gene expression",
+    "Translation factors" = "Gene expression",
+    "Chaperones and folding catalysts" = "Gene expression",
+    "Membrane trafficking" = "Gene expression",
+    "Ubiquitin system" = "Gene expression",
+    "Proteasome" = "Gene expression",
+    "Glycolysis" = "Metabolism",
+    "Pentose phosphate pathway" = "Metabolism",
+    "TCA cycle"  = "Metabolism",
+    "Fatty acid biosynthesis" = "Metabolism",
+    "Fatty acid degradation" = "Metabolism",
+    "Oxphos" = "Metabolism",
+    "Nucleotide metabolism" = "Metabolism",
+    "Amino acid metabolism" = "Metabolism"    
+)
+
+kegg.all.dt <- kegg.all.dt[term_name %in% names(all.sl.terms)]
+kegg.all.dt <- kegg.all.dt[!duplicated(paste(gene_id, term_name))]
+
+kegg.all.dt[, `:=`(
+    term_name = factor(term_name, levels = names(all.sl.terms)),
+    term_group = all.sl.terms[as.character(term_name)] %>%
+        factor(levels = unique(all.sl.terms))
+)]
+
+kegg.all.dt <- kegg.all.dt[order(term_name)]
+
+fwrite(
+    kegg.all.dt,
+    file.path(s8.3.dir, "key_KEGG_genes.csv")
+)
+
+```
+
+## Plot intersection of KEGG terms
+
+
+```{r plot intersection of KEGG terms}
+
+library("UpSetR")
+
+upset.keg.all.dt <- dcast(
+    kegg.all.dt,
+    gene_id ~ term_name,
+    value.var = "gene_id",
+    fun.aggregate = length
+)
+
+upset(
+    upset.keg.all.dt,
+    sets = names(all.sl.terms)
+)
+
+
+```
+
+# GO information extraction
+
+```{r go information}
+
+extractGO <- function(go.id, go.name){
+    GO.dt <- mget(go.id, org.Hs.egGO2ALLEGS) %>%
+    {AnnotationDbi::select(
+         org.Hs.eg.db,
+         key = .[[1]],
+         keytype = "ENTREZID",
+         columns = c("ENSEMBL", "SYMBOL"),
+         multiVals = "list"
+     )} %>%
+    data.table %>%
+    {.[!duplicated(ENSEMBL)]}
+
+    GO.dt[, `:=`(
+        gene_id = ENSEMBL,
+        gene_name = SYMBOL,
+        GO_id = go.id,
+        GO_name = go.name
+    )]
+
+    return(GO.dt)
+}
+
+## Extract angiogenesis related terms
+angiongenesis.go.vec <- c(
+    "Vascular Process" = "GO:0003018", #vascular process in circulatory system
+    "Angiogenesis" = "GO:0001525" #angiogenesis
+)
+
+angiogenesis.go.dt <- mapply(
+    extractGO,
+    go.id = angiongenesis.go.vec,
+    go.name = names(angiongenesis.go.vec),
+    SIMPLIFY = FALSE
+) %>% rbindlist %>%
+{cbind(., data.table(GO_group = "Angiogenesis"))}
+
+all.GO.dt <- rbindlist(
+    list(
+        kegg.metabolic.gene.dt,
+        angiogenesis.go.dt
+    ),
+    use.names = TRUE,
+    fill = TRUE
+)
+
+all.GO.dt[, `:=`(
+    ENSEMBL = NULL,
+    SYMBOL = NULL
+)]
+
+fwrite(
+    all.GO.dt,
+    file.path(s8.3.dir, "key_GO_genes.csv")
+)
+
+```
+
+
+# Data filtration for HP5 data analysis
+
+
+In order to reliably calculate log2 fold change of MRL, genes / transcripts with very little expression will be filtered out.
+
+
+## Data preprocessing
+
+
+```{r filter data}
+
+## For filtering of the results
+count.dt <- fread(file.path(
+    s4.1.7.count.per.tss.dir, "count-per-confident-tss.csv"
+))
+## Ignore non genic data
+count.dt <- count.dt[!grepl("^NA_", tss_name)]
+## Only analyze protein coding genes
+count.dt <- count.dt[
+    str_split_fixed(tss_name, "_", n = 2)[, 1] %in%
+    all.primary.tx.dt[biotype == "protein_coding", gene_id]
+]
+
+poly.count.dt <- count.dt[, c(
+    "tss_name", grep("^polysome", colnames(count.dt), value = TRUE)
+), with = FALSE]
+
+## For gene level analysis
+poly.gene.count.dt <- countByGeneFromTss(poly.count.dt)
+
+gene.filter.vec.1 <- c(
+    ## RCC4
+    "RCC4_noVHL_NA" = "polysome_RCC4_noVHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]$",
+    "RCC4_VHL_NA" = "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]$",
+    "RCC4_noVHL_Torin1" = "polysome_RCC4_noVHL_EIF4E2_NA_(3|4)_Torin1_ribo[[:digit:]]$",
+    "RCC4_VHL_Torin1" = "polysome_RCC4_VHL_EIF4E2_NA_(3|4)_Torin1_ribo[[:digit:]]$",
+    ## 786O VHL loss
+    "c786O_noVHL_EIF4E2_yy_NA" =
+        "polysome_786O_noVHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]$",
+    "c786O_VHL_EIF4E2_yy_NA" =
+        "polysome_786O_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]$",
+    ## 786O EIF4E2 KO
+    "c786O_noVHL_noEIF4E2_yy_NA" =
+        "polysome_786O_noVHL_noEIF4E2_g[[:digit:]]_[[:digit:]]_NA_ribo[[:digit:]]$",
+    "c786O_VHL_noEIF4E2_yy_NA" =
+        "polysome_786O_VHL_noEIF4E2_g[[:digit:]]_[[:digit:]]_NA_ribo[[:digit:]]$"  
+)
+
+wrapFilterPolysomeByCount <- function(match.pattern, count.dt, ref.colname = "tss_name", min.count.th = 10, min.datapoint.th = 6, filter.name){
+    print("------------------------")
+    print(paste0(filter.name, ":", match.pattern))
+    print("The following data are used to filter data")
+    grep(
+        match.pattern, colnames(count.dt), value = TRUE
+    ) %>% print
+    
+    out <- filterPolysomeByCount(match.pattern, count.dt, ref.colname, min.count.th, min.datapoint.th)
+    out.dt <- data.table(ref = out, filtered = TRUE)
+    setnames(
+        out.dt,
+        old = c("ref", "filtered"),
+        new = c(ref.colname, filter.name)
+    )
+    print("------------------------")
+    return(out.dt)
+}
+
+
+```
+
+## Gene level data filtration
+
+
+```{r gene level filteration}
+
+all.filtered.gene.dt <- mapply(
+    wrapFilterPolysomeByCount,
+    match.pattern = gene.filter.vec.1,
+    count.dt = list(poly.gene.count.dt),
+    ref.colname = "gene_id",
+    filter.name = names(gene.filter.vec.1),
+    min.count.th = 5,
+    SIMPLIFY = FALSE
+) %>%
+    {Reduce(function(...) merge(..., all = TRUE, by = "gene_id"), .)}
+
+all.filtered.gene.dt[is.na(all.filtered.gene.dt)] <- FALSE
+
+fwrite(
+    all.filtered.gene.dt,
+    file.path(
+        s8.3.dir,
+        "filtered_gene_for_polysome_analysis.csv"
+    )
+)
+
+
+```
+
+
+## TSS level filtration
+
+
+```{r tss level filtration}
+
+all.filtered.tss.dt <- mapply(
+    wrapFilterPolysomeByCount,
+    match.pattern = gene.filter.vec.1,
+    count.dt = list(poly.count.dt),
+    ref.colname = "tss_name",
+    filter.name = names(gene.filter.vec.1),
+    min.count.th = 5,
+    SIMPLIFY = FALSE
+) %>%
+    {Reduce(function(...) merge(..., all = TRUE, by = "tss_name"), .)}
+
+all.filtered.tss.dt[is.na(all.filtered.tss.dt)] <- FALSE
+
+fwrite(
+    all.filtered.tss.dt,
+    file.path(
+        s8.3.dir,
+        "filtered_tss_for_polysome_analysis.csv"
+    )
+)
+
+
+```
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

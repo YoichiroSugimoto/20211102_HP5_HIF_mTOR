@@ -1,0 +1,675 @@
+---
+title: "s9-1-2 Intersection of transcriptional and translational regulation by the HIF pathway"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("../s8-analysis-of-translation/functions", full.names = TRUE), source, chdir = TRUE)
+temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
+source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
+
+set.seed(0)
+
+sig.th <- 0.05
+
+```
+
+
+```{r define directory}
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
+s4.3.tx.info.dir <- file.path(s4.tss.dir, "s4-3-transcript-info")
+s4.3.1.tx.info.rcc4.dir <- file.path(s4.3.tx.info.dir, "s4-3-1-transcript-info-for-RCC4")
+
+
+s6.dir <- file.path(results.dir, "s6-differential-regulation-analysis")
+s6.1.dir <- file.path(s6.dir, "s6-1-differentially-expressed-genes")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+# Pre-processed data import
+
+
+```{r load preprocessed data}
+
+all.de.dte.res.dt <- fread(
+    file.path(
+        s9.dir,
+        "all-differential-expression-and-translation-data.csv"
+    ),
+    na.strings = ""
+)
+
+all.de.dte.res.dt[, `:=`(
+    VHL_target_RCC4 = factor(
+        VHL_target_RCC4,
+        levels = c("VHL_loss_repressed", "non_VHL_target", "VHL_loss_induced")
+    ),
+    mRNA_trsl_intersection_by_functions =  factor(
+        mRNA_trsl_intersection_by_functions,
+        levels = c("Glycolysis", "Vascular Process or Angiogenesis",
+                   "Vascular Process", "Angiogenesis", "Others")
+    )
+)]
+
+all.filtered.gene.dt <- fread(
+    file.path(
+        s8.3.dir,
+        "filtered_gene_for_polysome_analysis.csv"
+    )
+)
+
+
+```
+
+
+# Analysis of VHL dependent transcriptional and translational regulation
+
+
+```{r analysis of VHL dependent mRNA regulation and translation regulation}
+
+
+plotMRL_mRNA_analysis <- function(
+                                  input.de.dte.res.dt,
+                                  mrl.log2fc.colname,
+                                  abs.mrl.colname,
+                                  mrna.log2fc.colname,
+                                  filtered.gene.ids,
+                                  mrnafc.xlim = c(-4, 5),
+                                  mrlfc.ylim = c(-1, 0.5),
+                                  absmrl.ylim = c(1.5, 7.5)
+                                  ){
+
+    trsl.input.dt <- input.de.dte.res.dt[
+        gene_id %in% filtered.gene.ids
+    ]
+    
+    print("------------------------------------")
+    print("mRNA FC vs translation FC")
+    print(
+        cor.test(
+            trsl.input.dt[, get(mrna.log2fc.colname)],
+            trsl.input.dt[, get(mrl.log2fc.colname)],
+            method = "spearman",
+            alternative = "two.sided"
+        )
+    )
+    trsl.input.dt[, c(mrna.log2fc.colname, mrl.log2fc.colname), with = FALSE] %>%
+        {.[complete.cases(.)]} %>% nrow %>%
+        {print(paste0("The number of samples is: ", .))}
+    
+    trsl.scatter.g <- ggplot(
+        data = trsl.input.dt,
+        aes_string(
+            x = mrna.log2fc.colname,
+            y = mrl.log2fc.colname
+        )
+    ) +
+        geom_hline(yintercept = 0, color = "gray60") +
+        geom_vline(xintercept = 0, color = "gray60") +
+        geom_point(
+            aes_string(x = mrna.log2fc.colname)
+        ) +
+        scale_color_manual(
+            values = c(
+                "Up" = "#4477AA",
+                "Down" = "#EE6677",
+                "Uncertain" = "gray60"
+            ),
+            na.value = "gray60"
+        ) +
+        coord_cartesian(
+            xlim = mrnafc.xlim, ylim = mrlfc.ylim
+        ) +
+        theme(
+            legend.position = "bottom",
+            legend.title = element_blank(),
+            aspect.ratio = 1
+        ) +
+        xlab("mRNA abundance log2 fold change upon VHL loss") +
+        ylab("MRL log2 fold change upon VHL loss")
+
+    print(trsl.scatter.g)
+
+    ## Absolute MRL
+    print("mRNA FC vs absolute MRL")
+    print(
+        cor.test(
+            input.de.dte.res.dt[, get(abs.mrl.colname)],
+            input.de.dte.res.dt[, get(mrna.log2fc.colname)],
+            method = "spearman",
+            alternative = "two.sided"
+        )
+    )    
+    input.de.dte.res.dt[, c(mrna.log2fc.colname, abs.mrl.colname), with = FALSE] %>%
+        {.[complete.cases(.)]} %>% nrow %>%
+        {print(paste0("The number of samples is: ", .))}
+
+    
+    absmrl.base.g <- ggplot(
+        data = input.de.dte.res.dt,
+        aes_string(
+            y = abs.mrl.colname
+        )
+    )
+
+    absmrl.scatter.g <- absmrl.base.g +
+        geom_vline(xintercept = 0, color = "gray60") +
+        geom_point(
+            aes_string(
+                x = mrna.log2fc.colname
+            )
+        ) +
+        theme(
+            aspect.ratio = 1
+        )+
+        xlab("mRNA abundance log2 fold change upon VHL loss") +
+        ylab("MRL in VHL negative cell") +
+        coord_cartesian(ylim = absmrl.ylim, xlim = c(-4, 12))
+
+    print(absmrl.scatter.g)
+
+    return()
+}
+
+
+```
+
+## Analysis for RCC-4
+
+```{r plot for r4, fig.height = 5, fig.width = 7}
+
+t1.all.de.dte.res.dt <- all.de.dte.res.dt[
+    gene_id %in% all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id]
+]
+
+temp <- plotMRL_mRNA_analysis(
+    input.de.dte.res.dt = t1.all.de.dte.res.dt,
+    mrl.log2fc.colname = "MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
+    abs.mrl.colname = "MRL_treated_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
+    mrna.log2fc.colname = "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL",
+    filtered.gene.ids = all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id]
+)
+
+
+```
+
+## Analysis of 786-O
+
+
+```{r similar analysis with 786-O, fig.height = 5, fig.width = 7}
+
+h2a.all.de.dte.res.dt <- copy(all.de.dte.res.dt)
+
+h2a.all.de.dte.res.dt <- h2a.all.de.dte.res.dt[
+    gene_id %in% all.filtered.gene.dt[c786O_noVHL_EIF4E2_yy_NA == TRUE, gene_id]
+]
+
+temp <- plotMRL_mRNA_analysis(
+    input.de.dte.res.dt = h2a.all.de.dte.res.dt,
+    mrl.log2fc.colname = "MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
+    abs.mrl.colname = "MRL_treated_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
+    mrna.log2fc.colname = "log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL",
+    filtered.gene.ids = all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id]
+)
+
+```
+
+
+# Comparison of the effect size of translational regulation by the HIF and mTOR pathway
+
+
+```{r compare the effect size, fig.height = 7, fig.width = 7}
+
+sl.comp.names <- c(
+    "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
+    "786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
+    "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA"
+)
+
+intervention.names <- c(
+    "RCC-4:\nVHL loss",
+    "786-O:\nVHL loss",
+    "RCC-4 VHL:\nTorin 1"
+)
+
+m.all.de.dte.res.dt <- trslWideToLong(
+    all.de.dte.res.dt, sl.comp.names, intervention.names
+)
+
+m.all.de.dte.res.dt[, `:=`(
+    filter_flag = case_when(
+        variable == "MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL" ~
+            gene_id %in%
+            intersect(
+                all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id],
+                all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id]
+            ),
+        variable == "MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL" ~
+            gene_id %in%
+            intersect(
+                all.filtered.gene.dt[c786O_noVHL_EIF4E2_yy_NA == TRUE, gene_id],
+                all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id]
+            ),
+        variable == "MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA" ~
+            gene_id %in%
+            intersect(
+                all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id],
+                all.filtered.gene.dt[RCC4_VHL_Torin1 == TRUE, gene_id]
+            )             
+    )
+)]
+
+m.all.de.dte.res.dt <- m.all.de.dte.res.dt[filter_flag == TRUE]
+
+table(m.all.de.dte.res.dt[, .(Intervention)])
+
+## Sanity check
+if(nrow(m.all.de.dte.res.dt[duplicated(paste(gene_id, Intervention))]) == 0){
+    "OK"
+} else {stop("point 1")}
+
+temp <- plotTrslDistByIntervention(
+    m.all.de.dte.res.dt = m.all.de.dte.res.dt,
+    show.quantile = TRUE
+)
+
+
+```
+
+
+# Analysis of the effect of HIF activation on the mTOR pathway activity
+
+
+## Expression level changes of mTOR regulators / target upon VHL loss
+
+
+```{r expression level changes of mTOR regulators}
+
+sl.comparison.names <- c("RCC4_xx_HIF1B_N__noVHL_vs_VHL", "786O_xx_HIF1B_N__noVHL_vs_VHL")
+
+gene.de.res.dt <- lapply(
+    sl.comparison.names,
+    readTssDeRes,
+    file.path("../../results/s6-differential-regulation-analysis/s6-1-differentially-expressed-genes")
+) %>%
+    rbindlist
+
+sl.mtor.regulators <- c("BNIP3", "DDIT4", "EIF4EBP1")
+
+gene.de.res.dt <- gene.de.res.dt[
+    gene_name %in% sl.mtor.regulators
+] %>%
+    {.[, `:=`(
+         cell_line = str_split_fixed(comparison_name, "_", n = 2)[, 1] %>%
+             factor(levels = c("RCC4", "786O")),
+         gene_name = factor(gene_name, levels = sl.mtor.regulators)
+     )]}
+
+m.gene.de.res.dt <- melt(
+    gene.de.res.dt,
+    id.vars = c(
+        "gene_id", "gene_name",
+        "cell_line"
+    ),
+    measure.vars = c("meanNormCount_treated", "meanNormCount_base"),
+    value.name = "TPM"
+) %>%
+    {.[, `:=`(
+         VHL = case_when(
+             variable == "meanNormCount_treated" ~ "no VHL",
+             variable == "meanNormCount_base" ~ "VHL"
+         ) %>% factor(levels = c("VHL", "no VHL"))
+     )]}
+
+ggplot(
+    data = m.gene.de.res.dt,
+    aes(
+        x = gene_name,
+        y = TPM,
+        fill = VHL
+    )
+) +
+    geom_bar(stat = "identity", position = "dodge2") +
+    facet_grid(~ cell_line) +
+    scale_fill_manual(values = c(
+                          "no VHL" = "#4477AA",
+                          "VHL" = "#EE6677"
+                      )) +
+    theme(
+        aspect.ratio = 1
+    ) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    scale_y_continuous(expand = c(0, 0, 0.2, 0))
+
+gene.de.res.dt[
+  , .(gene_name, padj, shrlog2fc, treated_basename, base_basename, cell_line)
+]
+
+```
+
+
+## Analysis of the changes in translation upon VHL loss vs those upon mTOR inhibition
+
+### RCC-4
+
+```{r corrleation of the effect of translation by VHL loss and mTOR inhibition}
+
+t2.all.de.dte.res.dt <- all.de.dte.res.dt[
+    gene_id %in% Reduce(
+                     intersect,
+                     list(
+                         all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id],
+                         all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id],
+                         all.filtered.gene.dt[RCC4_VHL_Torin1 == TRUE, gene_id]
+                     ))
+]
+
+ggplot(
+    data = t2.all.de.dte.res.dt,
+    aes(
+        y = MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
+        x = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray60") +
+    geom_vline(xintercept = 0, color = "gray60") +
+    geom_point() +
+    geom_smooth(formula = y ~ x, method = "lm") +
+    theme(
+        aspect.ratio = 1
+    ) +
+    xlab("MRL log2 fold change with Torin 1") +
+    ylab("MRL log2 fold change upon VHL loss") +
+    coord_cartesian(xlim = c(-1.5, 0.5), ylim = c(-0.6, 0.6))
+
+t2.all.de.dte.res.dt %$%
+    cor.test(
+        x = MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
+        y = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        method = "pearson",
+        alternative = "two.sided"
+    )
+
+t2.all.de.dte.res.dt[
+  , .(
+        MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
+        MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
+    )] %>%
+    {.[complete.cases(.)]} %>% nrow %>%
+    {print(paste0("The number of samples was: ", .))}
+
+```
+
+### 786-O
+
+```{r corrleation of the effect of translation by VHL loss and mTOR inhibition in 786-O}
+
+t4.all.de.dte.res.dt <- all.de.dte.res.dt[
+    gene_id %in%
+    Reduce(
+        intersect,
+        list(
+            all.filtered.gene.dt[c786O_noVHL_EIF4E2_yy_NA == TRUE, gene_id],
+            all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id],
+            all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id],
+            all.filtered.gene.dt[RCC4_VHL_Torin1 == TRUE, gene_id]
+        ))
+]
+
+ggplot(
+    data = t4.all.de.dte.res.dt,
+    aes(
+        y = MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
+        x = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray60") +
+    geom_vline(xintercept = 0, color = "gray60") +
+    geom_point() +
+    geom_smooth(formula = y ~ x, method = "lm") +
+    theme(
+        aspect.ratio = 1
+    ) +
+    xlab("MRL log2 fold change with Torin 1") +
+    ylab("MRL log2 fold change upon VHL loss in 786-O") +
+    coord_cartesian(xlim = c(-1.5, 0.5), ylim = c(-0.6, 0.6))
+
+
+t4.all.de.dte.res.dt %$%
+    cor.test(
+        x = MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
+        y = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        method = "pearson",
+        alternative = "two.sided"
+    )
+
+t4.all.de.dte.res.dt[
+  , .(
+        MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
+        MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
+    )] %>%
+    {.[complete.cases(.)]} %>% nrow %>%
+    {print(paste0("The number of samples was: ", .))}
+
+
+```
+
+# Analysis of the association of TOP motif length and changes in translation upon VHL loss
+
+
+## QC for the TOP motif length assignment
+
+
+```{r qc for top motif length}
+
+tx.meta.data.rcc4.dt <- file.path(
+    s4.3.1.tx.info.rcc4.dir,
+    "transcript-meta-information-RCC4-VHL.csv"
+) %>% fread
+
+tx.meta.data.786o.dt <- file.path(
+    s4.3.tx.info.dir, "s4-3-2-transcript-info-for-786O",
+    "transcript-meta-information-786O-VHL.csv"
+) %>% fread
+
+
+## QC
+r4.temp.dt <- copy(tx.meta.data.rcc4.dt)
+setnames(r4.temp.dt, old = "tss_p1_pTOP", new = "TOP_in_RCC4")
+
+c7o.temp.dt <- copy(tx.meta.data.786o.dt)
+setnames(c7o.temp.dt, old = "tss_p1_pTOP", new = "TOP_in_786O")
+
+temp.qc.dt <- merge(
+    r4.temp.dt[, .(tss_name, TOP_in_RCC4)],
+    c7o.temp.dt[, .(tss_name, TOP_in_786O)],
+    by = "tss_name"
+)
+
+ggplot(
+    data = temp.qc.dt,
+    aes(
+        x = TOP_in_RCC4,
+        y = TOP_in_786O
+    )
+) +
+    geom_point()
+
+
+```
+
+## Analysis
+
+
+```{r top motif length vs VHL loss trsl}
+
+all.filtered.tss.dt <- file.path(
+    s8.3.dir,
+    "filtered_tss_for_polysome_analysis.csv"
+) %>% fread
+
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+mergeTranslationAndMetaData <- function(input.diff.trsl.file, filtered.tss.names, tx.meta.data.dt, cell.name){
+    diff.trsl.dt <- file.path(
+        s8.1.2.dir,
+        input.diff.trsl.file
+    ) %>% fread
+
+    diff.trsl.dt <- diff.trsl.dt[
+        tss_name %in% filtered.tss.names 
+    ]
+
+    diff.trsl.dt <- merge(
+        diff.trsl.dt,
+        tx.meta.data.dt[, .(tss_name, tss_p1_pTOP)],
+        by = "tss_name"
+    )
+    
+    diff.trsl.dt <- diff.trsl.dt[
+        !is.na(tss_p1_pTOP) & !is.na(MRL_log2fc)
+    ]
+
+    diff.trsl.dt[, `:=`(
+        rd_TOP_motif_length = round(tss_p1_pTOP) %>%
+            {if_else(. >= 8, "8+", as.character(.))},
+        cell_name = cell.name
+    )]
+
+    diff.trsl.dt[, mRNA_N := .N, by = list(rd_TOP_motif_length)]
+
+    return(diff.trsl.dt)
+}
+
+
+r4.filtered.tx <- all.filtered.tss.dt[
+    (RCC4_noVHL_NA == TRUE) & (RCC4_VHL_NA == TRUE), tss_name
+]
+
+c7.filtered.tx <- all.filtered.tss.dt[
+    (c786O_noVHL_EIF4E2_yy_NA == TRUE) & (c786O_VHL_EIF4E2_yy_NA == TRUE), tss_name
+]
+
+
+top.vhl.loss.dt <- mapply(
+    FUN = mergeTranslationAndMetaData,
+    input.diff.trsl.file = c("RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL.csv",
+      "786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL.csv"),
+    filtered.tss.names = list(r4.filtered.tx, c7.filtered.tx),
+    tx.meta.data.dt = list(tx.meta.data.rcc4.dt, tx.meta.data.786o.dt),
+    cell.name = c("RCC4", "786-O"),
+    SIMPLIFY = FALSE
+) %>%
+    rbindlist
+
+top.vhl.loss.sig.dt <- lapply(
+    c("RCC4", "786-O"),
+    function(x){
+        data.table(
+            cell_name = x,
+            top.vhl.loss.dt[cell_name == x] %$%
+            pairwise.wilcox.test(
+                x = MRL_log2fc,
+                g = rd_TOP_motif_length,
+                p.adjust.method = "none",
+                alternative = "two.sided"
+            )$p.value[, 1] %>% stack %>% data.table            
+        )
+    }
+) %>% rbindlist %>%
+{.[, padj := p.adjust(values, method = "holm")]} %>%
+{.[, `:=`(
+     sig_mark = case_when(
+         padj < sig.th * 0.1 ~ "**",
+         padj < sig.th ~ "*",
+         TRUE ~ NA_character_
+     ),
+     rd_TOP_motif_length = ind
+ )]} %T>% print
+
+merge(
+    top.vhl.loss.dt,
+    top.vhl.loss.sig.dt,
+    by = c("cell_name", "rd_TOP_motif_length"),
+    all.x = TRUE
+) %>% {.[, cell_name := factor(cell_name, levels = c("RCC4", "786-O"))]} %>%
+    ggplot(
+        aes(
+            x = rd_TOP_motif_length,
+            y = MRL_log2fc,
+            color = mRNA_N < 10
+        )
+    ) +
+    geom_hline(yintercept = 0, color = "gray60") +
+    geom_boxplot(outlier.shape = NA) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]}, 
+        vjust = -0.8, color = "black", size = 6
+    ) +
+    facet_grid(cell_name ~ .) +
+    theme(
+        aspect.ratio = 1,
+        legend.position = "none"
+    ) +
+    scale_color_manual(values = c("TRUE" = "gray60", "FALSE" = "black")) +
+    xlab("TOP motif length") +
+    ylab("MRL log2 fold change upon VHL loss")
+
+
+```
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

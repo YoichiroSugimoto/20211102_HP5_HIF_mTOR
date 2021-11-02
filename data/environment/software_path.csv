@@ -1,0 +1,6 @@
+﻿software_name,path
+paraclu,/camp/home/sugimoy/home/CAMP_HPC/software/source_files/paraclu-9
+dpi,/camp/home/sugimoy/home/CAMP_HPC/software/source_files/dpi1
+tagXSstrandedData,/camp/home/sugimoy/home/CAMP_HPC/software/source_files/utility_scripts/
+kallisto,/camp/home/sugimoy/home/CAMP_HPC/software/source_files/kallisto
+sratoolkit,/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/source_files/sratoolkit.2.11.0-centos_linux64/bin/

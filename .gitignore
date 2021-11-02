@@ -1,0 +1,127 @@
+## All hidden files except .gitignore
+.*
+!/.gitignore
+
+## cluster runnning log won't be included
+## slurm-*
+
+## Microsoft files
+*.docx
+*.xlsx
+*.pptx
+
+## ignore rawdata directory
+## http://stackoverflow.com/questions/1470572/gitignore-ignore-any-bin-directory
+rawdata/
+Rawdata/
+annotation/
+results/
+data/The_Pathology_Atlas_data/
+data/FANTOM/
+data/others/
+data/TCGA/
+data/uniprot/
+## ignore sofrware directory
+software/
+temp/
+
+## ignore md and figure documents in R
+R/**/*_files
+R/**/*.md
+R/**/*_files/*.png
+
+## ignore figure documents in doc
+doc/**/*_files
+
+## ignore raw data
+*.fastq
+*.fq
+*.fasta
+*.fa
+*.gff3
+*.gtf
+*.bam
+*.bai
+*.bed
+*.tab
+*.tsv
+*.gz
+
+## ignore temp data
+*.tmp
+
+## Figures
+*.pdf
+*.png
+*.ai
+*.eps
+*.jpeg
+*.tif
+
+## Compiled files
+*.html
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.backup
+
+## Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.brf
+*.run.xml
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+*~
+\#*\#
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# R
+.Rhistory
+
+# Emacs
+.#*

@@ -1,0 +1,167 @@
+---
+title: "sp-2 Preparation of STAR index"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+# Overview
+
+The sequences of genome are downloaded, and exported as
+a `fasta` format.
+The retrieved sequences are then indexed to map high-throughput DNA sequencing
+reads. 
+To do this, [STAR](https://github.com/alexdobin/STAR) will be used.
+
+# Setup
+
+
+```{r knitr config, message = FALSE, warning = FALSE}
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+### Capture `system` outputs
+system <- function(...) {
+    stopifnot(!any(names(list(...)) %in% "intern"))
+    result <- base::system(..., intern = TRUE)
+    cat(paste0(result, "\n"))
+}
+
+```
+
+
+```{r load packages, message = FALSE, warning = FALSE}
+
+file.prefix <- "hg38"
+### human genome by BSgenome
+bs.genome.ver <- "BSgenome.Hsapiens.UCSC.hg38"
+library(bs.genome.ver, character.only = TRUE)
+
+processors <- 8
+
+
+```
+
+## The input and output files and the directories
+
+
+```{r setup directories}
+
+## .libPaths("/well/ratcliff/data/yoichiro/software/R_packages/library")
+annot.dir <- file.path("../../annotation/")
+ref.seq.dir <- file.path(annot.dir, "hg38_annotation/ref_sequences/")
+star.index.dir <- file.path(annot.dir, "hg38_annotation/star_indices/") 
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+
+create.dir <- function(dir.name){
+    if(dir.exists(dir.name) == FALSE) {
+        dir.create(dir.name)
+    }
+}
+create.dir(ref.seq.dir)
+create.dir(star.index.dir)
+
+```
+
+
+
+## Load pre-processed data
+
+The annotation data pre-processed by "i Parse gene annotation" script
+is loaded here.
+
+
+```{r load pre-processed data}
+
+all.tx.gtf <- file.path(
+    annot.ps.dir,
+    "all-transcript.gtf"
+)
+
+```
+
+# Genome
+
+Follow STAR manual
+
+"It is strongly recommended to include major chromosomes (e.g., for human chr1-22,chrX,chrY,chrM,) as well as un-placed and un-localized scaffolds. Typically, un-placed/un-localized scaffolds add just a few MegaBases to the genome length, however, a substantial number of reads may map to ribosomal RNA (rRNA) repeats on these scaffolds. These reads would be reported as unmapped if the scaffolds are not included in the genome, or, even worse, may be aligned to wrong loci on the chromosomes. Generally, patches and alternative haplotypes should not be included in the genome."
+
+In BSgenome file, the following prefixes were found (explanation was taken from [NCBI](https://www.ncbi.nlm.nih.gov/grc/help/patches/) and [UCSC](http://hgdownload.soe.ucsc.edu/gbdb/hg38/html/description.html)):
+
+ - alt
+	 - "Haplotype chromosome, unplaced contig and unlocalized contig names now include their NCBI accession number (e.g., chr6_GL000256v2_alt)"
+	 - "Haplotype chromosome names consist of the chromosome number, followed by the NCBI accession number, followed by alt"
+ - fix
+	 - "FIX patches: Fix patches represent changes to existing assembly sequences."
+ - chrUn
+	 - "Unplaced contig names (contigs whose associated chromosome is not known) consist of "chrUn" followed by the NCBI accession number"
+ - random
+	 - "Unlocalized contig names consist of the chromosome number, followed by the NCBI accession number, followed by random"
+
+So, I exclude chromosomes where the names containing the postfix of _alt and _fix.
+
+```{r genome, results="hide"}
+
+genome.fa.file <- file.path(ref.seq.dir, paste0(file.prefix, "_genome.fa"))
+
+## The original function extracted standard chromosomes only but here I include all chrosomesomes
+## eval(substitute(
+##     genome.seq <- sapply(chromosomes, function(x){bsgenome.ver[[x]]}),
+##     list(bsgenome.ver = as.name(bs.genome.ver))
+## ))
+
+hg38.all.chrs <- names(getBSgenome(BSgenome.Hsapiens.UCSC.hg38))
+
+hg38.chrs <- hg38.all.chrs %>%
+    .[!grepl("_alt$", .)] %>%
+    .[!grepl("_fix$", .)]
+
+eval(substitute(
+    genome.seq <- sapply(hg38.chrs, function(x){bsgenome.ver[[x]]}),
+    list(bsgenome.ver = as.name(bs.genome.ver))
+))
+
+export(genome.seq, con = genome.fa.file, format = "fasta")
+
+```
+
+# Index retrieved sequences
+
+Here, index for `star` is generated. 
+
+```{r index}
+
+## Build STAR index
+buildSTARIndex <- function(star.cmd = "STAR", star.index.dir, genome.fa.file, all.tx.gtf){
+    cmd <- paste(star.cmd,
+                 "--runThreadN", processors,
+                 "--runMode genomeGenerate",
+                 "--genomeDir", star.index.dir,
+                 "--genomeFastaFiles", genome.fa.file,
+                 "--sjdbGTFfile", all.tx.gtf,
+                 "--sjdbOverhang 99")
+	system(cmd) 
+}
+
+buildSTARIndex(star.cmd = "STAR", star.index.dir, genome.fa.file, all.tx.gtf)
+
+```
+
+# Session information
+
+```{r session info}
+
+sessionInfo()
+
+```

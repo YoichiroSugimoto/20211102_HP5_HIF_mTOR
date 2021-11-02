@@ -1,0 +1,813 @@
+---
+title: "s8-3-2-2 Analysis of mTOR-dependent translational regulation (2/2)"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+The translational effect of mTOR inhibition in RCC-4 VHL will be examined here.
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+sig.th <- 0.05
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
+s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
+s4.2.1.tss.tx.map.RCC4.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-1-tss-transcript-mapping-RCC4")
+s4.3.tx.info.dir <- file.path(s4.tss.dir, "s4-3-transcript-info")
+s4.3.1.tx.info.rcc4.dir <- file.path(s4.3.tx.info.dir, "s4-3-1-transcript-info-for-RCC4")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+# Evaluation of translation changes by mTOR inhibition (gene level)
+
+## VHL status for the analysis
+
+
+```{r vhl status}
+
+vhl.status <- "VHL"
+
+```
+
+
+## Import filtration information
+
+```{r evaluation of translation changes by mTOR inhibition}
+
+all.filtered.tss.dt <- file.path(
+    s8.3.dir,
+    "filtered_tss_for_polysome_analysis.csv"
+) %>% fread
+
+all.filtered.tss.dt[, gene_id := str_split_fixed(tss_name, "_", n = 2)[, 1]]
+
+all.filtered.tss.dt[RCC4_VHL_NA == TRUE & RCC4_VHL_Torin1 == TRUE][
+    gene_id %in%
+    primary.tx.dt[!duplicated(gene_id)][biotype == "protein_coding", gene_id]    
+] %>%
+    nrow
+
+```
+
+## Read translation analysis data
+
+
+```{r read translation analysis data by gene level}
+
+torin.tx.trsl.dt <- file.path(
+    s8.1.2.dir,
+    paste0(
+        "RCC4_",
+        vhl.status,
+        "_EIF4E2_yy_xx__Torin1_vs_NA.csv"
+    )
+) %>% fread
+
+torin.tx.trsl.dt[
+  , trsl_reg_class := case_when(
+        translational_regulation %in% "Up" ~ "Preserved",
+        translational_regulation %in% "Down" ~ "Repressed",
+        TRUE ~ "Not significant"
+    ) %>%
+        factor(levels = c("Preserved", "Not significant", "Repressed"))
+]
+
+
+torin.tx.trsl.dt <- torin.tx.trsl.dt[
+    tss_name %in% all.filtered.tss.dt[
+                      RCC4_VHL_NA == TRUE & RCC4_VHL_Torin1 == TRUE, tss_name
+                  ] &
+    gene_id %in% primary.tx.dt[!duplicated(gene_id)][biotype == "protein_coding", gene_id]
+]
+
+```
+
+# Import mRNA feature data
+
+
+```{r import mRNA feature data}
+
+tss.tx.assignment.dt <- file.path(
+    s4.2.1.tss.tx.map.RCC4.dir,
+    "transcripts-per-TSS-for-RCC4.gtf"
+) %>%
+    {rtracklayer::import(.)} %>%
+as.data.frame %>% data.table
+
+tss.tx.assignment.dt <- tss.tx.assignment.dt[!duplicated(transcript_id)]
+tss.tx.assignment.dt[, transcript_id := original_transcript_id]
+
+tx.meta.dt <- file.path(
+  s4.3.1.tx.info.rcc4.dir,
+  "transcript-meta-information-RCC4-VHL.csv"
+) %>%
+    fread
+
+tx.meta.dt <- merge(
+    tss.tx.assignment.dt[, .(tss_name, transcript_id)],
+    tx.meta.dt,
+    by = "tss_name"
+)
+
+torin.tx.trsl.dt <- merge(
+    tx.meta.dt[cds_len > 100],
+    torin.tx.trsl.dt[, .(tss_name, gene_name, biotype, MRL_log2fc, MRL_treated, MRL_base, trsl_reg_class)],
+    by = "tss_name"
+)
+
+all.primary.tx.dt <- file.path(
+    annot.ps.dir,
+    "all_GENCODE_RefSeq_transcript_info.csv"
+) %>% fread
+
+all.primary.tx.dt <- all.primary.tx.dt[, c(
+    "gene_id", "gene_name", "transcript_id", "chromosome_name",
+    "biotype", "transcript_type",
+    "basic_tag", "refseq_tag", "MANE_Select_tag", "appris_tag",
+    "mRNA_start_NF_tag", "mRNA_end_NF_tag", "cds_start_NF_tag", "cds_end_NF_tag",
+    "bicistronic_tag", "readthrough_transcript_tag", "fusion_gene_flag"
+), with = FALSE]
+
+torin.tx.trsl.dt <- torin.tx.trsl.dt[
+    transcript_id %in% all.primary.tx.dt[
+                           mRNA_start_NF_tag == "N/A" &
+                           mRNA_end_NF_tag == "N/A" &
+                           cds_start_NF_tag == "N/A" &
+                           cds_end_NF_tag == "N/A" &
+                           fusion_gene_flag == FALSE,
+                           transcript_id
+                       ]
+][
+    cds_len > 100
+]
+
+fwrite(
+    torin.tx.trsl.dt,
+    file.path(s8.3.dir, "torin-1-translation-change-summary.csv")
+)
+
+
+```
+
+# Analysis of the effect of individual features
+
+
+```{r long table}
+
+m.torin.tx.trsl.dt <- melt(
+    torin.tx.trsl.dt,
+    id.vars = c(
+        "tss_name",
+        "gene_name",
+        "MRL_log2fc", "trsl_reg_class",
+        "mean_utr5_len", "cds_len",
+        "tx_kozak_score",
+        "tss_p1_TOP", "tss_p2_TOP", "tss_p3_TOP",
+        "tss_p1_tTOP", "tss_p2_tTOP", "tss_p3_tTOP",
+        "tss_p1_pTOP", "tss_p2_pTOP", "tss_p3_pTOP",
+        "tss_PRTE_score",
+        "uORF_all"
+    ),
+    measure.vars = c("MRL_treated", "MRL_base"),
+    value.name = "MRL"
+) %>%
+    {.[, `:=`(
+         treatment = case_when(
+             variable == "MRL_treated" ~ "Torin_1",
+             variable == "MRL_base" ~ "No_treatment"
+         ),
+         log10_cds_len = log10(cds_len)
+     )]}
+
+
+```
+
+
+## CDS length
+
+
+```{r analyse the effect of coding sequence length}
+
+m.torin.tx.trsl.dt[, `:=`(
+    cds_len_bin = cut(
+        log10_cds_len,
+        breaks = seq(2, 5, by = 0.25),
+        labels = paste0(
+            "(",
+            seq(2, 5, by = 0.25) %>% {.[1:(length(.) - 1)]} %>% {round(10^.)},
+            ", ",
+            seq(2, 5, by = 0.25) %>% {.[2:length(.)]} %>% {round(10^.)},
+            "]"
+        )
+    )
+)]
+
+fwrite(
+    m.torin.tx.trsl.dt,
+    file.path(s8.3.dir, "long-torin-1-translation-change-summary.csv")
+)
+
+ggplot(
+    data = m.torin.tx.trsl.dt[!is.na(cds_len_bin)],
+    aes(
+        x = cds_len_bin,
+        y = MRL,
+        fill = treatment
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("CDS length [nts]")
+
+print("The number of samples for the boxplots")
+m.torin.tx.trsl.dt[!is.na(MRL)][
+    , table(treatment, cds_len_bin)
+] %>% print
+
+cds.len.sig.dt <- lapply(
+    m.torin.tx.trsl.dt[, unique(cds_len_bin) %>% sort],
+    function(x){
+        data.table(
+            cds_len_bin = x,
+            wil_p = wilcox.test(
+                x = m.torin.tx.trsl.dt[
+                    treatment == "No_treatment" & cds_len_bin == x, MRL_log2fc],
+                y = m.torin.tx.trsl.dt[
+                    treatment == "No_treatment" & cds_len_bin != x, MRL_log2fc],
+                alternative = "two.sided"
+            )$p.value,
+            rg = rcompanion::wilcoxonRG(
+                                 x = m.torin.tx.trsl.dt[
+                                   treatment == "No_treatment", MRL_log2fc],
+                                 g = m.torin.tx.trsl.dt[
+                                   treatment == "No_treatment", cds_len_bin != x]
+                             ),
+            N = nrow(m.torin.tx.trsl.dt[
+                treatment == "No_treatment" & cds_len_bin == x]),
+            N_others = nrow(m.torin.tx.trsl.dt[
+                treatment == "No_treatment" & cds_len_bin != x])
+        )
+    }
+) %>%
+    rbindlist %>%
+{.[, padj := p.adjust(wil_p, method = "holm")]} %>%
+{.[, `:=`(
+     mTOR_sensitivity = case_when(
+         padj < sig.th & rg > 0 ~ "Resistent",
+         padj < sig.th & rg < 0 ~ "Hypersensitive",
+         TRUE ~ "N.S."
+     ),
+     sig_mark = case_when(
+         padj < sig.th * 0.1 ~ "**",
+         padj < sig.th ~ "*",
+         TRUE ~ NA_character_
+     )
+)] }%T>%
+print
+
+for.comp.m.torin.tx.trsl.dt <- rbind(
+    copy(m.torin.tx.trsl.dt[!is.na(cds_len_bin) & treatment == "No_treatment"])[
+        , cds_gp := "Binned by CDS length"
+    ],
+    copy(m.torin.tx.trsl.dt[treatment == "No_treatment"])[, `:=`(
+            cds_len_bin = "All",
+            cds_gp = "All"
+        )]
+) %>%
+    {.[, cds_gp := factor(cds_gp, levels = c("Binned by CDS length", "All"))]}
+
+
+merge(
+    for.comp.m.torin.tx.trsl.dt,
+    cds.len.sig.dt,
+    by = "cds_len_bin",
+    all.x = TRUE
+) %>%
+    ggplot(
+        aes(
+            x = cds_len_bin,
+            y = MRL_log2fc,
+            color = mTOR_sensitivity,
+            fill = mTOR_sensitivity
+        )
+    ) +
+    geom_hline(yintercept = for.comp.m.torin.tx.trsl.dt[
+                   cds_len_bin == "All", median(MRL_log2fc)
+               ]) + 
+    geom_boxplot(outlier.shape = NA) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]},
+        vjust = -0.1, color = "black", size = 5
+    ) +
+    facet_grid(~ cds_gp, space = "free_x", scales = "free_x") +
+    theme(
+        ##legend.position = "bottom",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(
+        values = c(
+            "Resistent" = "lightsteelblue2",
+            "Hypersensitive" = "mistyrose",
+            "N.S." = "gray60"
+        ),
+        na.value = "white"
+    ) +
+    scale_color_manual(
+        values = c(
+            "Resistent" = "#4477AA",
+            "Hypersensitive" = "#EE6677",
+            "N.S." = "gray20"
+        ),
+        na.value = "black"
+    ) +
+    xlab("CDS length [nts]") +
+    ylab("MRL log2 fold change with Torin 1")
+
+
+## Confirm that this is not the effct of TOP motif length differences
+ggplot(
+    data = m.torin.tx.trsl.dt[!is.na(cds_len_bin) & treatment == "No_treatment"],
+    aes(
+        x = cds_len_bin,
+        y = tss_p1_pTOP
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    coord_cartesian(ylim = c(0, 2)) +
+    xlab("CDS length [nts]") +
+    ylab("TOP motif length")
+
+
+```
+
+## uORF
+
+
+```{r uORF effect}
+
+m.torin.tx.trsl.dt[, uORF_capped := factor(
+                              round(uORF_all) %>%
+                              {case_when(
+                                  . >= 3 ~ "3+",
+                                  TRUE ~ as.character(.)
+                              )}
+                     )
+                   ]
+
+uorf.sig.dt <- rbind(
+    m.torin.tx.trsl.dt[treatment == "No_treatment"] %$%
+    pairwise.wilcox.test(
+        x = MRL,
+        g = uORF_capped,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[, 1] %>% stack %>% {data.table(., treatment = "No_treatment")},
+    m.torin.tx.trsl.dt[treatment == "Torin_1"] %$%
+    pairwise.wilcox.test(
+        x = MRL,
+        g = uORF_capped,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[, 1] %>% stack %>% {data.table(., treatment = "Torin_1")}
+) %>%
+    {.[, padj := p.adjust(values)]} %>%
+    {.[, `:=`(
+         sig_mark = case_when(
+             padj < sig.th * 0.1 ~ "**",
+             padj < sig.th ~ "*",
+             TRUE ~ NA_character_
+         ),
+         uORF_capped = ind
+     )]} %T>%
+    print
+
+merge(
+    m.torin.tx.trsl.dt,
+    uorf.sig.dt,
+    by = c("uORF_capped", "treatment"), all.x = TRUE
+) %>%
+    ggplot(
+        aes(
+            x = uORF_capped,
+            y = MRL,
+            fill = treatment
+        )
+    ) +
+    geom_boxplot(outlier.shape = NA) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]}, 
+        vjust = -0.8, color = "black", size = 6,
+        position = position_dodge(width = 0.8)
+    ) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1.5
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("uORF number")
+
+print("The number of samples for the boxplots")
+m.torin.tx.trsl.dt[!is.na(MRL)][
+    , table(treatment, uORF_capped)
+] %>% print
+
+
+ggplot(
+    data = m.torin.tx.trsl.dt,
+    aes(
+        x = factor(uORF_capped),
+        y = tss_p1_pTOP,
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1.5,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    coord_cartesian(ylim = c(0, 2)) + 
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("uORF number") +
+    ylab("TOP motif length")
+
+ggplot(
+    data = m.torin.tx.trsl.dt,
+    aes(
+        x = uORF_capped,
+        y = MRL_log2fc
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1.5,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("uORF number")
+
+
+```
+
+## TOP motif
+
+
+```{r TOP motifs, fig.width = 7, fig.height = 5}
+
+top.long.dt <- melt(
+    torin.tx.trsl.dt,
+    id.vars = c("tss_name", "MRL_log2fc"),
+    measure.vars = c("tss_p1_pTOP", "tss_p2_pTOP", "tss_p3_pTOP"),
+    value.name = "TOP_motif_length"
+) %>%
+    {.[, `:=`(
+         TOP_start = str_extract(variable, "[[:digit:]]") %>%
+             {paste0("+", .)},
+         rd_TOP_motif_length = round(TOP_motif_length) %>%
+             {if_else(. >= 8, "8+", as.character(.))}
+       )]}
+
+print("The number of mRNAs analysed here")
+top.long.dt[, table(TOP_start, rd_TOP_motif_length)]
+
+top.long.dt[, mRNA_N := .N, by = list(TOP_start, rd_TOP_motif_length)]
+
+top.pos.sig.dt <- lapply(
+    c("+1", "+2", "+3"),
+    function(x){
+        data.table(
+            TOP_start = x,
+            top.long.dt[TOP_start == x] %$%
+            pairwise.wilcox.test(
+                x = MRL_log2fc,
+                g = rd_TOP_motif_length,
+                p.adjust.method = "none",
+                alternative = "two.sided"
+            )$p.value[, 1] %>%
+             stack %>% data.table
+        )
+    }
+) %>% rbindlist %>%
+{.[, padj := p.adjust(values, method = "holm")]} %>%
+{.[, `:=`(
+     sig_mark = case_when(
+         padj < sig.th * 0.1 ~ "**",
+         padj < sig.th ~ "*",
+         TRUE ~ NA_character_
+     ),
+     rd_TOP_motif_length = ind
+ )]} %T>% print
+
+count.th <- 10
+
+merge(
+    top.long.dt,
+    top.pos.sig.dt,
+    by = c("TOP_start", "rd_TOP_motif_length"), all.x = TRUE
+) %>%
+    ggplot(
+        aes(
+            x = rd_TOP_motif_length,
+            y = MRL_log2fc,
+            color = mRNA_N < count.th
+        )
+    ) +
+    geom_hline(
+        yintercept = median(torin.tx.trsl.dt[, MRL_log2fc]), color = "gray60"
+    ) +
+    geom_boxplot(outlier.shape = NA) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]},
+        vjust = -0.8, color = "black", size = 6
+    ) +
+    scale_color_manual(values = c("TRUE" = "gray60", "FALSE" = "black")) +
+    facet_grid(~ TOP_start) +
+    theme(
+        aspect.ratio = 1,
+        legend.position = "none"
+    ) +
+    ylab("MRL log2 fold change with Torin 1") +
+    xlab("TOP motif length")
+
+```
+
+### Proportion of mRNAs with TOP motif
+
+
+```{r proportion of mRNAs with TOP motif}
+
+print(paste0(
+    "Proportion of mRNAs with TOP motif length > 2: ",
+    round(
+        torin.tx.trsl.dt[!is.na(tss_p1_pTOP), sum(tss_p1_pTOP > 2)] /
+        nrow(torin.tx.trsl.dt[!is.na(tss_p1_pTOP)]) * 100
+    ),
+    "% (",
+    torin.tx.trsl.dt[!is.na(tss_p1_pTOP), sum(tss_p1_pTOP > 2)],
+    "/",
+    nrow(torin.tx.trsl.dt[!is.na(tss_p1_pTOP)]),
+    ")"
+))
+
+ggplot(
+    torin.tx.trsl.dt,
+    aes(
+        x = 1,
+        group = round(tss_p1_pTOP) %>% factor,
+        fill = round(tss_p1_pTOP)
+    )
+) +
+    geom_bar(position = "fill") +
+    scale_fill_gradient2(
+        high = scales::muted("red"),
+        mid = "slategray1",
+        low = "lightblue",
+        midpoint = 0,
+        breaks = 0:10
+    ) +
+    coord_polar(theta = "y") +
+    theme_void(16) +
+    theme(aspect.ratio = 1) +
+    guides(fill=guide_legend(title = "TOP motif length"))
+
+    
+```
+
+
+### Does TOP motif starting from C / U differ in the sensitivity to mTOR
+
+```{r top senstivity by u or c}
+
+ggplot(
+    data = m.torin.tx.trsl.dt,
+    aes(
+        x = tss_p1_pTOP %>%
+            {if_else(. > 8.5, "9+", as.character(round(.)))},
+        y = MRL,
+        fill = treatment
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("TOP motif length (+1 Py)")
+
+print("The number of samples for the boxplots")
+m.torin.tx.trsl.dt[!is.na(MRL)][
+  , table(
+        treatment,
+        if_else(tss_p1_pTOP > 8.5, "9+", as.character(round(tss_p1_pTOP)))
+    )
+] %>% print
+
+m.torin.tx.trsl.dt[treatment == "No_treatment"] %$%
+    pairwise.wilcox.test(
+        x = MRL,
+        g = if_else(tss_p1_pTOP > 8.5, 9, round(tss_p1_pTOP)),
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[, 1] %>%
+    p.adjust(method = "holm")
+
+m.torin.tx.trsl.dt[treatment == "Torin_1"] %$%
+    pairwise.wilcox.test(
+        x = MRL,
+        g = if_else(tss_p1_pTOP > 8.5, 9, round(tss_p1_pTOP)),
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[, 1] %>%
+    p.adjust(method = "holm")
+
+ggplot(
+    data = torin.tx.trsl.dt,
+    aes(
+        x = tss_p1_pTOP %>%
+            {if_else(. > 8.5, "9+", as.character(round(.)))},
+        y = MRL_log2fc
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    xlab("TOP motif length (+1 Py)") +
+    ylab("MRL log2 fold change with Torin 1")
+
+torin.tx.trsl.dt %$%
+    pairwise.wilcox.test(
+        x = MRL_log2fc,
+        g = if_else(tss_p1_pTOP > 8.5, 9, round(tss_p1_pTOP)),
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[, 1] %>%
+    p.adjust(method = "holm")
+
+
+## The followings are preliminary validations that both TOP motif stating C and U are likly to be targetted by mTOR
+ggplot(
+    data = m.torin.tx.trsl.dt,
+    aes(
+        x = (tss_p1_TOP)%>%
+            {if_else(. > 8.5, "9+", as.character(round(.)))} %>%
+            factor,
+        y = MRL,
+        fill = treatment
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("TOP motif length (+1 C)")
+
+
+
+ggplot(
+    data = m.torin.tx.trsl.dt,
+    aes(
+        x = (tss_p1_tTOP) %>%
+            {if_else(. > 2.5, "3+", as.character(round(.)))} %>%
+            factor,
+        y = MRL,
+        fill = treatment
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("TOP motif length (+1 U)")
+
+
+```
+
+## The effect of TOP motif position
+
+Validation the TOP motif not starting from +1 does not affect mTOR sensitivity of mRNAs is first performed using GAM.
+
+```{r TOP effect}
+
+library("mgcv")
+
+gam.fit <- gam(
+    MRL_log2fc ~ s(tss_p1_pTOP, bs = "ts") + s(tss_p2_pTOP, bs = "ts") + s(tss_p3_pTOP, bs = "ts"),
+    method = "REML",
+    select = TRUE,
+    data = torin.tx.trsl.dt
+)
+
+library("mgcViz")
+b <- getViz(gam.fit)
+print(plot(b, allTerms = T) + coord_cartesian(ylim = c(-0.6, 0.2)), pages = 1)
+
+
+```
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

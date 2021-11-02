@@ -1,0 +1,439 @@
+---
+title: "s1-1 Preprocessing of fastq files"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+# Strategy
+
+The fastq files will be processed before the alignments to the human genome. The following steps will be performed:
+
+- Step 1: Extract UMIs from reads
+- Step 2: Demultiplex reads
+- Step 3: Process index
+  - Step 3-1
+    - Remove constant regions
+    - Demultplex library
+  - Step 3-2
+    - Copy the first base of reads to read.name
+- Step 4: Map reads to rRNAs and ERCC RNAs
+  - Collapse technical replicates
+  - ERCC spike-in mapped reads will be used later
+ 
+s1-1 will perform from Step 1 to Step 3-1, and the pre-processed files will be submitted to ArrayExpress. 
+ 
+# Set up
+
+
+```{r set up functions, message = FALSE, warning = FALSE}
+
+processors <- 24
+
+library("ShortRead")
+library("stringdist") 
+library("matrixStats")
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+```
+
+
+```{r define directories}
+
+sample.file <- file.path("../../data/sample_data/20210306_sample-data.csv")
+lib2fqfilename.file <- file.path("../../data/sample_data/20210306_libname_to_fq_filename.csv")
+fq.dir.file <- file.path("../../data/sample_data/20210306_fastq_dirs.csv")
+tso.index.file <- file.path("../../data/sample_data/20210306_TSO-index_1.csv")
+
+processed.sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+results.dir <- file.path("../../results")
+processed.fq.dir <- file.path(results.dir, "s1-processed_fastq")
+
+## processed.fq.log.dir <- file.path(processed.fq.dir, "log")
+processed.fq.step0.dir <- file.path(processed.fq.dir, "s1-1-Step0")
+processed.fq.step1.dir <- file.path(processed.fq.dir, "s1-1-Step1")
+processed.fq.step2.dir <- file.path(processed.fq.dir, "s1-1-Step2") 
+processed.fq.step3.1.dir <- file.path(processed.fq.dir, "s1-1-Step3-1")
+
+index.dir <- file.path(processed.fq.dir, "index-info")
+
+create.dirs(
+    dirs = c(
+        results.dir,
+        processed.fq.dir,
+        processed.fq.step0.dir,
+        processed.fq.step1.dir,
+        processed.fq.step2.dir,
+        processed.fq.step3.1.dir,
+        index.dir
+    )
+)
+
+
+```
+
+## Step 0. Prepare sample data
+
+
+Processed sample data file will be used throughout.
+
+
+```{r step 0}
+
+sample.dt <- fread(sample.file)
+sample.dt.cols <- colnames(sample.dt)
+
+sample.dt[is.na(sample.dt)] <- "NA"
+
+sample.dt[
+  , sample_name := case_when(
+        experiment == "total" ~ paste(
+                          experiment, cell, VHL, HIF1B, oxygen, clone, replicate, sep = "_"
+                      ),
+        experiment == "polysome" ~ paste(
+                          experiment, cell, VHL, EIF4E2, gRNA_id, clone, treatment,
+                          fraction, replicate,
+                          sep = "_"
+                      )
+    )
+]
+
+sample.dt <- sample.dt[
+    order(
+        experiment != "polysome",
+        cell != "RCC4",
+        EIF4E2 != "EIF4E2",
+        oxygen != "N",
+        HIF1B != "HIF1B",
+        VHL != "VHL",
+        treatment != "NA",
+        gRNA_id,
+        clone,
+        replicate,
+        fraction
+    )
+]
+
+if(nrow(sample.dt[duplicated(sample_name)]) != 0){
+    stop("sample_name duplicated")
+} else {"OK"}
+
+sample.dt <- sample.dt[, c("sample_name", sample.dt.cols), with = FALSE]
+
+## No technical replicate
+processed.sample.dt <- copy(sample.dt[replicate == 1])
+processed.sample.dt[, `:=`(
+    sample_name = gsub("_[[:digit:]]$", "", sample_name),
+    replicate = NULL
+)]
+
+fwrite(processed.sample.dt, processed.sample.file)
+
+```
+
+
+```{r sample file processing for this analysis only}
+
+read.process.sample.dt <- copy(sample.dt)
+
+lib2fqfilename.dt <- fread(lib2fqfilename.file)
+
+tso.index.dt <- fread(tso.index.file)
+
+read.process.sample.dt <- merge(
+    read.process.sample.dt,
+    lib2fqfilename.dt,
+    by = "library_ID",
+    allow.cartesian = TRUE
+) %>% {merge(
+          .,
+          tso.index.dt,
+          by = "TSO"
+      )}
+
+## Add lane index to sample_name
+read.process.sample.dt[, `:=`(
+    lane_name = str_extract(R1_file_name, "SUG[[:digit:]][[:digit:]][[:digit:]]"),
+    no_technical_rep_sample_name = gsub("_[[:digit:]]$", "", sample_name),
+    sample_name_with_lane = paste0(
+        sample_name, "_", 
+        str_extract(R1_file_name, "SUG[[:digit:]][[:digit:]][[:digit:]]")
+    )
+)]
+
+read.process.sample.dt <- read.process.sample.dt[
+    order(
+        experiment != "polysome",
+        cell != "RCC4",
+        EIF4E2 != "EIF4E2",
+        oxygen != "N",
+        HIF1B != "HIF1B",
+        VHL != "VHL",
+        treatment != "NA",
+        gRNA_id,
+        clone,
+        replicate,
+        fraction
+    )
+]
+
+length(read.process.sample.dt[
+    experiment == "total",
+    unique(lane_name)
+]) %>%
+{print(paste0("The number of lanes used for 5' end-Seq: ", .))}
+
+length(read.process.sample.dt[
+    experiment == "polysome",
+    unique(lane_name)
+]) %>%
+{print(paste0("The number of lanes used for HP5: ",.))}
+
+fwrite(
+    read.process.sample.dt,
+    file.path("../../data/sample_data/to_process_reads_sample_file.csv")
+)
+
+```
+
+
+```{r also subset filename files}
+
+fq.dir.dt <- fread(fq.dir.file)
+
+lib2fqfilename.dt <- lib2fqfilename.dt[
+    library_ID %in% unique(sample.dt[, library_ID])
+]
+
+fq.dir.dt <- fq.dir.dt[R1_file_name %in% lib2fqfilename.dt[, R1_file_name]]
+
+fq.dir.dt[, full_path := file.path(file_path, R1_file_name)]
+
+print("The following files will be processed:")
+print(fq.dir.dt)
+print(lib2fqfilename.dt)
+
+```
+
+# Step 0. Copy raw fastq files from the data storage 
+
+```{r merge fq files from the same cDNA libraries}
+
+
+copyFastqs <- function(fq.file, processed.fq.step0.dir){
+    
+    out.file.full <- file.path(
+        processed.fq.step0.dir,
+        basename(fq.file)
+    )
+    
+    cp.command <- paste(
+        "cp", fq.file, out.file.full
+    )
+    system.cat(cp.command)
+
+    cp.R2.command <- gsub("_R1_", "_R2_", cp.command)
+    system.cat(cp.R2.command)
+
+    return()
+}
+
+temp <- mclapply(
+    fq.dir.dt[, full_path],
+    copyFastqs,
+    processed.fq.step0.dir = processed.fq.step0.dir,
+    mc.cores = round(processors / 2)
+)
+
+
+```
+
+
+# Step 1. Extract UMI from reads
+
+
+```{r step 1}
+
+step1.in.files <- file.path(
+    processed.fq.step0.dir,
+    unique(read.process.sample.dt[, R1_file_name])
+)
+
+print("Processing the following files for Step 1:")
+print(step1.in.files)
+
+extractUMI <- function(R1.fq.file, processed.fq.step1.dir){
+
+    ## Start processing reads
+    step1.in.files <- c(
+        R1.fq.file,
+        gsub("_R1_", "_R2_", R1.fq.file)
+    )
+
+    step1.out.files <- file.path(
+        processed.fq.step1.dir,
+        basename(step1.in.files)
+    )
+
+    step1.cmd <- paste0(
+        "umi_tools extract",
+        " -I ", step1.in.files[1],
+        " --read2-in=", step1.in.files[2],
+        " --bc-pattern=", "XXXXXXXXXNNNNNNN",
+        " --stdout=", step1.out.files[1],
+        " --read2-out=", step1.out.files[2]
+    )
+
+    step1.out <- system.cat(step1.cmd)
+    ## cat(step4.out, sep = "\n")
+    return()
+}
+
+
+temp <- mclapply(
+    step1.in.files,
+    extractUMI,
+    processed.fq.step1.dir = processed.fq.step1.dir,
+    mc.cores = processors
+)
+
+
+```
+
+
+# Step 2. Demultiplex reads
+
+
+```{r Step 2}
+
+temp.index.dt <- copy(read.process.sample.dt)
+
+exportIndexInfo <- function(R1.fq.file, index.dir, temp.index.dt){
+    temp.index1.dt <- temp.index.dt[R1_file_name == basename(R1.fq.file)]
+    nrow.index1.dt <- nrow(temp.index1.dt)
+    index1.dt <- rbind(
+        data.table(paste0("> ", temp.index1.dt[, sample_name_with_lane])),
+        data.table(paste0("^", temp.index1.dt[, index_1]))
+    )[kronecker(1:nrow.index1.dt, c(0, nrow.index1.dt), "+")]
+
+    index1.file <- file.path(index.dir, paste0(basename(R1.fq.file), ".csv"))
+    fwrite(index1.dt, index1.file, col.names = FALSE)
+    return()
+}
+
+temp <- sapply(
+    step1.in.files,
+    exportIndexInfo,
+    index.dir = index.dir,
+    temp.index.dt = temp.index.dt
+)
+
+demultiplexReads <- function(R1.fq.file, index.dir, processed.fq.step1.dir, processed.fq.step2.dir){
+    ## Start processing reads
+    step1.in.files <- c(
+        R1.fq.file,
+        gsub("_R1_", "_R2_", R1.fq.file)
+    )
+
+    step1.out.files <- file.path(
+        processed.fq.step1.dir,
+        basename(step1.in.files)
+    )
+
+    index.file <- file.path(index.dir, paste0(basename(R1.fq.file), ".csv"))
+    step2.out.files <- paste0("{name}_", c("R1", "R2"), ".fastq.gz")
+
+    step2.cmd <- paste(
+        "cutadapt",
+        "-g", paste0("file:", index.file),
+        "-e", 0.2, # Maximum error rate
+        ## "-j", processors, # Parallel computing is not supported with current arguments
+        "--discard-untrimmed", # "Discard reads in which no adapter was found (cutadapt documentation)"
+        "-o", file.path(processed.fq.step2.dir, step2.out.files[1]),
+        "--paired-output", file.path(processed.fq.step2.dir, step2.out.files[2]),
+        grep("R1", step1.out.files, value = TRUE), grep("R2", step1.out.files, value = TRUE) # input
+    )
+
+    step2.out <- system.cat(step2.cmd)
+    cat(step2.out, sep = "\n")
+    return()
+}
+
+temp <- mclapply(
+    step1.in.files,
+    demultiplexReads,
+    index.dir = index.dir,
+    processed.fq.step1.dir = processed.fq.step1.dir,
+    processed.fq.step2.dir = processed.fq.step2.dir,
+    mc.cores = processors
+)
+
+```
+
+
+# Step 3-1. Trim adapter
+
+
+```{r step 3}
+
+trimAdapters <- function(analyzed.sample.name, processed.fq.step2.dir, processed.fq.step3.1.dir, processors){
+    ## Start processing reads
+    step3.in.files <- file.path(
+        processed.fq.step2.dir,
+        paste0(analyzed.sample.name, c("_R1.fastq.gz", "_R2.fastq.gz"))
+    )
+    
+    step3.out.files <- file.path(
+        processed.fq.step3.1.dir,
+        basename(step3.in.files)
+    )
+
+    step3.cmd <- paste(
+        "cutadapt",
+        "-g", "^TTATAGGG",
+        "-e", 0.2, # Maximum error rate
+        "-j", processors, 
+        "--discard-untrimmed", # "Discard reads in which no adapter was found (cutadapt documentation)"
+        "-o", grep("_R1.fastq.gz", step3.out.files, value = TRUE),
+        "--paired-output", grep("_R2.fastq.gz", step3.out.files, value = TRUE),
+        grep("_R1.fastq.gz", step3.in.files, value = TRUE),
+        grep("_R2.fastq.gz", step3.in.files, value = TRUE) # input
+    )
+
+    step3.out <- system.cat(step3.cmd)
+    cat(step3.out, sep = "\n")
+    return()
+}
+
+temp <- mclapply(
+    read.process.sample.dt[, sample_name_with_lane],
+    trimAdapters,
+    processed.fq.step2.dir = processed.fq.step2.dir,
+    processed.fq.step3.1.dir = processed.fq.step3.1.dir,
+    processors = 2,
+    mc.cores = round(processors / 2)
+)
+
+
+```
+
+# Session Info
+
+
+```{r session info}
+
+sessionInfo()
+
+```

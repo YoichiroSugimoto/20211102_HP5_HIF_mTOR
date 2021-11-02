@@ -1,0 +1,2 @@
+## For nicer color scheme
+install.packages("khroma")

@@ -1,0 +1,218 @@
+---
+title: "s4-1-2 Definition of tss (count per cluster)"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+		
+The count per TSS will be calculated.
+
+
+```{r knitr setup}
+
+knitr::opts_chunk$set(collapse = TRUE)
+
+```
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Data analysis
+library("data.table")
+library("magrittr")
+library("stringr")
+## Bioconductor
+library("rtracklayer")
+library("GenomicFeatures")
+library("GenomicAlignments")
+library("Rsubread")
+## Data visualization
+library("ggplot2")
+## Parallelization
+library("parallel")
+
+analysis.variable.dt <- fread("../../data/sample_data/analysis_variables.csv")
+
+## chrom.size.file <- "../../annotation/hg38_annotation/star_indices/chrNameLength.txt"
+## chrom.size.dt <- fread(chrom.size.file)
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+results.dir <- file.path("../../results")
+
+## Input data
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+## star.aligned.bam.dir <- file.path(s2.alignment.dir, "s2-1-b-star-aligned_bam")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+
+tss.bam.dir <- ifelse(
+    analysis.variable.dt[variable_name == "umi_dedup", selected_variable] == "dedup",
+    file.path(s2.2.processed.bam.dir, "s2-2-2-dedup-tss-bam"),
+    file.path(s2.2.processed.bam.dir, "s2-2-1-tss-bam")
+)
+
+## Define output directory
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.4.dpi.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-4-tss-by-dpi")
+s4.1.4.1.dpi.in.bed.dir <- file.path(s4.1.4.dpi.tss.dir, "dpi-input-bed")
+s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss") 
+
+create.dirs(c(
+    s4.1.7.count.per.tss.dir
+))
+
+```
+
+
+# Calculate count per TSS of all sequencing data
+
+
+```{r define base samples}
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+filtered.cluster.with.quantile.file <- file.path(
+    s4.1.6.filtered.tss.dir,
+    "filtered-tss-with-quantile.csv"
+)
+
+filtered.tss.with.quantile.dt <- fread(filtered.cluster.with.quantile.file)
+
+count.per.tss.dt <- countPerRangeFromBams(
+    list.files(tss.bam.dir, pattern = "tss.bam$", full.names = TRUE),
+    gr = makeGRangesFromDataFrame(filtered.tss.with.quantile.dt, keep.extra.columns = TRUE),
+    out.file.name = file.path(s4.1.7.count.per.tss.dir, "count-per-confident-tss.csv"),
+    sample.names = sample.names,
+    processors = processors,
+    range.name = "tss_name",
+    bam.file.prefix = ifelse(
+        analysis.variable.dt[variable_name == "umi_dedup", selected_variable] == "dedup",
+        ".tss.dedup.tss.bam$",
+        ".tss.bam$"
+    )
+)
+
+
+```
+
+# Calculate count per TSS of FANTOM5 CAGE data
+
+
+```{r calculate count per TSS for FANTOM}
+
+
+countPerRangeFromBeds <- function(input.bed.files, gr, out.file.name, processors, range.name = "tss_name", bed.file.sample.indicator = "CNhs[[:digit:]]*", sample.names = NULL){
+    ## This function count the number of TSS bam mapped within ranges specified by genomic ranges
+    ## input.bam.files: vector of input bam files
+    ## ge: GRanges of range
+    ## out.file.name: output count table filename
+    ## processors: the number of processors to be used
+    ## range.name: the names of range
+    ## bed.file.postfix: input bedfile is expected to have the name of sample.name + bed.file.postfix
+    ## sample.names: if sample.names are specified here, the order of column will be sorted in this order
+    require("GenomicAlignments")
+    
+    createCountTable <- function(input.bed.file, gr, range.name, bed.file.sample.indicator){
+        bed.dt <- fread(cmd = paste0("zcat ", input.bed.file))
+        setnames(
+            bed.dt,
+            old = paste0("V", 1:6),
+            new = c("chr", "start", "end", "cluster_name", "score", "strand")
+        )
+        bed.dt <- bed.dt[rep(1:nrow(bed.dt), times = score)]
+        
+        ol.count <- countOverlaps(gr, makeGRangesFromDataFrame(bed.dt))
+        ol.count.dt <- data.table(V1 = mcols(gr)[, range.name], count = ol.count)
+
+        ol.count.dt <- ol.count.dt[, .(count = sum(count)), by = V1]
+        setnames(
+            ol.count.dt,
+            old = c("V1", "count"),
+            new = c(range.name, str_extract(basename(input.bed.file), bed.file.sample.indicator))
+        )
+        setkeyv(ol.count.dt, range.name)
+        return(ol.count.dt)
+    }
+
+    input.bed.files <- input.bed.files[
+        grep(bed.file.sample.indicator, input.bed.files)
+    ]
+
+    if(all(grep(bed.file.sample.indicator, input.bed.files))){
+        "OK"
+    } else {
+        print("The following files does not have the file name indicator")
+        print(input.bed.files[!grepl(bed.file.sample.indicator, input.bed.files)])
+    }
+    
+    count.dts <- mclapply(
+        input.bed.files,
+        createCountTable,
+        gr = gr,
+        range.name = range.name,
+        bed.file.sample.indicator = bed.file.sample.indicator,
+        mc.cores = processors
+    )
+
+    count.dt <- Reduce(function(...) merge(..., by = range.name), count.dts)
+    setkeyv(count.dt, range.name)
+
+    if(!is.null(sample.names)){ 
+        count.dt <- count.dt[, c(range.name, sample.names), with = FALSE]
+    } else {"No columnname sorting"}
+    
+    fwrite(count.dt, file = out.file.name)
+    
+    return(count.dt)
+}
+
+fantom.cage.count.per.tss.dt <- list.files(
+    s4.1.4.1.dpi.in.bed.dir,
+    pattern = "ctss.bed.gz$",
+    full.names = TRUE
+) %>%
+    {.[!grepl("^total_", basename(.))]} %>%
+    {countPerRangeFromBeds(
+         input.bed.files = .,
+         gr = makeGRangesFromDataFrame(filtered.tss.with.quantile.dt, keep.extra.columns = TRUE),
+         out.file.name = file.path(s4.1.7.count.per.tss.dir, "FANTOM-CAGE-count-per-confident-tss.csv"),
+         processors = processors,
+         range.name = "tss_name",
+         bed.file.sample.indicator = "CNhs[[:digit:]]*"
+     )}
+
+
+
+```
+
+
+ 
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

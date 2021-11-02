@@ -1,0 +1,632 @@
+---
+title: "s9-1-4 Interplay of the HIF and mTOR pathways"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+sig.th <- 0.05
+
+## Data visualization packages
+library("ggrepel")
+library("cowplot")
+## Library("kableExtra")
+## Parallelization oackages
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("../s8-analysis-of-translation/functions", full.names = TRUE), source, chdir = TRUE)
+temp <- sapply(list.files("../s9-integrative-analysis/functions", full.names = TRUE), source, chdir = TRUE)
+source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+results.dir <- file.path("../../results")
+s7.dir <- file.path(results.dir, "s7-HIF-binding-site")
+s7.2.hif1.2a.dir <- file.path(s7.dir, "s7-2-HIF1A-and-HIF2A-ratio")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+# Pre-processed data import
+
+
+```{r load preprocessed data}
+
+all.de.dte.res.dt <- fread(
+    file.path(
+        s9.dir,
+        "all-differential-expression-and-translation-data.csv"
+    ),
+    na.strings = ""
+)
+
+all.de.dte.res.dt[, `:=`(
+    VHL_target_RCC4 = factor(
+        VHL_target_RCC4,
+        levels = c("VHL_loss_repressed", "non_VHL_target", "VHL_loss_induced")
+    ),
+    mRNA_trsl_intersection_by_functions =  factor(
+        mRNA_trsl_intersection_by_functions,
+        levels = c("Glycolysis", "Others", "Angiogenesis or vascular process")
+    )
+)]
+
+all.filtered.gene.dt <- fread(
+    file.path(
+        s8.3.dir,
+        "filtered_gene_for_polysome_analysis.csv"
+    )
+)
+
+th.all.de.dte.res.dt <- all.de.dte.res.dt[
+        gene_id %in% intersect(
+                         all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id],
+                         all.filtered.gene.dt[RCC4_noVHL_Torin1== TRUE, gene_id]
+                     )
+]
+
+
+```
+
+
+# GO term enrichment analysis of HIF target genes by their changes in translation upon mTOR inhibition
+
+
+```{r analyze GO term enrichment, fig.height = 5, fig.width = 6}
+
+library("gprofiler2")
+set_base_url("https://biit.cs.ut.ee/gprofiler_archive3/e102_eg49_p15") # For reproducibility, use archive version
+
+print("The number of genes for GO term analysis")
+th.all.de.dte.res.dt[, table(RCC4_mRNA_mTOR_trsl_group)]
+print(paste0("Total number of genes in the background: ", nrow(th.all.de.dte.res.dt)))
+
+gostres.hif.up.mtor.preserved <- gost(
+    query = th.all.de.dte.res.dt[
+        RCC4_mRNA_mTOR_trsl_group == "mRNA_up_and_translation_up",
+        gene_id
+    ],
+    custom_bg = th.all.de.dte.res.dt[, gene_id],
+    organism = "hsapiens"
+)
+
+gostres.hif.up.mtor.preserved.res.dt <-
+    gostres.hif.up.mtor.preserved$result %>% data.table
+
+
+gostres.hif.up.mtor.down <- gost(
+    query = th.all.de.dte.res.dt[
+        RCC4_mRNA_mTOR_trsl_group == "mRNA_up_and_translation_down",
+        gene_id
+    ],
+    custom_bg = th.all.de.dte.res.dt[, gene_id],
+    organism = "hsapiens"
+)
+
+gostres.hif.up.mtor.down.res.dt <-
+    gostres.hif.up.mtor.down$result %>% data.table
+
+
+mrna.mtor.go.res.dt <- rbindlist(list(
+    gostres.hif.up.mtor.preserved.res.dt[
+      , regulation_type := "VHL_loss_induced_and_translation_preserved"],
+    gostres.hif.up.mtor.down.res.dt[
+      , regulation_type := "VHL_loss_induced_and_translation_down-regulated"]
+))
+
+sl.mrna.mtor.go.res.dt <- mrna.mtor.go.res.dt[order(p_value)] %>%
+    {.[!(source %in% c("MIRNA", "WP", "HP"))]} %>%
+    {.[, head(.SD, 5), by = regulation_type]}
+
+sl.mrna.mtor.go.res.dt[order(regulation_type), .(
+    regulation_type,
+    term_name, source, p_value 
+)] %>% print
+
+file.path(
+    s9.dir, "VHL-mTOR-GO-term-analysis-result.csv"
+) %>% {fwrite(sl.mrna.mtor.go.res.dt, .)}
+
+```
+
+
+# HIF and mTOR dependent regulation of glycolytic genes
+
+
+```{r hif and mTOR on glycolytic genes}
+
+to.show.th.dt <- copy(th.all.de.dte.res.dt)
+
+to.show.th.dt <- to.show.th.dt[
+    (mRNA_trsl_intersection_by_functions == "Glycolysis") | gene_name %in% c("TYMP", "PGM2", "DERA")
+][, .(gene_name,
+      ##RCC4_mRNA_mTOR_trsl_group,
+      translational_regulation_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+      VHL_target_RCC4,
+      log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+      padj_RCC4_xx_HIF1B_N__noVHL_vs_VHL
+      )
+  ][order(gene_name)]
+
+setnames(
+    to.show.th.dt,
+    old = c(
+        "VHL_target_RCC4",
+        "translational_regulation_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA",
+        "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL",
+        "padj_RCC4_xx_HIF1B_N__noVHL_vs_VHL"),
+    new = c("mRNA_by_VHL_loss", "mTOR_inh_noVHL", "mRNA_log2fc", "mRNA_padj")
+)
+
+to.show.th.dt[
+    order(match(
+        gene_name,
+        c(
+            "HK1", "GPI", "PFKL", "PFKM", "ALDOA", "ALDOC",
+            "GAPDH", "TPI1", "PGK1", "PGAM1", "ENO1", "ENO2",
+            "PKM", "LDHA", "LDHB"
+            )
+    )),
+    .(gene_name, mRNA_by_VHL_loss, mTOR_inh_noVHL, mRNA_log2fc, mRNA_padj)
+]
+
+
+```
+
+
+# Analysis of HIF dependent transcriptional regulation and mTOR dependent translational regulation
+
+
+```{r VHL dependent mRNA changes and mTOR dependent translation changes}
+
+print("Sanity check")
+nrow(th.all.de.dte.res.dt[duplicated(gene_id)])
+
+ggplot(
+    th.all.de.dte.res.dt,
+    aes(
+        x = log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+        y = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        color = VHL_target_RCC4
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray40") +
+    geom_vline(xintercept = 0, color = "gray40") +
+    scale_color_manual(values = c(
+                           "VHL_loss_induced" = "firebrick",
+                           "non_VHL_target" = "black",
+                           "VHL_loss_repressed" = "black"
+                       )) +
+    geom_point() +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1
+    ) +
+    xlim(c(-4, 12)) + ylim(c(-1.5, 1)) +
+    xlab("mRNA log2 fold change upon VHL loss in RCC4") +
+    ylab("MRL log2 fold change with Torin 1 in RCC4")
+
+th.all.de.dte.res.dt %$%
+    cor.test(
+        x = log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+        y = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        method = "spearman",
+        alternative = "two.sided"
+    )
+
+print(paste0(
+    "The number of samples for this analysis was: ",
+    nrow(th.all.de.dte.res.dt[
+        !is.na(MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA)
+    ])
+))
+
+```
+
+
+```{r export table for publication}
+
+trsl.change.by.class.dt <- copy(th.all.de.dte.res.dt[, .(
+    gene_id, gene_name,
+    mRNA_trsl_intersection_by_functions,
+    VHL_target_RCC4,
+    log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+    ## padj_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+    MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA
+)])[
+    mRNA_trsl_intersection_by_functions != "Others" &
+    VHL_target_RCC4 == "VHL_loss_induced"
+][, VHL_target_RCC4 := NULL][
+    order(
+        mRNA_trsl_intersection_by_functions,,
+        - log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL
+    )
+]
+
+setnames(
+    trsl.change.by.class.dt,
+    old = c(
+        "mRNA_trsl_intersection_by_functions", 
+        "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL",
+        "MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA"
+    ),
+    new = c(
+        "Functional_classes",
+        "mRNA_log2FC_upon_VHL_loss",
+        "MRL_log2FC_with_Torin_1"
+    )
+)
+
+fwrite(
+    trsl.change.by.class.dt,
+    file.path(s9.dir, "mTOR_sensitivity_of_HIF_targets_by_class.csv")    
+)
+
+```
+
+
+
+# Differential sensitivity to mTOR inhibition of HIF-target mRNAs by their functional classes and HIFA isoforms
+
+
+## Analysis of mTOR sensitivity of HIF-target mRNAs by their functional classes
+
+
+```{r analysis of mrna vs translation by protein functions}
+
+unhighlighted.color <- "gray60" #"#BEBEBEB2"
+
+go.annot.colors <- c(
+    "Glycolysis" = "#E88CA0",
+    "Angiogenesis or vascular process" = "#008A42",
+    "Others" = unhighlighted.color
+)
+
+## Density plot version
+ggplot(
+    data = th.all.de.dte.res.dt[VHL_target_RCC4 == "VHL_loss_induced"],
+    aes(
+        x = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        color = forcats::fct_rev(mRNA_trsl_intersection_by_functions),
+        fill = forcats::fct_rev(mRNA_trsl_intersection_by_functions)
+    )
+) +
+    geom_density(
+        alpha = 0.7,
+        color = "black",
+        bw = "SJ"
+    ) +
+    ## geom_rug(
+    ##     data = th.all.de.dte.res.dt[
+    ##         VHL_target_RCC4 == "VHL_loss_induced" &
+    ##         mRNA_trsl_intersection_by_functions != "Others"
+    ##     ],
+    ##     size = 1
+    ## ) +
+    scale_fill_manual(values = go.annot.colors) +
+    scale_color_manual(
+        values = go.annot.colors,
+        guide = "none"
+    ) +
+    guides(
+        fill = guide_legend(reverse = TRUE, ncol = 1)
+    ) +
+    xlab("MRL log2 fold change with Torin 1") +
+    ylab("Density of genes") +
+    theme(
+        legend.position = "bottom",
+        legend.title = element_blank()
+    )
+
+print("The number of genes for this analysis")
+th.all.de.dte.res.dt[
+    VHL_target_RCC4 == "VHL_loss_induced" &
+    !is.na(MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA),
+    .N, by = mRNA_trsl_intersection_by_functions
+]
+
+print("in RCC4")
+th.all.de.dte.res.dt[VHL_target_RCC4 == "VHL_loss_induced"] %$%
+    pairwise.wilcox.test(
+        x = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        g = mRNA_trsl_intersection_by_functions,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )
+
+## Just to confirm the robustness
+print("in RCC4 VHL")
+th.all.de.dte.res.dt[VHL_target_RCC4 == "VHL_loss_induced"] %$%
+    pairwise.wilcox.test(
+        x = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        g = mRNA_trsl_intersection_by_functions,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )
+
+```
+
+
+## Analysis of HIF2A/HIF1A binding ratio of HIF-target mRNAs by their functional classes
+
+
+```{r hif2a hif1a binding ratio, fig.height = 7}
+
+## Here I focus on the comparison of angiogenesis and vasucular process genes vs others
+th.all.de.dte.res.dt[, `:=`(
+    angiogenesis_or_others = case_when(
+        mRNA_trsl_intersection_by_functions == "Angiogenesis or vascular process" ~
+            "Angiogenesis or vascular process",
+        TRUE ~ "Others"
+    )
+)]
+
+## Load HIF binding data
+tss.hif.pos.dt <- file.path(
+    s7.2.hif1.2a.dir,
+    "filtered-tss-and-nearest-hif-binding-position.csv"
+) %>%
+    fread
+
+hif.induced.tss.hif.pos.dt <- tss.hif.pos.dt[
+    tss_name %in%
+    tss.de.res.dt[
+        comparison_name == "RCC4_xx_HIF1B_N__noVHL_vs_VHL" &
+        padj < 0.1 &  log2fc > 0
+    ][order(shrlog2fc, decreasing = TRUE)][!duplicated(gene_id), tss_name]
+]
+
+hif.binding.and.trsl.dt <- merge(
+    th.all.de.dte.res.dt,
+    hif.induced.tss.hif.pos.dt[, .(gene_id, Fold, HIF2A_enrichment_with_dist_th)],
+    by = "gene_id"
+)
+
+ggplot(
+    data = hif.binding.and.trsl.dt[
+        VHL_target_RCC4 == "VHL_loss_induced"
+    ],
+    aes(
+        y = HIF2A_enrichment_with_dist_th,
+        x = mRNA_trsl_intersection_by_functions
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray60") +
+    geom_boxplot(outlier.shape = NA) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    ggsci::scale_fill_jama() +
+    ggsci::scale_color_jama() +
+    theme(
+        aspect.ratio = 3,
+        legend.position = "bottom",
+        legend.title = element_blank()
+    ) +
+    xlab("Functional class") +
+    ylab("log2(HIF2A binding / HIF1A binding)")
+
+
+stats.hif.binding.and.trsl.dt <- hif.binding.and.trsl.dt[
+    !is.na(HIF2A_enrichment_with_dist_th) &
+    VHL_target_RCC4 == "VHL_loss_induced"    
+]
+
+stats.hif.binding.and.trsl.dt[
+  , .N, by = mRNA_trsl_intersection_by_functions
+]
+
+stats.hif.binding.and.trsl.dt %$%
+    pairwise.wilcox.test(
+        x = HIF2A_enrichment_with_dist_th,
+        g = angiogenesis_or_others,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )
+
+lapply(
+    stats.hif.binding.and.trsl.dt[
+        , levels(mRNA_trsl_intersection_by_functions)
+    ],
+    function(x){
+        data.table(
+            functional_class = x,
+            wil_p = wilcox.test(
+                x = stats.hif.binding.and.trsl.dt[
+                    mRNA_trsl_intersection_by_functions == x,
+                    HIF2A_enrichment_with_dist_th
+                ],
+                y = stats.hif.binding.and.trsl.dt[
+                    mRNA_trsl_intersection_by_functions != x,
+                    HIF2A_enrichment_with_dist_th
+                ],
+                alternative = "two.sided"
+            )$p.value             
+        )
+    }
+) %>%
+    rbindlist %>%
+    {.[functional_class != "Others"]} %>%
+    {.[, padj := p.adjust(wil_p, method = "holm")]} %>%
+    print
+
+```
+
+
+## Analysis of HIF2A-dependent induction of HIF-target mRNAs by their functional classes
+
+
+```{r analysis of hif2a and vascular system remodling gene, fig.height = 7}
+
+ggplot(
+    data = th.all.de.dte.res.dt[
+        VHL_target_RCC4 == "VHL_loss_induced" &
+        !is.na(padj_786O_xx_HIF1B_N__noVHL_vs_VHL)
+    ],
+    aes(
+        x = mRNA_trsl_intersection_by_functions,
+        y = log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray60") +
+    geom_boxplot(outlier.shape = NA) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    coord_cartesian(ylim = c(-1.5, 3)) +
+    theme(
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        aspect.ratio = 3
+    ) +
+    ylab("mRNA log2 fold change upon VHL loss in 786-O") +
+    xlab("Functional class")
+
+## For statisitical analysis of mRNA induction in 786-O
+for.stat.th.all.de.dte.res.dt <- copy(
+    th.all.de.dte.res.dt[
+        VHL_target_RCC4 == "VHL_loss_induced",
+        .(gene_id, gene_name,
+          mRNA_trsl_intersection_by_functions,
+          angiogenesis_or_others,
+          translational_regulation_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+          padj_RCC4_xx_HIF1B_N__noVHL_vs_VHL, log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+          padj_786O_xx_HIF1B_N__noVHL_vs_VHL, log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL,
+          meanNormCount_treated_786O_xx_HIF1B_N__noVHL_vs_VHL,
+          meanNormCount_base_786O_xx_HIF1B_N__noVHL_vs_VHL)
+    ]
+)
+
+for.stat.th.all.de.dte.res.dt[!is.na(padj_786O_xx_HIF1B_N__noVHL_vs_VHL)] %$%
+    pairwise.wilcox.test(
+        x = log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL,
+        g = angiogenesis_or_others,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )
+
+## Show the number of samples, and the sample with missing value
+for.stat.th.all.de.dte.res.dt[
+    !is.na(padj_786O_xx_HIF1B_N__noVHL_vs_VHL),
+    table(angiogenesis_or_others)
+]
+
+for.stat.th.all.de.dte.res.dt[
+    is.na(padj_786O_xx_HIF1B_N__noVHL_vs_VHL),
+    table(angiogenesis_or_others)
+]
+
+
+```
+
+
+# Analysis of mTOR dependent translational regulation as a function of HIF pathway acivitity
+
+
+```{r mTOR inhibition effect upon VHL loss}
+
+th2.all.de.dte.res.dt <- th.all.de.dte.res.dt[
+    gene_id %in% Reduce(
+                     intersect,
+                     list(
+                         all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id],
+                         all.filtered.gene.dt[RCC4_noVHL_Torin1== TRUE, gene_id],
+                         all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id],
+                         all.filtered.gene.dt[RCC4_VHL_Torin1== TRUE, gene_id]
+                     ))
+]
+
+ggplot(
+    data = th2.all.de.dte.res.dt,
+    aes(
+        x = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        y = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA
+    )
+) +
+    geom_abline(intercept = 0, slope = 1, color = "gray60") +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    coord_cartesian(xlim = c(-1.5, 0.5), ylim = c(-1.5, 0.5)) +
+    xlab("MRL log2 fold change with Torin 1 in RCC4 VHL") +
+    ylab("MRL log2 fold change with Torin 1 in RCC4") +
+    theme(
+        aspect.ratio = 1
+    )
+
+th2.all.de.dte.res.dt %$%
+    cor.test(
+        x = MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        y = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA,
+        method = "pearson",
+        alternative = "two.sided"
+    )
+
+print(
+    paste0(
+        "The number of genes analysed was: ",
+        nrow(
+            th2.all.de.dte.res.dt[, .(
+            MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+            MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA
+            ) %>% {.[complete.cases(.)]}]
+        )
+    )
+)
+
+th2.all.de.dte.res.dt %$%
+    lm(
+        MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA ~
+            MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA,
+    ) %>% summary
+
+## Additional confirmation of the offset from the line of identity
+th2.all.de.dte.res.dt %$%
+    lm(
+        MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA ~
+            MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA +
+            offset(MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA),
+    ) %>% summary
+
+
+```
+
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+
+```

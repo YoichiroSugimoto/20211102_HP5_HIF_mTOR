@@ -1,0 +1,272 @@
+---
+title: "sq-0 Sequence data submission"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Specify the number of CPUs to be used
+processors <- 4
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+results.dir <- file.path("../../results")
+
+processed.fq.dir <- file.path(results.dir, "s1-processed_fastq")
+processed.fq.step3.1.dir <- file.path(processed.fq.dir, "s1-1-Step3-1")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+sq0.dir <- file.path(sq.dir, "sq0-data-submission")
+
+create.dirs(c(
+    sq.dir,
+    sq0.dir
+))
+
+```
+
+# Preparation
+
+
+```{r preparation}
+
+read.process.sample.dt <- file.path(
+    "../../data/sample_data/to_process_reads_sample_file.csv"
+) %>%
+    fread
+
+read.process.sample.dt[, `:=`(
+    R1_fastq_name = paste0(sample_name_with_lane, "_R1.fastq.gz"),
+    R2_fastq_name = paste0(sample_name_with_lane, "_R2.fastq.gz")
+)]
+
+total.raw.fastq.dt <- read.process.sample.dt[experiment == "total"]
+hp5.raw.fastq.dt <- read.process.sample.dt[experiment == "polysome"]
+
+fwrite(
+    total.raw.fastq.dt,
+    file.path(sq0.dir, "total-fastq-data.csv")
+)
+
+fwrite(
+    hp5.raw.fastq.dt,
+    file.path(sq0.dir, "HP5-fastq-data.csv")
+)
+
+wideFaDt <- function(raw.fastq.dt){
+    m.raw.fastq.dt <- melt(
+        raw.fastq.dt,
+        id.vars = "no_technical_rep_sample_name",
+        measure.vars = c("R1_fastq_name", "R2_fastq_name"),
+        value.name = "fastq_file_name"
+    )
+    setnames(m.raw.fastq.dt, old = "no_technical_rep_sample_name", new = "sample_name")
+    m.raw.fastq.dt[, fq_file_id := paste0("fastq_", 1:.N), by = sample_name]
+
+    d.raw.fastq.dt <- dcast(
+        m.raw.fastq.dt,
+        sample_name ~ fq_file_id,
+        value.var = "fastq_file_name"
+    )
+
+    d.raw.fastq.dt[is.na(d.raw.fastq.dt)] <- "none"
+
+    sample.dt <- file.path("../../data/sample_data/processed_sample_file.csv") %>%
+        fread
+    
+    original.sample.name.order <- sample.dt[, sample_name]
+
+    sl.sample.dt <- merge(
+        sample.dt,
+        d.raw.fastq.dt,
+        by = "sample_name"
+    )
+
+    sl.sample.dt[
+      , sample_name := factor(sample_name, levels = original.sample.name.order)
+    ]
+
+    sl.sample.dt <- sl.sample.dt[order(sample_name)]
+    
+    return(sl.sample.dt)
+}
+
+total.sample.dt <- wideFaDt(total.raw.fastq.dt)
+hp5.sample.dt <- wideFaDt(hp5.raw.fastq.dt)
+
+fwrite(
+    total.sample.dt,
+    file.path(sq0.dir, "total-sample-data.csv")
+)
+
+fwrite(
+    hp5.sample.dt,
+    file.path(sq0.dir, "HP5-sample-data.csv")
+)
+
+```
+
+
+# Obtaining md5 for sequence data
+
+
+```{r md5}
+
+exportMd5sum <- function(raw.fastq.dt, md5sum.file){
+    fq.files <- file.path(
+        processed.fq.step3.1.dir,
+        paste0(
+            rep(raw.fastq.dt[, sample_name_with_lane], each = 2),
+            c("_R1.fastq.gz", "_R2.fastq.gz")
+        )
+    )
+
+    md5sum.dt <- tools::md5sum(
+                            fq.files
+                        ) %>%
+        stack %>%
+        data.table
+
+    md5sum.dt[, ind := basename(file.path(ind))]
+
+    md5sum.dt <- md5sum.dt[, .(ind, values)]
+    
+    fwrite(
+        md5sum.dt, file.path(sq0.dir, md5sum.file),
+        sep = "\t", col.names = FALSE
+    )
+    return()
+}
+
+temp <- exportMd5sum(
+    raw.fastq.dt = hp5.raw.fastq.dt,
+    md5sum.file = "HP5_md5sum.txt"
+)
+
+temp <- exportMd5sum(
+    raw.fastq.dt = total.raw.fastq.dt,
+    md5sum.file = "5Seq_md5sum.txt"
+)
+
+```
+
+# Ftp upload of the files
+
+
+```{r ftp upload}
+
+## uploadToFtp <- function(raw.fastq.dt, ftp.url, processors, user.pwd = "aexpress:aexpress1", verbose = FALSE){
+
+##     fq.files <- file.path(
+##         processed.fq.step3.1.dir,
+##         paste0(
+##             rep(raw.fastq.dt[, sample_name_with_lane], each = 2),
+##             c("_R1.fastq.gz", "_R2.fastq.gz")
+##         )
+##     )
+
+##     if(!all(file.exists(fq.files))){
+##         stop("some files do not exist")
+##     } else {}
+
+##     if(verbose == FALSE){
+##         temp <- mclapply(
+##             fq.files,
+##             function(x){
+##                 RCurl::ftpUpload(
+##                            what = x,
+##                            to = paste0(ftp.url, basename(x)),
+##                            userpwd = user.pwd
+##                        )
+##             },
+##             mc.cores = processors
+##         )
+##     } else {
+##         temp <- lapply(
+##             fq.files,
+##             function(x){
+##                 print(x)
+##                 RCurl::ftpUpload(
+##                            what = x,
+##                            to = paste0(ftp.url, basename(x)),
+##                            userpwd = user.pwd
+##                        )
+##             }
+##         )
+##     }
+    
+##     return(temp)
+## }
+
+## cut.point <- round(nrow(hp5.raw.fastq.dt)/2)
+## print(paste0(cut.point * 2, " files uploaded by the first function"))
+
+## temp1 <- uploadToFtp(
+##     hp5.raw.fastq.dt[1:cut.point],
+##     ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/knks9jmm-2ovkqksjnea3z/",
+##     processors = processors
+## )
+
+## if(nrow(data.table(stack(unlist(temp1)))[ind != "OK"]) != 0){
+##     stop("Error 1")
+## } else {"OK"}
+
+## temp2 <- uploadToFtp(
+##     hp5.raw.fastq.dt[(cut.point + 1):(cut.point + 50)],
+##     ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/knks9jmm-2ovkqksjnea3z/",
+##     processors = processors
+## )
+
+## if(nrow(data.table(stack(unlist(temp2)))[ind != "OK"]) != 0){
+##     stop("Error 2")
+## } else {"OK"}
+
+## temp3 <- uploadToFtp(
+##     hp5.raw.fastq.dt[(cut.point + 51):nrow(hp5.raw.fastq.dt)],
+##     ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/knks9jmm-2ovkqksjnea3z/",
+##     processors = processors,
+##     verbose = TRUE
+## )
+
+## if(nrow(data.table(stack(unlist(temp3)))[ind != "OK"]) != 0){
+##     stop("Error 3")
+## } else {"OK"}
+
+
+## temp <- uploadToFtp(
+##     total.raw.fastq.dt,
+##     ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/knlecp6x-d24on2pjpl62/",
+##     processors = processors
+## )
+
+## if(nrow(data.table(stack(unlist(temp)))[ind != "OK"]) != 0){
+##     stop("Error 2")
+## } else {"OK"}
+
+```
+
+ 
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

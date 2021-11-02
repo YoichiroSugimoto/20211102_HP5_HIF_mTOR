@@ -1,0 +1,991 @@
+---
+title: "s8-3-1-1 Validation of method (single condition / prediction of MRL by GAM)"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+Validation of HP5 by analysing the relationship of mRNA features and MRL will be performed.
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Additional packages for parallelization
+## Specify the number of CPUs to be used
+processors <- 8
+## library("BiocParallel")
+## register(MulticoreParam(processors))
+
+## Significance threshold
+sig.th <- 0.05
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+source(
+    "../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R",
+    chdir = TRUE
+)
+
+RNGkind("L'Ecuyer-CMRG") # Random number for parallel process
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+
+results.dir <- file.path("../../results")
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+
+s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
+s4.2.1.tss.tx.map.RCC4.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-1-tss-transcript-mapping-RCC4")
+
+s4.3.tx.info.dir <- file.path(s4.tss.dir, "s4-3-transcript-info")
+s4.3.1.tx.info.rcc4.dir <- file.path(s4.3.tx.info.dir, "s4-3-1-transcript-info-for-RCC4")
+
+s6.dir <- file.path(results.dir, "s6-differential-regulation-analysis")
+s6.1.dir <- file.path(s6.dir, "s6-1-differentially-expressed-genes")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
+
+s8.2.dte.iso.dir <- file.path(s8.dir, "s8-2-differentially-translated-isoforms")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+# Master table preparation
+
+
+## Data import
+
+
+```{r import essential data}
+
+all.primary.tx.dt <- file.path(
+    annot.ps.dir,
+    "all_GENCODE_RefSeq_transcript_info.csv"
+) %>% fread
+
+all.primary.tx.dt <- all.primary.tx.dt[, c(
+    "gene_id", "gene_name", "transcript_id", "chromosome_name",
+    "biotype", "transcript_type",
+    "basic_tag", "refseq_tag", "MANE_Select_tag", "appris_tag",
+    "mRNA_start_NF_tag", "mRNA_end_NF_tag", "cds_start_NF_tag", "cds_end_NF_tag",
+    "bicistronic_tag", "readthrough_transcript_tag", "fusion_gene_flag"
+), with = FALSE]
+
+r4.vhl.mrl.file <- "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL-mean_ribosome_loading.csv" 
+
+```
+
+## Functions
+
+
+```{r functions for data preprocessing}
+
+processMetaInfoDt <- function(dt){
+    dt[, `:=`(
+            first75mer_mMFEpn_G4p = - first75mer_MFE_G4p / 75,
+            nonFirst75mer_mMFEpn_G4p = - nonFirst75mer_MFE_G4p /
+                if_else(min_utr5_len > 85, mean_utr5_len - 75, NA_real_),
+            cds_mMFEpn_G4p = - cds_MFE_G4p / cds_len,
+            uORF_all_capped = ifelse(uORF_all > 3, 3, uORF_all),
+            log10_cds_len = log10(cds_len),
+            log10_utr5_len = log10(mean_utr5_len)
+        )]
+    return(dt)
+}
+
+filterMrlData <- function(dt, ref.colname, all.primary.tx.dt, filter.vals){
+    dt <- dt[
+        transcript_id %in% all.primary.tx.dt[
+                               mRNA_start_NF_tag == "N/A" &
+                               mRNA_end_NF_tag == "N/A" &
+                               cds_start_NF_tag == "N/A" &
+                               cds_end_NF_tag == "N/A" &
+                               fusion_gene_flag == FALSE,
+                               transcript_id
+                           ]
+    ][
+        is.finite(log10_utr5_len) &
+        cds_len > 100
+    ][
+        get(ref.colname) %in% filter.vals
+    ]
+
+    dt <- merge(
+        all.primary.tx.dt[
+          , c("transcript_id", "gene_name", "chromosome_name"), with = FALSE
+        ],
+        dt,
+        by = "transcript_id"
+    )
+    
+    return(dt)
+}
+
+target.var <- "MRL_base"
+
+all.test.features <- c(
+    "log10_utr5_len", "uORF_all",
+    "first75mer_mMFEpn_G4p", "nonFirst75mer_mMFEpn_G4p", 
+    "tx_kozak_score", "log10_cds_len", "cds_mMFEpn_G4p"
+)
+
+minMrlData <- function(dt, ref.colname, target.var, test.features){
+
+    dt <- dt[, c(
+        ref.colname, "gene_id", "transcript_id", "min_utr5_len", "cds_len",
+        "meanNormCount_base",
+        target.var, test.features
+    ), with = FALSE]
+
+    return(dt)
+}
+
+
+```
+
+
+## Data preparation for TSS isoform level analysis
+
+
+```{r import master table}
+
+## Load mRNA meta information
+tss.tx.assignment.dt <- file.path(
+    s4.2.1.tss.tx.map.RCC4.dir,
+    "transcripts-per-TSS-for-RCC4.gtf"
+) %>%
+    {rtracklayer::import(.)} %>%
+as.data.frame %>% data.table
+
+tss.tx.assignment.dt <- tss.tx.assignment.dt[!duplicated(transcript_id)]
+tss.tx.assignment.dt[, transcript_id := original_transcript_id]
+
+tx.meta.info.dt <- file.path(
+  s4.3.1.tx.info.rcc4.dir,
+  "transcript-meta-information-RCC4-VHL.csv"
+) %>%
+    fread
+
+tx.meta.info.dt <- merge(
+    tss.tx.assignment.dt[, .(tss_name, transcript_id)],
+    tx.meta.info.dt,
+    by = "tss_name"
+)
+
+tx.meta.info.dt <- processMetaInfoDt(tx.meta.info.dt)
+
+## Import MRL data
+tx.level.mrl.dt <- file.path(
+    s8.1.2.dir,
+    r4.vhl.mrl.file
+) %>% fread
+
+tx.level.mrl.master.dt <- merge(
+    tx.level.mrl.dt[, c(
+        "tss_name",
+        "MRL_base", "totalRLRsd_base"
+    ), with = FALSE],
+    tx.meta.info.dt,
+    by = "tss_name"
+) %>%
+    merge(
+        y = tss.de.res.dt[
+            comparison_name == "RCC4_xx_HIF1B_N__noVHL_vs_VHL",
+            .(tss_name, meanNormCount_base)
+        ],
+        by = "tss_name"
+    )
+
+## Import gene filteration data
+all.filtered.tss.dt <- file.path(
+    s8.3.dir,
+    "filtered_tss_for_polysome_analysis.csv"
+) %>%
+    fread
+
+tss.level.mrl.master.dt <- minMrlData(
+    tx.level.mrl.master.dt,
+    ref.colname = "tss_name",
+    target.var = target.var,
+    test.features = all.test.features
+)
+
+tx.level.mrl.master.dt <- NULL
+
+## Print basic stats to report
+tss.level.mrl.master.dt[
+    gene_id %in% all.primary.tx.dt[biotype == "protein_coding", gene_id] &
+    tss_name %in% all.filtered.tss.dt[RCC4_VHL_NA == TRUE, tss_name]
+] %T>%
+    {print(
+         paste0("The # of tx with MRL measurement: ", nrow(.))
+     )} %>%
+    {print(
+         paste0("The # of gene with MRL measurement: ", nrow(.[!duplicated(gene_id)]))
+     )}
+
+tss.level.mrl.master.dt <- filterMrlData(
+    dt = tss.level.mrl.master.dt,
+    ref.colname = "tss_name",
+    all.primary.tx.dt = all.primary.tx.dt,
+    filter.vals = all.filtered.tss.dt[RCC4_VHL_NA == TRUE, tss_name]
+)
+
+fwrite(
+    tss.level.mrl.master.dt,
+    file = file.path(s8.3.dir, "tss_level_MRL_summary.csv")
+)
+
+```
+
+
+# Evaluation of the contribution of an individual mRNA feature on translation
+
+
+```{r eval mRNA feature contribution}
+
+library("mgcv")
+
+createGamFormula <- function(test.features, target.var){
+    gam.formula <- paste0(
+        "s(",
+        test.features,
+        ', bs = "ts")', #bs="ts" is as "tp" but with a modification to the smoothing penalty, so that the null space is also penalized slightly and the whole term can therefore be shrunk to zero
+        collapse = " + "
+    ) %>%
+        {paste0(c(target.var, .), collapse = " ~ ")} %>%
+        as.formula
+    return(gam.formula)
+}
+
+
+uniFeatureGam <- function(test.feature, sl.mrl.master.dt, target.var, quite = FALSE){
+
+    sl.mrl.master.dt <- sl.mrl.master.dt[, c(
+        "tss_name", "gene_id", target.var, test.feature
+    ), with = FALSE] %>%
+        {.[complete.cases(.)]} %>%
+        {.[is.finite(get(test.feature))]}
+
+    if(quite == FALSE){
+        print(test.feature)
+        
+        print(paste0(
+            "The number of tx for the analysis: ", nrow(sl.mrl.master.dt)
+        ))
+        print(paste0(
+            "The number of genes for the analysis: ",
+            nrow(sl.mrl.master.dt[!duplicated(gene_id)])
+        ))
+    } else {"No print"}
+    
+    uni.gam.formula <- createGamFormula(
+        test.feature, target.var = target.var
+    )
+
+    gam.uni.fit <- gam(
+        formula = uni.gam.formula,
+        data = sl.mrl.master.dt,
+        select = FALSE,
+        method = "REML"
+    )
+
+    dev.summary.dt <- data.table(
+        feature_name = test.feature,
+        r_sq_model = summary(gam.uni.fit)$r.sq,        
+        dev_explained_by_uni =  summary(gam.uni.fit)$dev.expl,
+        p_value = summary(gam.uni.fit)$s.table[, "p-value"]
+    )
+
+    return(dev.summary.dt)    
+}
+
+runAllUniGam <- function(sl.mrl.master.dt, input.name, all.test.features, target.var, quite = FALSE){
+
+    if(quite == FALSE){
+        print("----------------------------------------------")
+    } else {"No print"}
+    
+    all.uni.dev.dt <- lapply(
+        all.test.features,
+        uniFeatureGam,
+        sl.mrl.master.dt = sl.mrl.master.dt,
+        target.var = target.var,
+        quite = quite
+    ) %>%
+        rbindlist
+
+    all.uni.dev.dt[, `:=`(
+        input_name = input.name
+    )]
+
+    return(all.uni.dev.dt)
+}
+
+
+all.uni.dev.dt <- runAllUniGam(
+    sl.mrl.master.dt = tss.level.mrl.master.dt,
+    input.name = "TSS resolution",
+    all.test.features = all.test.features,
+    target.var = "MRL_base"
+)
+
+all.uni.dev.dt[, padj := p.adjust(p_value, method = "holm")]
+
+print(all.uni.dev.dt)
+
+uniFeatureGamCV <- function(test.feature, train.mrl.master.dt, test.mrl.master.dt, target.var, quite = FALSE){
+    
+    train.mrl.master.dt <- train.mrl.master.dt[, c(
+        "tss_name", "chromosome_name", "meanNormCount_base", target.var, test.feature
+    ), with = FALSE] %>%
+        {.[complete.cases(.)]} %>%
+        {.[is.finite(get(test.feature))]}
+
+    test.mrl.master.dt <- test.mrl.master.dt[, c(
+        "tss_name", "chromosome_name", "meanNormCount_base", target.var, test.feature
+    ), with = FALSE] %>%
+        {.[complete.cases(.)]} %>%
+        {.[is.finite(get(test.feature))]}
+    
+    
+    if(quite == FALSE){
+        print(test.feature)
+        
+        print(paste0(
+            "The number of tx for training: ", nrow(train.mrl.master.dt)
+        ))
+        print(paste0(
+            "The number of tx for test: ",
+            nrow(test.mrl.master.dt)
+        ))
+    } else {"No print"}
+    
+    uni.gam.formula <- createGamFormula(
+        test.feature, target.var = target.var
+    )
+
+    gam.uni.train.fit <- gam(
+        formula = uni.gam.formula,
+        data = train.mrl.master.dt,
+        select = FALSE,
+        method = "REML"
+    )
+
+    test.mrl.master.dt[, `:=`(
+        prediced_MRL_base = predict(gam.uni.train.fit, newdata = test.mrl.master.dt)
+    )]
+
+    r.sq <- test.mrl.master.dt %$% 
+        cor(prediced_MRL_base, MRL_base)^2
+
+    
+    dev.summary.dt <- data.table(
+        feature_name = test.feature,
+        r_sq_model = summary(gam.uni.train.fit)$r.sq,
+        r_sq_cv = r.sq,
+        dev_explained_by_uni =  summary(gam.uni.train.fit)$dev.expl,
+        p_value = summary(gam.uni.train.fit)$s.table[, "p-value"]
+    )
+
+    return(dev.summary.dt)    
+}
+
+
+runAllUniGamCV <- function(run.index, sl.mrl.master.dt, input.name, all.test.features, target.var, quite = FALSE){
+
+    if(quite == FALSE){
+        print("----------------------------------------------")
+    } else {"No print"}
+
+
+    all.chrs <- unique(sl.mrl.master.dt[, chromosome_name])
+    train.chrs <- sample(all.chrs, size = length(all.chrs) - 4, replace = FALSE)
+    mrna.quantile <- quantile(sl.mrl.master.dt[, meanNormCount_base], probs = 0.5)
+
+    train.tss.names <- sl.mrl.master.dt[
+        chromosome_name %in% train.chrs,
+        tss_name
+    ]
+    test.tss.names <- sl.mrl.master.dt[
+        meanNormCount_base > mrna.quantile &
+        !(chromosome_name %in% train.chrs),
+        tss_name
+    ]
+    train.mrl.master.dt <- sl.mrl.master.dt[tss_name %in% train.tss.names]
+    test.mrl.master.dt <- sl.mrl.master.dt[tss_name %in% test.tss.names]    
+    
+    all.uni.dev.dt <- lapply(
+        all.test.features,
+        uniFeatureGamCV,
+        train.mrl.master.dt = train.mrl.master.dt,
+        test.mrl.master.dt = test.mrl.master.dt,
+        target.var = target.var,
+        quite = quite
+    ) %>%
+        rbindlist
+
+    all.uni.dev.dt[, `:=`(
+        input_name = input.name
+    )]
+
+    return(all.uni.dev.dt)
+}
+
+all.uni.dev.cv.dt <- lapply(
+    1:10,
+    runAllUniGamCV,
+    sl.mrl.master.dt = tss.level.mrl.master.dt,
+    input.name = "TSS resolution",
+    all.test.features = all.test.features,
+    target.var = "MRL_base"
+) %>%
+    rbindlist
+
+std.error <- function(x) sd(x)/sqrt(length(x))
+
+all.uni.dev.cv.summary.dt <- all.uni.dev.cv.dt[, list(
+    rsq_mean = mean(r_sq_cv),
+    rsq_sem = std.error(r_sq_cv)
+), by = feature_name] %>%
+    merge(
+        all.uni.dev.dt[, .(feature_name, padj)],
+        by = "feature_name"
+    )
+
+all.uni.dev.cv.summary.dt <- all.uni.dev.cv.summary.dt[
+  , feature_name := factor(
+        feature_name,
+        levels = all.test.features 
+    )][order(feature_name)]
+
+all.uni.dev.cv.summary.dt[, `:=`(
+    simplified_feature_name = c(
+        "Length",
+        "uORF number",
+        "Structure (near cap)",
+        "Structure (distal to cap)",
+        "Kozak sequence",
+        "Length",
+        "Structure"
+    )  %>%
+        factor(levels = c(
+                   "Kozak sequence",
+                   "Length",
+                   "uORF number",
+                   "Structure (near cap)",
+                   "Structure (distal to cap)",
+                   "Structure"                   
+               )),
+    segment = c(rep("5' UTR", times = 4), rep("CDS", times = 3)),
+    sig_mark = case_when(
+        padj < sig.th * 0.1 ~ "**",
+        padj < sig.th ~ "*",
+        TRUE ~ NA_character_
+    )
+)]
+
+all.uni.dev.cv.summary.dt %T>%
+    print %>%
+    ggplot(
+        aes(
+            y = rsq_mean,
+            x = simplified_feature_name
+        )
+    ) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_errorbar(
+        aes(ymin = rsq_mean - rsq_sem, ymax = rsq_mean + rsq_sem),
+        width = 0.5
+    ) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = max, 
+        vjust = -0.75, color = "black", size = 6
+    ) +
+    facet_grid(~ segment, space = "free", scale = "free") +
+    ggsci::scale_fill_jama() +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    scale_y_continuous(
+        labels = scales::percent_format(accuracy = 1), limits = c(0, 0.3)
+    ) +
+    xlab("mRNA features") +
+    ylab("R2") +
+    theme(
+        legend.position = "bottom"
+    )
+
+```
+
+
+# MRL prediction from the selected mRNA features using GAM
+
+
+## Preliminary analysis of variable correlations
+
+
+```{r preliminary analysis}
+
+library("corrplot")
+
+corrplot(
+    tss.level.mrl.master.dt[, all.test.features, with = FALSE] %>%
+    {.[complete.cases(.)]} %>% cor,
+    type = "upper",
+    method = "color",
+    addCoef.col = "white"
+)
+
+
+```
+
+
+## Prediction with the four most significantly predictive mRNA features
+
+
+```{r MRL prediction with GAM}
+
+## Extract necessary data
+sl.test.features <- c(
+    "uORF_all", "first75mer_mMFEpn_G4p", "tx_kozak_score", "log10_cds_len"
+)
+
+if(all(sl.test.features %in% all.uni.dev.dt[order(p_value)][1:4, feature_name])){
+    "OK"
+} else {stop("Check the 3 most significant features")}
+
+print(
+    paste0(
+        "All ",
+        length(tss.level.mrl.master.dt[, chromosome_name] %>% unique),
+        " chromosomes used here"
+    )
+)
+print(tss.level.mrl.master.dt[, chromosome_name] %>% unique %>% sort)
+
+predictMRL <- function(sl.mrl.master.dt, target.var, test.features, ref.colname, plot.result = FALSE){
+
+    sl.mrl.master.dt <- sl.mrl.master.dt[, c(
+        ref.colname, target.var, test.features, "chromosome_name", "meanNormCount_base"
+    ), with = FALSE] %>%
+        {.[complete.cases(.)]}
+
+    all.chrs <- unique(sl.mrl.master.dt[, chromosome_name])
+    train.chrs <- sample(all.chrs, size = length(all.chrs) - 4, replace = FALSE)
+
+    mrna.quantile <- quantile(sl.mrl.master.dt[, meanNormCount_base], probs = 0.5)
+
+    train.tss.names <- sl.mrl.master.dt[
+        chromosome_name %in% train.chrs,
+        get(ref.colname)
+    ]
+
+    test.tss.names <- sl.mrl.master.dt[
+        meanNormCount_base > mrna.quantile &
+        !(chromosome_name %in% train.chrs),
+        get(ref.colname)
+    ]
+
+    train.mrl.master.dt <- sl.mrl.master.dt[get(ref.colname) %in% train.tss.names]
+    test.mrl.master.dt <- sl.mrl.master.dt[get(ref.colname) %in% test.tss.names]
+
+    gam.fm.train.fit <- gam(
+        formula = createGamFormula(test.features = sl.test.features, target.var),
+        data = train.mrl.master.dt,
+        method = "REML"
+    )
+
+    test.mrl.master.dt[, `:=`(
+        prediced_MRL_base = predict(gam.fm.train.fit, newdata = test.mrl.master.dt)
+    )]
+
+    r.sq <- test.mrl.master.dt %$% 
+        cor(prediced_MRL_base, MRL_base)^2
+
+    print(round(r.sq, digits = 3))
+    
+    if(plot.result){
+
+        g1 <- ggplot(
+            data = test.mrl.master.dt,
+            aes(
+                x = MRL_base,
+                y = prediced_MRL_base
+            )
+        ) +
+            geom_point() +
+            coord_cartesian(xlim = c(2, 7), ylim = c(2, 7)) +
+            xlab("Measured MRL") +
+            ylab("Predicted MRL")
+
+        print(g1)
+
+        print(paste0(
+            "The number of tx for training: ", nrow(train.mrl.master.dt), "\n",
+            "The number of tx for test: ", nrow(test.mrl.master.dt)
+        ))
+
+    } else {"No plot"}
+
+    return(r.sq)
+}
+
+tx.r.sqs <- mclapply(
+    1:10,
+    function(x){
+        predictMRL(
+            sl.mrl.master.dt = tss.level.mrl.master.dt,
+            target.var = target.var,
+            test.features = sl.test.features,
+            ref.colname = "tss_name",
+            plot.result = FALSE
+        )        
+    },
+    mc.cores = processors
+) %>% unlist
+
+summary(tx.r.sqs)
+
+```
+
+
+# Analysis of the association of an individual mRNA feature and MRL
+
+## uAUG
+
+```{r uAUG vs MRL}
+
+## Plot individual fit
+tss.level.mrl.master.dt[, uORF_capped := factor(
+                              round(uORF_all) %>%
+                              {case_when(
+                                  . >= 3 ~ "3+",
+                                  TRUE ~ as.character(.)
+                              )}
+                          )]
+
+uorf.test.res.dt <- tss.level.mrl.master.dt[!is.na(MRL_base)] %$%
+    pairwise.wilcox.test(
+        x = MRL_base,
+        g = uORF_capped,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[, 1] %>%
+    p.adjust(method = "holm") %>%
+    {data.table(stack(.))}
+
+setnames(uorf.test.res.dt, old = c("values", "ind"), new = c("padj", "uORF_capped"))
+
+uorf.test.res.dt[, sig_mark := case_when(
+                       padj < sig.th * 0.1 ~ "**",
+                       padj < sig.th ~ "*",
+                       TRUE ~ NA_character_
+                   )]
+
+print(uorf.test.res.dt)
+
+merge(
+    tss.level.mrl.master.dt[!is.na(MRL_base)],
+    uorf.test.res.dt,
+    by = "uORF_capped",
+    all.x = TRUE
+) %>%
+    ggplot(
+        aes(
+            x = uORF_capped,
+            y = MRL_base
+        )
+    ) +
+    geom_boxplot(
+        fill = "#4477AA",
+        outlier.shape = NA
+    ) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]}, 
+        vjust = -0.8, color = "black", size = 6
+    ) +
+    theme(
+        aspect.ratio = 2
+    ) +
+    ylab("MRL in RCC4 VHL") +
+    xlab("uORF number")
+
+print("The sample numbers for the boxplots")
+tss.level.mrl.master.dt[
+    !is.na(MRL_base),
+    table(uORF_capped)
+]
+
+
+```
+
+## CDS length
+
+```{r CDS length}
+
+tss.level.mrl.master.dt[, `:=`(
+    cds_len_bin = cut(
+        log10_cds_len,
+        breaks = seq(2, 5, by = 0.25),
+        labels = paste0(
+            "(",
+            seq(2, 5, by = 0.25) %>% {.[1:(length(.) - 1)]} %>% {round(10^.)},
+            ", ",
+            seq(2, 5, by = 0.25) %>% {.[2:length(.)]} %>% {round(10^.)},
+            "]"
+        )
+    )
+)]
+
+all.cds.len.bins <- tss.level.mrl.master.dt[, unique(cds_len_bin)]
+
+ref.bin <- "(1000, 1778]"
+all.non.ref.bins <- all.cds.len.bins[all.cds.len.bins != ref.bin]
+
+runWilcoxForCds <- function(sl.bin, mrl.master.dt){
+    data.table(
+        cds_len_bin = sl.bin,
+        wil_p = wilcox.test(
+            x = mrl.master.dt[!is.na(MRL_base) & cds_len_bin == ref.bin, MRL_base],
+            y = mrl.master.dt[!is.na(MRL_base) & cds_len_bin == sl.bin, MRL_base],
+            alternative = "two.sided"
+        )$p.value
+    )
+}
+
+cds.bin.wilp.dt <- lapply(
+    sort(all.non.ref.bins),
+    runWilcoxForCds,
+    mrl.master.dt = tss.level.mrl.master.dt[!is.na(MRL_base)]
+) %>%
+    rbindlist %>%
+{.[, padj := p.adjust(wil_p, method = "holm")]} %>%
+{.[, sig_mark := case_when(
+         padj < sig.th * 0.1 ~ "**",
+         padj < sig.th ~ "*",
+         TRUE ~ NA_character_
+     )
+]} %T>%
+print %>%
+rbind(
+    data.table(cds_len_bin = ref.bin, sig_mark = "(NA)"),
+    use.names = TRUE, fill = TRUE
+) %>% {.[order(cds_len_bin)]}
+
+merge(
+    tss.level.mrl.master.dt[
+        !is.na(cds_len_bin) & !is.na(MRL_base) &
+        !(cds_len_bin %in% c("(17783, 31623]", "(31623, 56234]", "(56234, 1e+05]"))
+    ],
+    cds.bin.wilp.dt,
+    by = "cds_len_bin", all.x = TRUE
+) %>%
+    ggplot(
+        aes(
+            x = cds_len_bin,
+            y = MRL_base
+        )
+    ) +
+    geom_boxplot(
+        aes(
+            group = cds_len_bin
+        ),
+        fill = "#4477AA",
+        outlier.shape = NA
+    ) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]}, 
+        vjust = -0.25, color = "black", size = 5
+    ) +
+    theme(
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    ylab("MRL in RCC4 VHL") +
+    xlab("CDS length [nts]")
+
+print("The sample numbers for the boxplots")
+tss.level.mrl.master.dt[!is.na(MRL_base), table(cds_len_bin)]
+
+
+```
+
+## RNA structure near cap
+
+
+```{r RNA structure near cap}
+
+tss.level.mrl.master.dt[, `:=`(
+    rna_structure_bin = cut_number(
+        first75mer_mMFEpn_G4p, n = 5
+    )
+)]
+
+ggplot(
+    data = tss.level.mrl.master.dt[!is.na(rna_structure_bin)],
+    aes(
+        x = rna_structure_bin,
+        y = MRL_base
+    )
+) +
+    geom_boxplot(
+        fill = "#4477AA",
+        outlier.shape = NA,
+        notch = TRUE,
+        alpha = 0.8
+    ) +
+    theme(
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    ylab("MRL in RCC4 VHL") +
+    xlab("RNA structure (near cap)")
+
+## In comparison to the most structured bin
+tss.level.mrl.master.dt %$%
+    pairwise.wilcox.test(
+        x = MRL_base,
+        g = rna_structure_bin,
+        p.adjust.method = "none",
+        alternative = "two.sided"
+    )$p.value[4, ] %>%
+    p.adjust(method = "holm")
+
+ref.structure.bin <- tss.level.mrl.master.dt[
+    order(rna_structure_bin, decreasing = TRUE)
+][
+    1, rna_structure_bin
+]
+
+tss.level.mrl.master.dt %$%
+pairwise.wilcox.test(
+    x = MRL_base,
+    g = (ref.structure.bin == rna_structure_bin),
+    alternative = "two.sided"
+)
+
+print("The number of mRNAs per bin")
+tss.level.mrl.master.dt[!is.na(MRL_base), table(rna_structure_bin)]
+
+tss.level.mrl.master.dt[
+    !is.na(MRL_base),
+    table(ref.structure.bin == rna_structure_bin)
+]
+
+```
+
+
+
+## Kozak sequence score
+
+
+```{r kozak score}
+
+tss.level.mrl.master.dt[, `:=`(
+    kozak_bin = cut_number(
+        tx_kozak_score, n = 5
+    )
+)]
+
+all.kozak.bins <- tss.level.mrl.master.dt[, unique(kozak_bin) %>% sort]
+ref.kozak.bin <- all.kozak.bins[3]
+comp.kozak.bins <- all.kozak.bins[all.kozak.bins != ref.kozak.bin]
+
+kozak.sig.dt <- lapply(
+    sort(comp.kozak.bins),
+    function(x){
+        data.table(
+            kozak_bin = x,
+            wil_p = wilcox.test(
+                x = tss.level.mrl.master.dt[kozak_bin == ref.kozak.bin, MRL_base],
+                y = tss.level.mrl.master.dt[kozak_bin == x, MRL_base],
+                alternative = "two.sided"
+            )$p.value,
+            N = nrow(tss.level.mrl.master.dt[kozak_bin == x]),
+            N_ref = nrow(tss.level.mrl.master.dt[kozak_bin == ref.kozak.bin])
+        )
+    }
+) %>%
+    rbindlist %>%
+    {.[, padj := p.adjust(wil_p, method = "holm")]} %>%
+    {.[, sig_mark := case_when(
+             padj < sig.th * 0.1 ~ "**",
+             padj < sig.th ~ "*",
+             TRUE ~ NA_character_
+         )
+       ]} %T>%
+    print
+
+print("The number of mRNAs per bin")
+tss.level.mrl.master.dt[!is.na(MRL_base), table(kozak_bin)]
+
+merge(
+    tss.level.mrl.master.dt,
+    kozak.sig.dt,
+    by = "kozak_bin",
+    all.x = TRUE
+) %>%
+    ggplot(
+        aes(
+            x = kozak_bin,
+            y = MRL_base
+        )
+    ) +
+    geom_boxplot(
+        fill = "#4477AA",
+        alpha = 0.8,
+        outlier.shape = NA,
+        notch = TRUE
+    ) +
+    geom_hline(
+        yintercept = tss.level.mrl.master.dt[, median(MRL_base, na.rm = TRUE)],
+        color = "gray20", linetype = "dashed", size = 0.8
+    ) +
+    stat_summary(
+        geom = 'text', aes(label = sig_mark),
+        fun = function(x){boxplot.stats(x)$stats[5]}, 
+        vjust = -0.25, color = "black", size = 5
+    ) +
+    theme(
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    ylab("MRL in RCC4 VHL") +
+    xlab("Kozak consensus")
+
+```
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

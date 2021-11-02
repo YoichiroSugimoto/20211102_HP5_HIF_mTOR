@@ -1,0 +1,31 @@
+## execute the following two commands with c-x c-e
+## Note that before executing these commands, the following codes should be included in .emacs.d/init.el
+## ;;; I. Package installing
+## ;;;  - Enables MELPA rep
+## ;;;    - (http://melpa.org/#/getting-started)
+## (require 'package)
+## (add-to-list 'package-archives
+## 	          '("melpa" . "https://melpa.org/packages/"))
+## (when (< emacs-major-version 24)
+##   ;; For important compatibility libraries like cl-lib
+##   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+## (package-initialize)
+
+(setq package-selected-packages
+      '(autopair 
+      buffer-move 
+      elpy 
+      company 
+      ess 
+      poly-R 
+      poly-markdown 
+      markdown-mode 
+      poly-noweb 
+      polymode 
+      popup 
+      pyvenv 
+      yasnippet 
+      zenburn-theme))
+
+(package-install-selected-packages)
+

@@ -1,0 +1,197 @@
+---
+title: "s5-1 Validation of TSS"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+Ability of HP5 to identify TSS will be validated by analysing position of 5' termini of the reads to the annotated TSS.
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor
+library("rtracklayer")
+library("GenomicFeatures")
+library("GenomicAlignments")
+library("Rsubread")
+
+## Specify the number of CPUs to be used
+processors <- 8
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+ref.seq.dir <- file.path(annot.dir, "hg38_annotation/ref_sequences/")
+genome.fa.file <- list.files(ref.seq.dir, pattern = "_genome.fa$", full.names = TRUE)
+
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+s2.2.1.tss.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-1-tss-bam")
+
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
+
+## create.dirs(c())
+
+
+```
+
+
+# Analysis of HP5 identified TSS position to the annotated TSS
+
+
+```{r HP5 tss positions}
+
+all.primary.tx.dt <- file.path(
+    annot.ps.dir,
+    "all_GENCODE_RefSeq_transcript_info.csv"
+) %>% fread
+
+## Import annotation data
+all.tx.gtf <- file.path(
+    annot.ps.dir,
+    "all-transcript.gtf"
+)
+
+all.tx.gr <- rtracklayer::import(all.tx.gtf)
+
+grToPromoter <- function(gr){
+
+    sl.gr <- gr[(
+    mcols(gr)[, "transcript_id"] %in%
+    all.primary.tx.dt[
+        fusion_gene_flag == FALSE | chromosome_name == "chrM",
+        transcript_id
+    ]
+    )]
+
+    sl.txdb <- makeTxDbFromGRanges(sl.gr)
+
+    ## Only promoters for mRNA and lncRNA are analyzed
+    promoter.gr <- promoters(sl.txdb, upstream = 0, downstream = 1)
+
+    promoter.gr <- promoter.gr[
+        mcols(promoter.gr)[, "tx_name"] %in%
+        all.primary.tx.dt[biotype %in% c("protein_coding"), transcript_id]
+    ]
+
+    return(promoter.gr)
+}
+
+promoter.gr <- grToPromoter(all.tx.gr)
+
+## Import TSS data
+hp5.r4vhl.prefix <- "^polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]"
+
+input.bams <- list.files(
+    s2.2.1.tss.bam.dir,
+    pattern = paste0(hp5.r4vhl.prefix, "\\.tss.bam$"),
+    full.names = TRUE
+)
+
+print("The following samples are analysed for the TSS analysis")
+print(basename(input.bams))
+
+param <- ScanBamParam(flag = scanBamFlag(isSecondaryAlignment = FALSE)) # Unique alignment
+
+input.gr <- mclapply(
+    input.bams, 
+    readGAlignments,
+    param = param,
+    mc.cores = processors
+) %>% {Reduce(c, .)}
+
+## Only analyze TSS aligned within 100 bp distance from protein coding genes
+all.primary.tx.txdb <- makeTxDbFromGRanges(all.tx.gr)
+all.primary.tx.range.gr <- transcripts(all.primary.tx.txdb)
+
+all.primary.tx.range.gr <- all.primary.tx.range.gr[
+    mcols(all.primary.tx.range.gr)[["tx_name"]] %in%
+    all.primary.tx.dt[biotype == "protein_coding", transcript_id]
+]
+
+start(all.primary.tx.range.gr) <- start(all.primary.tx.range.gr) - 100
+end(all.primary.tx.range.gr) <- end(all.primary.tx.range.gr) + 100
+
+genic.filtered.tss.gr <- subsetByOverlaps(
+    input.gr,
+    all.primary.tx.range.gr
+)
+
+## Indeitify nearest annotated TSS for 5' end-Seq defined TSS
+nearest.promoter.index <- nearest(
+    GRanges(genic.filtered.tss.gr),
+    promoter.gr,
+    ignore.strand = FALSE
+)
+
+dist.vec <- ifelse(
+    strand(genic.filtered.tss.gr) == "+",
+    start(genic.filtered.tss.gr) - start(promoter.gr[nearest.promoter.index]),
+    -1 * (start(genic.filtered.tss.gr) - start(promoter.gr[nearest.promoter.index]))
+)
+
+dist.dt <- table(dist.vec) %>% data.table
+setnames(dist.dt, old = "dist.vec", new = "genomic_position")
+
+dist.dt[, `:=`(
+    genomic_position = as.integer(genomic_position),
+    N_proportion = N / sum(dist.dt[, N])
+)]
+
+ggplot(
+    data = dist.dt[genomic_position > -150 & genomic_position < 250],
+    aes(
+        x = genomic_position,
+        y = N_proportion
+    )
+) +
+    geom_vline(xintercept = 0, color = "gray60", linetype = "dashed") +
+    geom_area(color = "black", fill = "#EE6677") +
+    coord_cartesian(xlim = c(-100, 200)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    xlab("Genomic position of 5' terminal end of HP5 reads \nto annotated TSS") +
+    ylab("Proportion of reads")
+
+
+```
+
+
+
+
+ 
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

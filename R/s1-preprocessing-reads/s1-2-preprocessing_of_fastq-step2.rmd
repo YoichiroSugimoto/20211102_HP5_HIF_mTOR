@@ -1,0 +1,232 @@
+---
+title: "s1-2 Preprocessing of fastq files"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+# Strategy
+
+The fastq files will be processed before the alignments to the human genome. The following steps will be performed:
+
+- Step 1: Extract UMIs from reads
+- Step 2: Demultiplex reads
+- Step 3: Process index
+  - Step 3-1
+    - Remove constant regions
+    - Demultplex library
+  - Step 3-2
+    - Copy the first base of reads to read.name
+- Step 4: Map reads to rRNAs and ERCC RNAs
+  - Collapse technical replicates
+  - ERCC spike-in mapped reads will be used later
+ 
+This script will perform Step 3-2 and 4.
+ 
+# Set up
+
+
+```{r set up functions, message = FALSE, warning = FALSE}
+
+processors <- 24
+
+library("ShortRead")
+library("stringdist") 
+library("matrixStats")
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+```
+
+
+```{r define directories}
+
+annot.dir <- file.path("../../annotation/")
+rRNA.ercc.annot.dir <- file.path(annot.dir, "rRNA_ERCC_annotation")
+rRNA.ercc.index.dir <- file.path(rRNA.ercc.annot.dir, "rRNA_ERCC_indices")
+
+results.dir <- file.path("../../results")
+processed.fq.dir <- file.path(results.dir, "s1-processed_fastq")
+processed.fq.step3.1.dir <- file.path(processed.fq.dir, "s1-1-Step3-1")
+processed.fq.step3.2.dir <- file.path(processed.fq.dir, "s1-1-Step3-2")
+processed.fq.step4.0.dir <- file.path(processed.fq.dir, "s1-1-Step4-0") 
+processed.fq.step4.dir <- file.path(processed.fq.dir, "s1-1-Step4")
+processed.fq.step4.2.dir <- file.path(processed.fq.dir, "s1-1-Step4-2-rRNA-ERCC")
+
+
+create.dirs(
+    dirs = c(
+        results.dir,
+        processed.fq.step3.2.dir,
+        processed.fq.step4.0.dir,
+        processed.fq.step4.dir,
+        processed.fq.step4.2.dir
+    )
+)
+
+sample.dt <- file.path(
+    "../../data/sample_data/processed_sample_file.csv"
+) %>% fread
+
+read.process.sample.dt <- file.path(
+    "../../data/sample_data/to_process_reads_sample_file.csv"
+) %>% fread
+
+
+```
+
+
+# Step 3-2. Copy the first base to read name
+
+
+This function has a very high memory consumption.
+
+
+```{r step 3-2}
+
+runAddFirstBaseToFqEntryName.rscript.cmd <- function(analyzed.sample.name, processed.fq.step3.1.dir, processed.fq.step3.2.dir){
+
+    addFirstBaseToFqEntryName.rscript <- file.path("./functions/addFirstBaseToFqEntryName.R")
+
+    run.addFirstBaseToFqEntryName.rscript.cmd <- paste(
+        "Rscript",
+        addFirstBaseToFqEntryName.rscript,
+        "-s", analyzed.sample.name,
+        "-i", processed.fq.step3.1.dir,
+        "-o", processed.fq.step3.2.dir
+    )
+
+    system.cat(run.addFirstBaseToFqEntryName.rscript.cmd)
+    
+    return()
+}
+
+
+temp <- mclapply(
+    read.process.sample.dt[, sample_name_with_lane],
+    runAddFirstBaseToFqEntryName.rscript.cmd,
+    processed.fq.step3.1.dir = processed.fq.step3.1.dir,
+    processed.fq.step3.2.dir = processed.fq.step3.2.dir,
+    mc.cores = round(processors / 4)
+)
+
+```
+
+# Step4-0. Collapse technical replicates
+
+
+```{r collapse technical replicates}
+
+collapseTechnicalReplicates <- function(no.techr.sample.name, read.process.sample.dt, processed.fq.step3.2.dir, processed.fq.step4.0.dir){
+    input.files <- file.path(
+        processed.fq.step3.2.dir,
+        paste0(read.process.sample.dt[
+            no_technical_rep_sample_name == no.techr.sample.name,
+            sample_name_with_lane
+        ], "_R1.fastq.gz")
+    )
+
+    output.file <- file.path(
+        processed.fq.step4.0.dir,
+        paste0(no.techr.sample.name, "_R1.fastq.gz")
+    )
+
+    cat.command <- paste(
+        c("cat", input.files, ">", output.file),
+        collapse = " "
+    ) %T>%
+        system.cat
+
+    gsub("_R1.fastq.gz", "_R2.fastq.gz", cat.command) %>%
+        system.cat
+    
+    return()
+}
+
+## Sanity check
+if(all(
+    sort(sample.dt[, sample_name]) ==
+    sort(read.process.sample.dt[
+        !duplicated(no_technical_rep_sample_name), no_technical_rep_sample_name
+    ])
+)){"OK"} else {stop()}
+
+temp <- mclapply(
+    sample.dt[, sample_name],
+    collapseTechnicalReplicates,
+    read.process.sample.dt = read.process.sample.dt,
+    processed.fq.step3.2.dir = processed.fq.step3.2.dir,
+    processed.fq.step4.0.dir = processed.fq.step4.0.dir,
+    mc.cores = round(processors / 2)
+)
+
+```
+
+
+# Step 4. Map reads to rRNAs and ERCC RNAs
+
+
+```{r step 4}
+
+removeRibosomalRNA <- function(analyzed.sample.name, rRNA.ercc.index.dir, processed.fq.step4.0.dir, processed.fq.step4.dir, processed.fq.step4.2.dir, processors){
+
+    step4.in.files <- file.path(
+        processed.fq.step4.0.dir,
+        paste0(analyzed.sample.name, c("_R1.fastq.gz", "_R2.fastq.gz"))
+    )
+    
+    step4.out.files <- file.path(
+        processed.fq.step4.dir,
+        gsub("_R1", "", basename(step4.in.files[1]))
+    )
+
+    step4.cmd <- paste(
+        "bowtie2",
+        "-p", processors,
+        "--un-conc-gz", step4.out.files,
+        "-N", 1,
+        "-x", paste0(rRNA.ercc.index.dir, "/rRNA"),
+        "-1", step4.in.files[1],
+        "-2", step4.in.files[2],
+        "| samtools view -@", processors, "-Su /dev/stdin",
+        "| samtools sort -@", processors, "-T", analyzed.sample.name, "-",
+        ">", file.path(processed.fq.step4.2.dir, paste0(analyzed.sample.name, ".sorted.bam"))
+    )
+
+    ## cat(analyzed.sample.name, sep = "\n\n")
+    step4.out <- system.cat(step4.cmd)
+    return()
+}
+
+temp <- lapply(
+    sample.dt[, sample_name],
+    removeRibosomalRNA,
+    rRNA.ercc.index.dir = rRNA.ercc.index.dir,
+    processed.fq.step4.0.dir = processed.fq.step4.0.dir,
+    processed.fq.step4.dir = processed.fq.step4.dir,
+    processed.fq.step4.2.dir = processed.fq.step4.2.dir,
+    processors = processors
+)
+
+
+```
+
+
+# Session Info
+
+
+```{r session info}
+
+sessionInfo()
+
+```

@@ -1,0 +1,123 @@
+---
+title: "sp-3 Preparation of bowtie2 index for the alignments to rRNA and ERCC"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+# Overview
+
+The rRNA and [ERCC spike-in RNA](https://www-s.nist.gov/srmors/certificates/documents/SRM2374_putative_T7_products_NoPolyA_v1.fasta) sequences are downloaded.
+
+The retrieved sequence is then indexed to map sequence reads. 
+To do this, bowtie2 will be used.
+
+# Setup
+
+## The input and output files and the directories
+
+```{r knitr config, message = FALSE, warning = FALSE}
+
+library("rentrez")
+library("rtracklayer")
+library("Biostrings")
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+processors <- 8
+
+```
+
+```{r setup directories}
+
+annot.dir <- file.path("../../annotation/")
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+
+rRNA.ercc.annot.dir <- file.path(annot.dir, "rRNA_ERCC_annotation")
+rRNA.ercc.index.dir <- file.path(rRNA.ercc.annot.dir, "rRNA_ERCC_indices")
+
+create.dirs(c(
+    rRNA.ercc.annot.dir,
+    rRNA.ercc.index.dir
+))
+
+```
+
+
+# Download human rRNA sequences and generate rRNA and ERCC bowtie2 index
+
+
+```{r genome, results="hide"}
+
+## Normal rRNAs
+rRNA.ids <- c("NR_023363.1","NR_046235.1") # NCBI rRNA 5S, pre-rRNA 45S: NR_046235.1
+## Since 5.8S, 28S, 18S is included in 45S, I did not include "NR_003285.2","NR_003287.2","NR_003286.2"
+rRNA.fa <- entrez_fetch(db="nucleotide", id=rRNA.ids, rettype="fasta")
+rRNA.fa.file <- file.path(
+    rRNA.ercc.annot.dir,
+    paste0(
+        "rRNA_",
+        format(as.POSIXlt(Sys.time(), "GMT"), c("%Y_%m%d_%H%M%S")),
+        ".fa"
+    ))
+write(rRNA.fa, file = rRNA.fa.file)
+
+## mitochondria rRNAs
+primary.tx.gtf <- list.files(
+    file.path(annot.dir, "hg38_annotation/processed_data"),
+    pattern = "primary_transcript_[[:digit:]]*_[[:digit:]]*_[[:digit:]]*\\.gtf$",
+    full.names = TRUE
+) 
+
+primary.tx.annotation.gr <-import(primary.tx.gtf)
+
+bs.genome.ver <- "BSgenome.Hsapiens.UCSC.hg38"
+library(bs.genome.ver, character.only = TRUE)
+
+mt.rRNA.ids <- c("ENSG00000211459", "ENSG00000210082") #MT-RNR1, MT-RNR2
+mt.rRNA.gr <- primary.tx.annotation.gr[primary.tx.annotation.gr$gene_id %in% mt.rRNA.ids]
+
+mt.rRNA.seq <- getSeq(BSgenome.Hsapiens.UCSC.hg38, mt.rRNA.gr)
+names(mt.rRNA.seq) <- mt.rRNA.ids
+
+export(mt.rRNA.seq, con = rRNA.fa.file, format = "fasta", append = TRUE)
+
+ercc.fa.file <- file.path(
+    "../../data/ERCC_sequence/SRM2374_putative_T7_products_NoPolyA_v1.fasta.txt"
+)
+
+ercc.seq <- readDNAStringSet(ercc.fa.file, format = "fasta")
+
+export(ercc.seq, con = rRNA.fa.file, format = "fasta", append = TRUE)
+
+## bowtie2 indexing
+
+index.cmd <- paste(
+    "bowtie2-build",
+    rRNA.fa.file,
+    file.path(rRNA.ercc.index.dir, "rRNA")
+)
+
+index.out <- system.cat(index.cmd)
+
+```
+
+
+# Session information
+
+```{r session info}
+
+sessionInfo()
+
+```

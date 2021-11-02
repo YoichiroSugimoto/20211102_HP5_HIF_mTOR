@@ -1,0 +1,158 @@
+---
+title: "s4-3-2 Extract transcript information for 786O"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+library("rtracklayer")
+library("GenomicFeatures")
+library("GenomicAlignments")
+
+## Specify the number of CPUs to be used
+processors <- 16
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+source("./functions/extractTxMetaInfo.R")
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+ref.seq.dir <- file.path(annot.dir, "hg38_annotation/ref_sequences/")
+genome.fa.file <- list.files(ref.seq.dir, pattern = "_genome.fa$", full.names = TRUE)
+
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
+
+s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
+s4.2.2.tss.tx.map.786O.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-2-tss-transcript-mapping-786O")
+
+s4.3.tx.info.dir <- file.path(s4.tss.dir, "s4-3-transcript-info")
+s4.3.2.tx.info.786o.dir <- file.path(s4.3.tx.info.dir, "s4-3-2-transcript-info-for-786O")
+
+create.dirs(c(
+    s4.3.tx.info.dir,
+    s4.3.2.tx.info.786o.dir
+))
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+
+# Define variables
+
+```{r define base variables}
+
+tx.gtf.file <- file.path(
+    s4.2.2.tss.tx.map.786O.dir,
+    "transcripts-per-TSS-for-786O.gtf"
+)
+
+ref.colname <- "tss_name"
+
+tx.info.dir <- s4.3.2.tx.info.786o.dir
+
+tx.meta.data.file <- file.path(
+  tx.info.dir,
+  "transcript-meta-information-786O-VHL.csv"
+)
+
+
+```
+
+
+# Calculate read count for each position of TSS
+
+```{r calc read count per pos per tss}
+
+filtered.tss.with.quantile.dt <- file.path(
+  s4.1.6.filtered.tss.dir,
+  "filtered-tss-with-quantile.csv"
+) %>% fread
+
+analysis.variable.dt <- fread("../../data/sample_data/analysis_variables.csv")
+vhl.status <- "VHL"
+
+tss.bam.dir <- ifelse(
+    analysis.variable.dt[variable_name == "umi_dedup", selected_variable] == "dedup",
+    file.path(s2.2.processed.bam.dir, "s2-2-2-dedup-tss-bam"),
+    file.path(s2.2.processed.bam.dir, "s2-2-1-tss-bam")
+)
+
+input.bam.files <- list.files(
+    tss.bam.dir,
+    full.names = TRUE,
+    pattern = ifelse(
+        analysis.variable.dt[variable_name == "umi_dedup", selected_variable] == "dedup",
+        ".tss.dedup.tss.bam$",
+        ".tss.bam$"
+    )
+) %>%
+    {grep(paste0("total_786O_", vhl.status, "_HIF1B_N"), ., value = TRUE)}
+
+
+tss.count.per.pos.dt <- tssWeightByPosition(
+    filtered.tss.with.quantile.dt = filtered.tss.with.quantile.dt,
+    input.bam.files = input.bam.files
+)
+
+
+```
+
+# Extract transcript meta information
+
+```{r export tx meta infor}
+
+temp <- extractTxMetaInfo(
+    tx.gtf.file = tx.gtf.file,
+    tss.count.per.pos.dt = tss.count.per.pos.dt,
+    ref.colname = ref.colname,
+    tx.info.dir = tx.info.dir,
+    tx.meta.data.file = tx.meta.data.file,
+    processors = processors
+)
+
+```
+
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

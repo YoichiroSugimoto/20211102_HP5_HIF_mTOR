@@ -1,0 +1,298 @@
+---
+title: "s2-2 Process aligned reads (UMI accounting and tss count export)"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+# Overview
+
+Process aligned reads to:
+
+- Generate TSS bam files
+- Account UMIs based on the TSS bam files
+- Generate deduplicated 
+  - TSS bam files
+  - Full length bam files
+- Generate gene-level count data
+  - From total bam file
+  - From deduplicated bam file
+ 
+The count data generated here will be mainly used for the QC purpose only.
+
+ 
+# Set up
+
+```{r set up functions, , message = FALSE, warning = FALSE}
+
+processors <- 24
+
+library("GenomicAlignments")
+library("rtracklayer")
+library("Rsubread")
+library("kableExtra")
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+```
+
+
+```{r define directories}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+results.dir <- file.path("../../results")
+
+## Input bam files
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+star.aligned.bam.dir <- file.path(s2.alignment.dir, "s2-1-b-star-aligned_bam")
+
+## Input annotation
+annot.dir <- file.path("../../annotation/")
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+
+all.tx.gtf <- file.path(
+    annot.ps.dir,
+    "all-transcript.gtf"
+)
+
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+
+## Output file
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+s2.2.1.tss.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-1-tss-bam")
+s2.2.2.dedup.tss.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-2-dedup-tss-bam")
+s2.2.3.dedup.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-3-dedup-bam") 
+s2.2.4.gene.count.dir <- file.path(s2.2.processed.bam.dir, "s2-2-4-gene-count")
+s2.2.4.1.gene.count.total.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-1-gene-count-total")
+s2.2.4.2.gene.count.dedup.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-2-gene-count-dedup")
+
+create.dirs(c(
+    s2.2.processed.bam.dir,
+    s2.2.1.tss.bam.dir,
+    s2.2.2.dedup.tss.bam.dir,
+    s2.2.3.dedup.bam.dir,
+    s2.2.4.gene.count.dir,
+    s2.2.4.1.gene.count.total.dir,
+    s2.2.4.2.gene.count.dedup.dir
+))
+
+
+```
+
+# Generate TSS bam file
+
+```{r generate tss bam file}
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+runGenerateTssBam <- function(sample.name, star.aligned.bam.dir, s2.2.1.tss.bam.dir){
+
+    generateTssBam.rscript <- "./functions/generateTssBam.R"
+
+    generateTssBam.cmd <- paste(
+        "Rscript",
+        generateTssBam.rscript,
+        "-s", sample.name,
+        "-b", star.aligned.bam.dir,
+        "-o", s2.2.1.tss.bam.dir
+    )
+
+    system.cat(generateTssBam.cmd)
+}
+
+
+temp <- mclapply(
+    sample.names,
+    runGenerateTssBam,
+    star.aligned.bam.dir = star.aligned.bam.dir,
+    s2.2.1.tss.bam.dir = s2.2.1.tss.bam.dir,
+    mc.cores = processors
+)
+
+```
+
+# Deduplication with UMI
+
+
+```{r dedup}
+
+dedupTssBam <- function(sample.name, s2.2.1.tss.bam.dir, s2.2.2.dedup.tss.bam.dir){
+
+    input.bam <- list.files(
+        s2.2.1.tss.bam.dir,
+        pattern = paste0(sample.name, ".tss.bam"),
+        full.names = TRUE
+    )
+
+    output.bam <- file.path(
+        s2.2.2.dedup.tss.bam.dir,
+        gsub(".bam", ".dedup.tss.bam", basename(input.bam))
+    )
+
+    umi.dedup.cmd <- paste(
+        "umi_tools",
+        "dedup",
+        "-I", input.bam,
+        ## paste0("--output-stats=", dedup.stats.out),
+        "-S", output.bam
+    )
+
+    dedup.out <- system.cat(umi.dedup.cmd)
+
+    return(dedup.out)
+}
+
+dedup.outs <- mclapply(
+    sample.names,
+    dedupTssBam,
+    s2.2.1.tss.bam.dir = s2.2.1.tss.bam.dir,
+    s2.2.2.dedup.tss.bam.dir = s2.2.2.dedup.tss.bam.dir,
+    mc.cores = processors
+)
+
+```
+
+# Generate deduplicated bam file
+
+
+```{r dedup bam}
+
+runDedupBam <- function(sample.name, star.aligned.bam.dir, s2.2.2.dedup.tss.bam.dir, s2.2.3.dedup.bam.dir){
+
+    dedupBam.rscript <- "./functions/dedupBam.R"
+
+    dedupBam.cmd <- paste(
+        "Rscript",
+        dedupBam.rscript,
+        "-s", sample.name,
+        "-b", star.aligned.bam.dir,
+        "-d", s2.2.2.dedup.tss.bam.dir,
+        "-o", s2.2.3.dedup.bam.dir
+    )
+
+    system.cat(dedupBam.cmd)
+
+    return()
+}
+
+temp <- mclapply(
+    sample.names,
+    runDedupBam,
+    star.aligned.bam.dir = star.aligned.bam.dir,
+    s2.2.2.dedup.tss.bam.dir = s2.2.2.dedup.tss.bam.dir,
+    s2.2.3.dedup.bam.dir = s2.2.3.dedup.bam.dir,
+    mc.cores = round(processors / 4)
+)
+
+```
+
+
+# Create read count table by genes
+
+
+```{r gene count}
+
+primary.tx.essential.dt <- primary.tx.dt[, c("gene_id", "gene_name", "biotype"), with = FALSE]
+
+primary.tx.essential.dt[, biotype := factor(
+                              biotype, levels = c(
+                                           "protein_coding",
+                                           "lncRNA",
+                                           "miRNA",
+                                           "rRNA",
+                                           "other"
+                                       ))]
+
+primary.tx.essential.dt <-
+    primary.tx.essential.dt[order(biotype, decreasing = FALSE)][!duplicated(gene_id)]
+setkey(primary.tx.essential.dt, gene_id)
+
+
+geneCount <- function(sample.names, bam.dir, all.tx.gtf, processors){
+
+    input.bams <- file.path(
+        bam.dir,
+        paste0(sample.names, ".bam")
+    )
+
+    fc <- featureCounts(
+        input.bams,
+        annot.ext = all.tx.gtf,
+        isGTFAnnotationFile = TRUE,
+        GTF.featureType = "exon",
+        GTF.attrType = "gene_id",
+        nthreads = processors,
+        isPairedEnd = TRUE,
+        strandSpecific = 1,
+        primaryOnly = TRUE,
+        requireBothEndsMapped = TRUE
+    )
+
+    count.dt <- data.table(fc$count, keep.rownames = TRUE)
+
+    simplified.colnames <- gsub("\\/", "\\.", bam.dir) %>%
+        gsub("\\-", "\\.", .) %>%
+        gsub(., "", colnames(count.dt)) %>%
+        gsub("^\\.", "", .) %>%
+        gsub(".bam$", "", .) %>%
+        gsub(".dedup$", "", .)
+    
+    setnames(count.dt, colnames(count.dt), simplified.colnames)
+    setnames(count.dt, "rn", "gene_id")
+
+    return(count.dt)
+}
+
+total.count.dt <- geneCount(
+    sample.names,
+    bam.dir = star.aligned.bam.dir,
+    all.tx.gtf = all.tx.gtf,
+    processors = processors
+)
+
+total.count.dt <- merge(primary.tx.essential.dt, total.count.dt)
+total.count.file <- file.path(s2.2.4.1.gene.count.total.dir, "total_gene_count_table.csv")
+
+fwrite(total.count.dt, total.count.file)
+
+## Caculate gene count for dedup data
+
+dedup.count.dt <- geneCount(
+    paste0(sample.names, ".dedup"),
+    bam.dir = s2.2.3.dedup.bam.dir,
+    all.tx.gtf = all.tx.gtf,
+    processors = processors
+)
+
+dedup.count.dt <- merge(primary.tx.essential.dt, dedup.count.dt)
+dedup.count.file <- file.path(s2.2.4.2.gene.count.dedup.dir, "dedup_gene_count_table.csv")
+
+fwrite(dedup.count.dt, dedup.count.file)
+
+```
+
+# Session Information
+
+
+```{R Session}
+
+sessionInfo()
+
+```

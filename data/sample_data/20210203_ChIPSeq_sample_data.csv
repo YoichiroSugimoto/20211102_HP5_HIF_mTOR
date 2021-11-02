@@ -1,0 +1,5 @@
+﻿SampleID,Factor,Replicate,bamReads,Peaks,PeakCaller
+HIF1A_1,HIF1A,1,RCC4_N_HIF1A_1.sorted.bam,RCC4_N_HIF1A.narrowPeak,narrow
+HIF1A_2,HIF1A,2,RCC4_N_HIF1A_2.sorted.bam,RCC4_N_HIF1A.narrowPeak,narrow
+HIF2A_1,HIF2A,1,RCC4_N_HIF2A_1.sorted.bam,RCC4_N_HIF2A.narrowPeak,narrow
+HIF2A_2,HIF2A,2,RCC4_N_HIF2A_2.sorted.bam,RCC4_N_HIF2A.narrowPeak,narrow

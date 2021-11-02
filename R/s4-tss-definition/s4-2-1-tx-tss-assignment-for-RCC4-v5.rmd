@@ -1,0 +1,211 @@
+---
+title: "s4-2-1 Transcript assignment to TSS (RCC-4) version 5"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+A transcript will be assigned to a TSS based on the 5' end-Seq of total mRNA data. 
+This will be performed for RCC4 and 786-O cells independently, 
+and both the cell lines with and without VHL will be considered. 
+
+
+5' end-Seq reads starting from each TSS will be assembled 
+using `StringTie` software with the parameters, `--conservative -j 5`. 
+To guide the assembly, this analysis will consider both TSS defined before 
+(the median position will be used as the input) and transcript annotation. 
+The analysis will generate possible reconstructed 5' ends of source transcripts (assemblies) for each TSS 
+with the 5′ end-Seq read coverage score 
+(calculated by multiplying the transcript per million (TPM) estimate 
+and length of the assembly reported by the software). 
+For each TSS, any assembly with a lower coverage score (equal or less than 80% of the highest score) 
+will be filtered out, since these are likely to have less data support or from poorly expressed isoforms.
+
+
+The selected assemblies are plausible 5’ ends of expressed transcripts from a TSS defined by data. 
+To complement the remaining part of transcript information, 
+for each assembly, high homology annotated transcripts those fall into the following categories will be searched: 
+(i). for an assembly that comprises multiple exons, 
+annotated transcripts containing all the exon junctions of the assembly 
+except the donor of the first exon junction 
+(categorised as i-a when the donor of the first exon junction is also contained, and otherwise categorised as i-b); 
+(ii) for an assembly comprised of one exon, annotated transcripts containing 3' end of the assembly. 
+
+
+Following this process, it remains possible that 
+more than one assembly-annotated transcript pairs are associated with a TSS. 
+In this case, we will prioritize the assembly-transcript pairs using the following criteria: 
+
+1. transcripts categorized as protein coding
+2. start codon of transcripts downstream to TSS (q50)
+3. prioritize assembly-transcript pairs by the overlap category (described above) in the following order: (i-a), (ii), and (i-b)
+4. prioritize transcripts annotated by RefSeq entries over GENCODE
+5. transcripts flagged as “basic” transcripts by GENCODE
+6. 5' UTR length of transcripts not equal to 0
+7. 3' UTR length of transcripts not equal to 0
+8. transcripts with long CDS length
+9. transcripts with long 5' UTR
+10. transcripts with long 3' UTR, and
+11. assemblies with high coverage score. 
+
+In this way, an annotated transcript will be assigned to a TSS.
+
+
+Finally, TSS of the assigned transcripts will be corrected to the experimentally defined TSS. 
+If the TSS is downstream to the start codon of the assigned transcripts, 
+5' most AUG sequence with the same reading frame as the original CDS will be searched and 
+the region between the AUG sequence and the original stop codon will be defined as CDS of the mRNA. 
+The corrected transcripts will be used as the assigned transcripts to the TSS. 
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor packages
+library("rtracklayer")
+library("GenomicFeatures")
+library("GenomicAlignments")
+## Specify the number of CPUs to be used
+processors <- 16
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+source("./functions/assignTxToTss.R")
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+hg38.annot.dir <- file.path(
+    annot.dir,
+    "hg38_annotation"
+)
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+
+software.path.dt <- file.path("../../data/environment/software_path.csv") %>% fread
+
+ref.seq.dir <- file.path(annot.dir, "hg38_annotation/ref_sequences/")
+genome.fa.file <- list.files(ref.seq.dir, pattern = "_genome.fa$", full.names = TRUE)
+
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+kallisto.index.dir <- file.path(annot.dir, "hg38_annotation/kallisto_indices/")
+
+results.dir <- file.path("../../results")
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+star.aligned.bam.dir <- file.path(s2.alignment.dir, "s2-1-b-star-aligned_bam")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+s2.2.1.tss.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-1-tss-bam")
+
+## Previous results
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
+
+s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
+s4.2.1.tss.tx.map.RCC4.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-1-tss-transcript-mapping-RCC4")
+
+create.dirs(c(
+    s4.2.tx.assignment.dir,
+    s4.2.1.tss.tx.map.RCC4.dir
+))
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+# Define variables
+
+
+```{r define input variables}
+
+filtered.tss.with.quantile.file <- file.path(
+  s4.1.6.filtered.tss.dir,
+  "filtered-tss-with-quantile.csv"
+)
+
+filtered.tss.with.quantile.dt <- fread(filtered.tss.with.quantile.file)
+
+
+all.tx.gtf <- file.path(
+    annot.ps.dir,
+    "all-transcript.gtf"
+)
+
+all.primary.tx.info.file <- file.path(
+    annot.ps.dir,
+    "all_GENCODE_RefSeq_transcript_info.csv"
+)
+
+all.primary.tx.dt <- fread(all.primary.tx.info.file)
+
+tx.map.out.dir <- s4.2.1.tss.tx.map.RCC4.dir
+
+function.dir <- file.path("./functions")
+
+
+```
+
+
+# Select the data to define transcript and TSS assignment
+
+
+```{r which data to be used}
+
+## Below is for RCC4 data
+sl.sample.names <- grep("total", sample.names, value = TRUE) %>%
+  grep("_HIF1B_N_", ., value = TRUE) %>%
+  grep("RCC4_noVHL|RCC4_VHL", ., value = TRUE)
+
+print("The following data will be used to assign transcripts to TSS")
+print(sl.sample.names)
+
+```
+
+
+# Assign transcript to TSS
+
+
+```{r assign tx to tss}
+
+temp <- assignTxToTss(
+    tx.map.out.dir = tx.map.out.dir,
+    filtered.tss.with.quantile.dt = filtered.tss.with.quantile.dt,
+    all.tx.gtf = all.tx.gtf,
+    all.primary.tx.dt = all.primary.tx.dt,
+    sl.sample.names = sl.sample.names,
+    star.aligned.bam.dir = star.aligned.bam.dir,
+    software.path.dt = software.path.dt,
+    cell.name = "RCC4",
+    function.dir = function.dir
+)
+
+```
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

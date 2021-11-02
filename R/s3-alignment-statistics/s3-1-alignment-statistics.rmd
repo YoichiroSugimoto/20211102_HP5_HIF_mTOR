@@ -1,0 +1,589 @@
+---
+title: "s3-1 Alignment statistics"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 7
+     fig_height: 7
+---
+
+
+# Overview
+
+The number of reads by the RNA source is analysed.
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Bioconductor packages
+library("GenomicAlignments")
+library("Biostrings")
+library("GenomicFeatures")
+## knitr
+library("kableExtra")
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+## Input annotation
+annot.dir <- file.path("../../annotation/")
+
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+## Input files
+lib2fqfilename.file <- file.path("../../data/sample_data/20210306_libname_to_fq_filename.csv")
+
+results.dir <- file.path("../../results")
+
+processed.fq.dir <- file.path(results.dir, "s1-processed_fastq")
+processed.fq.step0.dir <- file.path(processed.fq.dir, "s1-1-Step0")
+processed.fq.step4.0.dir <- file.path(processed.fq.dir, "s1-1-Step4-0")
+processed.fq.step4.dir <- file.path(processed.fq.dir, "s1-1-Step4")
+processed.fq.step4.2.dir <- file.path(processed.fq.dir, "s1-1-Step4-2-rRNA-ERCC")
+
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+star.aligned.bam.dir <- file.path(s2.alignment.dir, "s2-1-b-star-aligned_bam")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+s2.2.1.tss.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-1-tss-bam")
+s2.2.2.dedup.tss.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-2-dedup-tss-bam")
+s2.2.3.dedup.bam.dir <- file.path(s2.2.processed.bam.dir, "s2-2-3-dedup-bam") 
+s2.2.4.gene.count.dir <- file.path(s2.2.processed.bam.dir, "s2-2-4-gene-count")
+s2.2.4.1.gene.count.total.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-1-gene-count-total")
+s2.2.4.2.gene.count.dedup.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-2-gene-count-dedup")
+
+s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
+
+create.dirs(
+    c(s3.alignment.stats.dir)
+)
+
+```
+
+
+
+```{r read start count data}
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+total.count.file <- file.path(s2.2.4.1.gene.count.total.dir, "total_gene_count_table.csv")
+total.count.dt <- fread(total.count.file)
+
+```
+
+
+# Functions to extract read numbers
+
+
+```{r read number extraction function}
+
+countReadsFromFq <- function(sample.name, fq.dir, use.fq.filename = FALSE){
+ 
+    if(use.fq.filename){
+        input.fq <- file.path(fq.dir, sample.name)
+    } else {
+        input.fq <- list.files(
+            fq.dir,
+            pattern = paste0(
+                "(", sample.name, ".*R1.fastq.gz|",
+                sample.name, ".*fastq.1.gz)"
+            ),
+            full.names = TRUE
+        )
+    }
+    
+    rnum <- as.integer(
+            system.cat(paste("zcat", input.fq, "| echo $((`wc -l`/4))")) 
+    )
+
+    return(rnum)
+}
+
+
+countReadsFromTssBam <- function(sample.name, bam.dir){
+
+    input.bam <- list.files(
+        bam.dir,
+        pattern = glob2rx(paste0(sample.name, "*.bam")),
+        full.names = TRUE
+    )
+
+    rnum <- countBam(input.bam)$records
+
+    return(rnum)
+}
+
+
+```
+
+# Alignment statistics by the RNA source
+
+## rRNA and ERCC spike-in RNA aligned read counts
+
+```{r count ercc aligned reads}
+
+ercc.fa.file <- file.path("../../data/ERCC_sequence/SRM2374_putative_T7_products_NoPolyA_v1.fasta.txt")
+
+ercc.seq <- readDNAStringSet(ercc.fa.file, format = "fasta")
+ercc.count.ref.dt <- data.table(
+   RNA_source = c(names(ercc.seq), "rRNA_prerRNA", "others")
+)
+ercc.count.ref.dt <- ercc.count.ref.dt[order(RNA_source)][
+    RNA_source != "080418_Consensus_Vector_Sequence_NIST_SEQUENCING_ASSEMBLY_noRestrict_rev"
+]
+
+countERCC.rRNA <- function(sample.name, processed.fq.step4.2.dir){
+
+    ## print(sample.name)
+    
+    rrna.ercc.bam.file <- file.path(
+        processed.fq.step4.2.dir,
+        paste0(sample.name, ".sorted.bam")
+    )
+
+    rrna.ercc.bam <- readGAlignmentPairs(
+        rrna.ercc.bam.file,
+        param = ScanBamParam(what = "mapq"),
+        use.names = TRUE
+    )
+
+    rrna.ercc.unique.dt <- rrna.ercc.bam %>%
+        as.data.frame %>%
+    data.table(keep.rownames = "rname")
+
+    ## sanity check
+    if(nrow(rrna.ercc.unique.dt) != nrow(rrna.ercc.unique.dt[!duplicated(rname)])){
+        stop("Duplicated reads!!")
+    } else {"OK"}
+
+    rrna.ids <- unique(rrna.ercc.unique.dt[, seqnames.first]) %>%
+        {.[!grepl("^ERCC-", .)]}
+    
+    ## For ERCC counting, only considering reads uniquly aligned
+    rrna.ercc.unique.dt[, `:=`(
+        counting_flag = case_when(
+            seqnames.first == seqnames.last &
+            grepl("^ERCC-", seqnames.first) &
+            strand.first == "+" & strand.last == "-" &
+            mapq.first > 5 & mapq.last > 5 ~ as.character(seqnames.first),
+            strand.first == "+" & strand.last == "-" &
+            seqnames.first == seqnames.last &
+            seqnames.first %in% rrna.ids &
+            seqnames.last %in% rrna.ids ~ "rRNA_prerRNA",
+            TRUE ~ "others"
+        )
+    )]
+        
+    rrna.ercc.count.dt <- rrna.ercc.unique.dt[, .N, by = counting_flag]
+
+    setnames(
+        rrna.ercc.count.dt,
+        old = c("counting_flag", "N"),
+        new = c("RNA_source", sample.name)
+    )
+    
+    return(rrna.ercc.count.dt)
+}
+
+rrna.ercc.count.dts <- mclapply(
+    sample.names,
+    countERCC.rRNA,
+    processed.fq.step4.2.dir = processed.fq.step4.2.dir,
+    mc.cores = processors
+)
+
+rrna.ercc.count.dt <- Reduce(
+    function(...) merge(..., all = TRUE, by = "RNA_source"),
+    c(list(ercc.count.ref.dt), rrna.ercc.count.dts)
+)
+
+setnafill(
+    rrna.ercc.count.dt,
+    fill = 0,
+    cols = sample.names
+)
+
+ercc.count.dt <- copy(rrna.ercc.count.dt)[grepl("^ERCC-", RNA_source)]
+setnames(ercc.count.dt, old = "RNA_source", new = "ERCC_id")
+
+ercc.count.file <- file.path(
+    s3.alignment.stats.dir,
+    "ERCC_count_per_sample.csv"
+)
+
+fwrite(
+    ercc.count.dt, file = ercc.count.file
+)
+
+file.path(
+    s3.alignment.stats.dir,
+    "rRNA_ERCC_count_per_sample.csv"
+) %>%
+    {fwrite(rrna.ercc.count.dt, file = .)}
+
+rrna.ercc.count.dt[, simplified_RNA_source := str_split_fixed(RNA_source, "-", n = 2)[, 1]]
+
+sum.rrna.ercc.count.dt <- rrna.ercc.count.dt[
+  , lapply(.SD, sum), .SDcols = sample.names, by = simplified_RNA_source
+]
+
+```
+
+## RNA source analysis
+
+```{r alignment statistics by the read origins total}
+
+## Step 3: All adapter trimmed reads
+all.rnums <- mclapply(
+    sample.names,
+    countReadsFromFq,
+    fq.dir = processed.fq.step4.0.dir,
+    mc.cores = processors
+) %>% unlist
+names(all.rnums) <- sample.names
+
+## Step 4: All reads after rRNA removals
+no.rRNA.rnums <- mclapply(
+    sample.names,
+    countReadsFromFq,
+    fq.dir = processed.fq.step4.dir,
+    mc.cores = processors
+) %>% unlist
+names(no.rRNA.rnums) <- sample.names
+
+## All uniquly aligned reads
+nodedup.rnums <- mclapply(
+    sample.names,
+    countReadsFromTssBam,
+    bam.dir = s2.2.1.tss.bam.dir,
+    mc.cores = processors
+) %>% unlist
+names(nodedup.rnums) <- sample.names
+
+file.path(
+    s3.alignment.stats.dir,
+    "all-objects.Rdata"
+) %>%
+    {save(
+         all.rnums, no.rRNA.rnums, nodedup.rnums, sum.rrna.ercc.count.dt,
+         total.count.dt,
+         file = .
+     )}
+
+createReadNumberDt <- function(all.rnums, no.rRNA.rnums, sum.rrna.ercc.count.dt, nodedup.rnums, count.dt, sample.dt, s3.alignment.stats.dir, out.prefix = "", dedup.flag = FALSE){
+
+    aligned.rnums <- count.dt[, lapply(.SD, sum), .SDcols = sample.names] %>%
+        unlist
+
+    ercc.rnums <- sum.rrna.ercc.count.dt[
+        simplified_RNA_source == "ERCC", sample.names, with = FALSE
+    ] %>% unlist
+
+    rrna.rnums <- sum.rrna.ercc.count.dt[
+        simplified_RNA_source == "rRNA_prerRNA", sample.names, with = FALSE
+    ] %>% unlist
+
+    
+    ## Sanity check
+    if(
+        all(names(aligned.rnums) == names(no.rRNA.rnums)) &
+        all(names(no.rRNA.rnums) == names(ercc.rnums)) &
+        all(names(ercc.rnums) == names(rrna.rnums))
+    ){
+        "OK"
+    } else {stop()}
+
+    not.aligned.rnums <- all.rnums - aligned.rnums - ercc.rnums - rrna.rnums
+    
+    annotated.rnums.dt <- count.dt[
+      , lapply(.SD, sum), by = list(biotype), .SDcols = sample.names
+    ] %>%
+        melt(
+            id.vars = "biotype",
+            variable.name = "sample_name"
+        ) %>%
+        dcast(
+            sample_name ~ biotype
+        )
+
+    annotated.rnums.dt <- annotated.rnums.dt[order(match(sample_name, sample.names))]
+
+    if(all(names(aligned.rnums) == annotated.rnums.dt[, sample_name])){
+        "OK"
+    } else {stop()}
+    
+    if(dedup.flag){
+        ## (TODO) Unaligned vs deduplication is not well defined here.
+        stop("dedup.flag = TRUE is not currently supported")
+    } else {
+        annotated.rnums.dt[, `:=`(
+            rRNA_prerRNA = rrna.rnums,
+            ERCC = ercc.rnums,
+            not_aligned = not.aligned.rnums
+        )]
+    }
+
+    ## rRNA annotation from rRNA alignment and gtf annotation merged as this is confusing
+    annotated.rnums.dt[, rRNA := rRNA + rRNA_prerRNA]
+    annotated.rnums.dt[, rRNA_prerRNA := NULL]
+    
+    type.ordered <- c(
+        "protein_coding", "lncRNA", "miRNA", "other",
+        "duplicated", "rRNA", "ERCC", "not_aligned"
+    )
+
+    annotated.rnums.dt <- annotated.rnums.dt[, c(
+        "sample_name",
+        type.ordered[type.ordered %in% colnames(annotated.rnums.dt)]
+    ), with = FALSE]
+
+    for.export.annotated.rnums.dt <- copy(annotated.rnums.dt)[
+      , all_read := Reduce("+", .SD),
+        .SDcols = type.ordered[type.ordered %in% colnames(annotated.rnums.dt)]
+    ]
+
+    for.export.annotated.rnums.dt <- merge(
+        sample.dt[, .(
+            sample_name, experiment, cell, VHL, HIF1B, EIF4E2, gRNA_id, oxygen, clone, treatment, fraction, input_volume
+        )],
+        for.export.annotated.rnums.dt,
+        by = "sample_name"
+    )
+
+    for.export.annotated.rnums.dt <- for.export.annotated.rnums.dt[
+        order(match(sample_name, sample.names))
+    ]
+
+    for.export.annotated.rnums.dt[, `:=`(
+        experiment = case_when(
+            experiment == "polysome" ~ "HP5",
+            experiment == "total" ~ "5' end-Seq"
+        )
+    )]
+    
+    file.path(
+        s3.alignment.stats.dir, paste0(out.prefix, "alignment-statistics.csv")
+    ) %>%
+        {fwrite(for.export.annotated.rnums.dt, file = .)}
+    
+    m.annotated.rnums.dt <- melt(
+        annotated.rnums.dt,
+        id.vars = "sample_name",
+        variable.name = "read_type",
+        value = "read_count"
+    )
+
+    m.annotated.rnums.dt[, read_type := factor(read_type, levels = rev(type.ordered))]
+
+    m.annotated.rnums.dt[, `:=`(
+        experiment_type = str_split_fixed(sample_name, "_", n = 5)[, 1],
+        cell = str_split_fixed(sample_name, "_", n = 5)[, 2],
+        oxygen = case_when(
+            grepl("^total_", sample_name) ~ str_split_fixed(sample_name, "_", n = 6)[, 5]
+        ) %>%
+            {factor(., levels = c("N", "H"))},
+        VHL = str_split_fixed(sample_name, "_", n = 5)[, 3] %>%
+            {factor(., levels = c("noVHL", "VHL"))},
+        treatment = case_when(
+            str_split_fixed(sample_name, "_", n = 5)[, 1] == "total" ~ NA_character_,
+            TRUE ~ str_split_fixed(sample_name, "_", n = 9)[, 7]
+        ),
+        fraction = case_when(
+            str_split_fixed(sample_name, "_", n = 5)[, 1] == "total" ~ NA_character_,
+            TRUE ~ str_split_fixed(sample_name, "_", n = 9)[, 8]
+        ),
+        HIF1BorEIF4E2 = str_split_fixed(sample_name, "_", n = 5)[, 4],
+        short_sample_name = str_split_fixed(sample_name, "_", n = 3)[, 3] %>%
+            {gsub("_NA", "", .)} %>%
+            {gsub("(_HIF1B|_noHIF1B|_EIF4E2|noEIF4E2)", "", .)}
+    )]
+
+    m.annotated.rnums.dt <- merge(
+        sample.dt[, .(sample_name, library_ID)],
+        m.annotated.rnums.dt,
+        by = "sample_name"
+    ) 
+
+    ## Summarize HP5 for RCC-4 VHL stats to report
+    hp5.r4vhl.m.annotated.rnums.dt <- m.annotated.rnums.dt[
+        experiment_type == "polysome" &
+        cell == "RCC4" &
+        VHL == "VHL" &
+        treatment == "NA"
+    ]
+
+    hp5.r4vhl.m.annotated.rnums.dt[
+      , read_count_per_library := sum(read_count), by = sample_name
+    ]
+
+    hp5.r4vhl.m.annotated.rnums.dt[, `:=`(
+        count_ratio = read_count / read_count_per_library
+    )]
+
+
+    print("Average number of reads for HP5 (RCC-4 VHL)")
+    hp5.r4vhl.m.annotated.rnums.dt[
+        read_type == "protein_coding",
+        list(
+            read_number =
+                mean(read_count_per_library) %>%
+                prettyNum(big.mark = ",",scientific = FALSE)
+        )
+    ] %>% print
+
+    print("Average number of reads per fraction (RCC-4 VHL)")
+    hp5.r4vhl.m.annotated.rnums.dt[
+        read_type == "protein_coding",
+        list(
+            read_number = mean(read_count_per_library)
+        ), by = fraction
+    ] %T>%
+        print %>%
+        {.[,
+        list(
+            read_number =
+                mean(read_number) %>%
+                prettyNum(big.mark = ",",scientific = FALSE)
+        )           
+        ]} %>% print
+
+    print("Proportion of reads from mRNA per fraction (RCC-4 VHL)")
+    hp5.r4vhl.m.annotated.rnums.dt[
+        read_type == "protein_coding",
+        list(
+            ratio_of_reads = mean(count_ratio)
+        ), by = fraction
+    ] %T>%
+        print %>%
+        {.[,
+           list(
+               read_number =
+                   mean(ratio_of_reads) %>%
+                   {sprintf("%1.0f%%", 100*.)}
+           )           
+           ]} %>% print
+
+    print("Proportion of reads from ERCC per fraction (RCC-4 VHL)")
+    hp5.r4vhl.m.annotated.rnums.dt[
+        read_type == "ERCC",
+        list(
+            ratio_of_reads = mean(count_ratio)
+        ), by = fraction
+    ] %T>%
+        print %>%
+        {.[,
+           list(
+               read_number =
+                   mean(ratio_of_reads) %>%
+                   {sprintf("%1.2f%%", 100*.)}
+           )           
+           ]} %>% print
+
+
+    read.type.colors <- c(
+        "protein_coding" = "#2166AC",
+        "lncRNA" = "skyblue1",
+        "miRNA" = "paleturquoise3",
+        "other" = "paleturquoise2",
+        "not_annotated" = "paleturquoise1",
+        "duplicated" = "papayawhip",
+        "not_aligned" = "gray85",
+        "rRNA" = "gray26",
+        "ERCC" = "darkolivegreen4"        
+    )
+    
+    g1 <- hp5.r4vhl.m.annotated.rnums.dt[
+        ,
+        list(
+            read_number = mean(read_count)
+        ), by = list(fraction, read_type)
+    ] %>%
+        ggplot(
+            aes(
+                x = str_extract(fraction, "[[:digit:]]") %>%
+                    {case_when(
+                         . == "1" ~ paste0(., " ribosome"),
+                         . == "8" ~ paste0(., "+ ribosomes"),
+                         TRUE ~ paste0(., " ribosomes")
+                    )},
+                y = read_number / 10^6,
+                fill = read_type
+            )
+        ) +
+        geom_bar(stat = "identity") +
+        theme(
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+            aspect.ratio = 2,
+            legend.position = "bottom"
+        ) +
+        xlab("Fraction") +
+        ylab("Number of reads [10^6 reads]") +
+        scale_fill_manual(
+            values = read.type.colors
+        ) +
+        ggtitle("The number of reads by their identity\n(HP5 of RCC-4 VHL)")
+
+    print(g1)
+        
+    return(for.export.annotated.rnums.dt)
+}
+
+total.for.export.annotated.rnums.dt <- createReadNumberDt(
+    all.rnums = all.rnums,
+    no.rRNA.rnums = no.rRNA.rnums,
+    sum.rrna.ercc.count.dt = sum.rrna.ercc.count.dt,
+    nodedup.rnums = nodedup.rnums,
+    count.dt = total.count.dt,
+    sample.dt = sample.dt,
+    s3.alignment.stats.dir = s3.alignment.stats.dir,
+    out.prefix = "",
+    dedup.flag = FALSE
+)
+
+```
+
+
+```{r print tables, results = "asis"}
+
+total.for.export.annotated.rnums.dt %>%
+    kable(., format.args = list(big.mark = ',')) %>%
+    kable_styling(bootstrap_options = c("striped", "condensed"))
+
+
+```
+
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```
+
+
+

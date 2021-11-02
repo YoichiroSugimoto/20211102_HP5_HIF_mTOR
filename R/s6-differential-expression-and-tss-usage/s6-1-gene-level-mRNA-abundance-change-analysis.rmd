@@ -1,0 +1,172 @@
+---
+title: "s6-1 Gene level mRNA differential expression analysis"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+Gene level mRNA differential expression analysis will be performed here.
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Biocoductor packages
+library("DESeq2")
+## Data analysis packages
+library("magrittr")
+library("matrixStats")
+
+## Parallelization
+## Specify the number of CPUs to be used
+processors <- 8
+library("BiocParallel")
+register(MulticoreParam(processors))
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+source(file.path("./functions/load_total_sample_data.R"), chdir = TRUE)
+source(file.path("./functions/test_differential_expression.R"), chdir = TRUE)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
+s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
+s4.2.1.tss.tx.map.RCC4.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-1-tss-transcript-mapping-RCC4")
+
+s6.dir <- file.path(results.dir, "s6-differential-regulation-analysis")
+s6.1.dir <- file.path(s6.dir, "s6-1-differentially-expressed-genes")
+
+create.dirs(c(
+  s6.dir,
+  s6.1.dir
+))
+
+```
+
+# Data preparation
+
+```{r read start count data}
+
+filtered.tss.with.quantile.dt <- file.path(
+  s4.1.6.filtered.tss.dir,
+  "filtered-tss-with-quantile.csv"
+) %>% fread
+
+total.count.per.tss.dt <- file.path(s4.1.7.count.per.tss.dir, "count-per-confident-tss.csv") %>%
+    fread
+
+total.count.per.tss.dt <- total.count.per.tss.dt[
+  , c("tss_name", grep("^total_", colnames(total.count.per.tss.dt), value = TRUE)),
+    with = FALSE
+]
+
+total.count.dt <- countByGeneFromTss(total.count.per.tss.dt)
+
+colnames(total.count.dt) <- gsub(
+    "total_", "", colnames(total.count.dt)
+)
+
+total.count.dt <- total.count.dt[, c("gene_id", rownames(total.coldata.df)), with = FALSE]
+
+total.count.dt <- merge(
+    primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name, biotype)],
+    total.count.dt,
+    by = "gene_id"
+)
+
+
+
+```
+
+# Analysis of differentially expressed genes
+
+## Data preparation for DESeq2 analysis
+
+```{r deseq2 set up}
+
+countDt2Df <- function(count.dt){
+    ## temp.count.dt <- copy(count.dt[biotype == "protein_coding"])
+    temp.count.dt <- copy(count.dt[biotype != ""])
+    count.df <- as.data.frame(temp.count.dt)
+    rownames(count.df) <- count.df[, "gene_id"]
+    annot.df <- count.df[, c("gene_id", "gene_name", "biotype")]
+    count.df <- dropColumnDf(count.df, drop.vec = c("gene_id", "gene_name", "biotype"))
+    return(list(count.df = count.df, annot.df = annot.df))
+}
+
+deseq2.in.list <- countDt2Df(total.count.dt)
+
+if(!all(colnames(deseq2.in.list$count.df) == rownames(total.coldata.df))){
+    stop("colnames of count.df does not match with rownames of coldata.df")
+} else {"OK"}
+
+```
+
+## List of comparison
+
+```{r prepare list of comparisons}
+
+## This is now performed at the R file in functions/ directory
+print("List of comparisons")
+total.comparison.dt
+
+```
+
+
+## Analysis of differential gene expression by VHL or oxygen
+
+```{r Analsyis of VHL dependent mRNA abundance changes}
+
+de.res.dts <- mapply(
+    analyzeDE,
+    total.count.dt = list(total.count.dt),
+    annot.dt = list(data.table(deseq2.in.list$annot.df)),
+    ref.column.name = list("gene_id"),
+    input.sample.data.df = list(total.coldata.df),
+    comparison.name = total.comparison.dt[, comparison],
+    exp.design = total.comparison.dt[, exp_formula],
+    out.dir = list(s6.1.dir),
+    SIMPLIFY = FALSE
+)
+
+```
+
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

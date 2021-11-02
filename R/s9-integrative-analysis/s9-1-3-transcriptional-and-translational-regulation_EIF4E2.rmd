@@ -1,0 +1,171 @@
+---
+title: "s9-1-3 Analysis of translational regulation by the HIF2A/EIF4E2 axis"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Data visualization packages
+library("ggrepel")
+library("cowplot")
+## Parallelization oackages
+## Specify the number of CPUs to be used
+processors <- 8
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("../s8-analysis-of-translation/functions", full.names = TRUE), source, chdir = TRUE)
+temp <- sapply(list.files("../s9-integrative-analysis/functions", full.names = TRUE), source)
+source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.1.tss.def.dir <- file.path(s4.tss.dir, "s4-1-tss-definition")
+s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss") 
+
+s6.dir <- file.path(results.dir, "s6-differential-regulation-analysis")
+s6.1.dir <- file.path(s6.dir, "s6-1-differentially-expressed-genes")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+create.dirs(
+    c(
+        s9.dir
+    )
+)
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+```
+
+# Pre-processed data import
+
+
+```{r load preprocessed data}
+
+all.de.dte.res.dt <- fread(
+    file.path(
+        s9.dir,
+        "all-differential-expression-and-translation-data.csv"
+    ),
+    na.strings = ""
+)
+
+all.de.dte.res.dt[, `:=`(
+    VHL_target_RCC4 = factor(
+        VHL_target_RCC4,
+        levels = c("VHL_loss_repressed", "non_VHL_target", "VHL_loss_induced")
+    ),
+    mRNA_trsl_intersection_by_functions =  factor(
+        mRNA_trsl_intersection_by_functions,
+        levels = c("Glycolysis", "Vascular Process or Angiogenesis",
+                   "Vascular Process", "Angiogenesis", "Others")
+    )
+)]
+
+all.filtered.gene.dt <- fread(
+    file.path(
+        s8.3.dir,
+        "filtered_gene_for_polysome_analysis.csv"
+    )
+)
+
+
+```
+
+# Analysis of the effect of EIF4E2 KO on global translational efficiency
+
+
+```{r analyse global effect}
+
+sl.comp.names <- c(
+    "786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2",
+    "786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2"
+)
+
+
+intervention.names <- c(
+    "786-O VHL:\nEIF4E2 KO",
+    "786-O:\nEIF4E2 KO"
+)
+
+m.all.de.dte.res.dt <- trslWideToLong(
+    all.de.dte.res.dt, sl.comp.names, intervention.names
+)
+
+m.all.de.dte.res.dt[, `:=`(
+    filter_flag = case_when(
+        variable == "MRL_log2fc_786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2" ~
+            gene_id %in%
+            intersect(
+                all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id],
+                all.filtered.gene.dt[c786O_VHL_noEIF4E2_yy_NA == TRUE, gene_id]
+            ),
+        variable == "MRL_log2fc_786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2" ~
+            gene_id %in%
+            intersect(
+                all.filtered.gene.dt[c786O_noVHL_EIF4E2_yy_NA == TRUE, gene_id],
+                all.filtered.gene.dt[c786O_noVHL_noEIF4E2_yy_NA == TRUE, gene_id]
+            )
+    )
+)]
+
+m.all.de.dte.res.dt <- m.all.de.dte.res.dt[filter_flag == TRUE]
+
+temp <- plotTrslDistByIntervention(
+    m.all.de.dte.res.dt = m.all.de.dte.res.dt,
+    show.quantile = TRUE
+)
+
+print("The numbers of genes analysed:")
+m.all.de.dte.res.dt[, table(Intervention)] %>% print
+
+```
+
+
+# Session information
+
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```
