@@ -24,6 +24,12 @@
 ##         "library_size_factor_by_ERCC.csv"
 ##     )
 ## )
+## poly.sizefactor.with.ribo0.dt <- fread(
+##     file = file.path(
+##         s3.4.poly.size.factor.dir,
+##         "library_size_factor_with_ribo0_by_ERCC.csv"
+##     )
+## )
 
 subsetColdata <- function(comparison.name, poly.coldata.df){
 
@@ -71,7 +77,87 @@ subsetColdata <- function(comparison.name, poly.coldata.df){
 }
 
 ## Define functions for MRL calculation
-normalizeHP5readsByStandard <- function(polysome.count.df, polysome.sizefactor.dt, sizefactor.col, ref.column.name){
+prepareHP5dataForMrlCalculation <- function(
+                                            test.count.df,
+                                            input.sample.data.df,
+                                            poly.sizefactor.dt,
+                                            test.fractions,
+                                            s8.1.dir,
+                                            comparison.name4export,
+                                            outfile.postfix = ""
+                                            ){
+    ## Subset by fractions
+    polysome.fractionated.samples <- input.sample.data.df[
+        input.sample.data.df$fraction %in% test.fractions,
+        ] %>% rownames
+
+    polysome.count.df <- test.count.df[
+      , colnames(test.count.df) %in% polysome.fractionated.samples
+    ]
+
+    fwrite(
+        data.table(polysome.count.df, keep.rownames = "gene_id"),
+        file = file.path(
+            s8.1.dir,
+            paste0(
+                comparison.name4export,
+                "-raw_count",
+                if_else(nchar(outfile.postfix) == 0, "", "-"),
+                outfile.postfix,
+                ".csv"
+            )
+        )
+    )
+    
+    ## subset size.factor.dt
+    poly.sizefactor.dt <- poly.sizefactor.dt[
+      , sample_name := gsub("polysome_", "", sample_name)
+    ] %>%
+        {.[
+             sample_name %in% rownames(input.sample.data.df)
+         ]}
+
+    polysome.sizefactor.dt <- poly.sizefactor.dt[
+        sample_name %in% polysome.fractionated.samples
+    ][
+        order(match(sample_name, polysome.fractionated.samples))
+    ]
+
+    fwrite(
+        polysome.sizefactor.dt,
+        file = file.path(
+            s8.1.dir,
+            paste0(
+                comparison.name4export,
+                "-size_factor",
+                if_else(nchar(outfile.postfix) == 0, "", "-"),
+                outfile.postfix,
+                ".csv"
+            )
+        )
+    )
+
+    if(all(
+        colnames(polysome.count.df) ==
+        polysome.sizefactor.dt[, sample_name]
+    )){"OK"} else {stop("error 1")}
+
+    return(list(
+        count_df = polysome.count.df,
+        sizefactor_dt = polysome.sizefactor.dt
+    ))
+}
+
+normalizeHP5readsByStandard <- function(
+                                        polysome.count.df,
+                                        polysome.sizefactor.dt,
+                                        sizefactor.col,
+                                        ref.column.name,
+                                        annot.df,
+                                        s8.1.dir,
+                                        comparison.name4export,
+                                        outfile.postfix = ""
+                                        ){
 
     if(all(colnames(polysome.count.df) != polysome.sizefactor.dt[, sample_name])){
         stop("Samples in the count table and size factor table do not match")
@@ -116,6 +202,27 @@ normalizeHP5readsByStandard <- function(polysome.count.df, polysome.sizefactor.d
         keep.rownames = TRUE
     )
     setnames(normalized.polysome.count.dt, old = "rn", new = ref.column.name)
+
+    ## Export normalized count
+    tpm.poly.count4export.dt <- merge(
+        data.table(annot.df),
+        normalized.polysome.count.dt,
+        by = ref.column.name,
+        all = TRUE
+    )
+    
+    count.for.export.file <- file.path(
+        s8.1.dir,
+        paste0(
+            comparison.name4export,
+            "-normalized_count",
+            if_else(nchar(outfile.postfix) == 0, "", "-"),
+            outfile.postfix,
+            ".csv"
+        )
+    )
+
+    fwrite(tpm.poly.count4export.dt, file = count.for.export.file)
 
     return(normalized.polysome.count.dt)
 }
@@ -264,12 +371,8 @@ calcMrlStat <- function(mrl.count.dt, annot.df, ref.column.name, base.input.name
         mrl.stat.dt,
         by = ref.column.name,
         all = TRUE
-    ) ## %>%
-    ##   merge(
-    ##       y = mrl.count.dt,
-    ##       by = ref.column.name,
-    ##       all = TRUE
-    ##   )
+    )
+
     return(mrl.count4export.dt)
     
 }
@@ -282,6 +385,7 @@ analyzeDtg <- function(
                        deseq2.formula,
                        input.sample.data.df,
                        poly.sizefactor.dt,
+                       poly.sizefactor.with.ribo0.dt = NULL,
                        sizefactor.col = "size_factor",
                        s8.1.dir,
                        processors
@@ -296,7 +400,12 @@ analyzeDtg <- function(
     library("matrixStats")
     library("ggplot2")
     library("pheatmap")
-    
+
+    ## Analyse ribo0 fraction as well?
+    ribo0.analysis.flag <- !is.null(poly.sizefactor.with.ribo0.dt)
+
+    ###########################################
+    ## Analysis setup
     test.fractions <- paste0("ribo", 1:8)
 
     ## Prepare reduced formula
@@ -331,10 +440,15 @@ analyzeDtg <- function(
     comparison.elements <- str_split_fixed(comparison.name, "__", n = 2)[, 2] %>%
         str_split_fixed(., "_vs_", n = 2)
     deseq2.coef <- paste0(".", compared.factor, comparison.elements[, 1])
-    
+
+    ## Curate input sample data
+    input.sample.data.with.ribo0.df <- input.sample.data.df
+    input.sample.data.df <- input.sample.data.df[
+        input.sample.data.df$fraction %in% test.fractions,
+    ]
     print("The data that will be used for this analysis")
     print(input.sample.data.df)
-
+    
     ## Comparison name for export
     comparison.name4export <- comparison.name %>%
         gsub("\\(", "", .) %>%
@@ -343,45 +457,39 @@ analyzeDtg <- function(
 
     ## subset count.df
     test.count.df <- count.df[, rownames(input.sample.data.df)]
-
-    ## subset size.factor.dt
-    poly.sizefactor.dt <- poly.sizefactor.dt[
-       , sample_name := gsub("polysome_", "", sample_name)
-        ] %>%
-        {.[
-            sample_name %in% rownames(input.sample.data.df)
-        ]}
+    test.count.with.ribo0.df <- count.df[
+      , rownames(input.sample.data.with.ribo0.df)
+    ]
         
-    ## #######################################################################
+    ## ######################################################################
     ## Mean ribosome load calcuation
     print("MRL calculation")
-
-    ## Here I only analyze polysome fractionated samples
-    polysome.fractionated.samples <- input.sample.data.df[
-        input.sample.data.df$fraction %in% test.fractions,
-        ] %>% rownames
-
-    polysome.count.df <- test.count.df[
-       , colnames(test.count.df) %in% polysome.fractionated.samples
-    ]
-
-    polysome.sizefactor.dt <- poly.sizefactor.dt[
-        sample_name %in% polysome.fractionated.samples
-    ][
-        order(match(sample_name, polysome.fractionated.samples))
-    ]
-
+    
+    ### Only considering ribo1-8 fractions
+    standard.formated.hp5.data <- prepareHP5dataForMrlCalculation(
+        test.count.df = test.count.df,
+        input.sample.data.df = input.sample.data.df,
+        poly.sizefactor.dt = poly.sizefactor.dt,
+        test.fractions = test.fractions,
+        s8.1.dir = s8.1.dir,
+        comparison.name4export = comparison.name4export,
+        outfile.postfix = ""
+    )
+    
     normalized.polysome.count.dt <- normalizeHP5readsByStandard(
-        polysome.count.df = polysome.count.df,
-        polysome.sizefactor.dt = polysome.sizefactor.dt,
+        polysome.count.df = standard.formated.hp5.data$count_df,
+        polysome.sizefactor.dt = standard.formated.hp5.data$sizefactor_dt,
         sizefactor.col = sizefactor.col,
-        ref.column.name = ref.column.name
+        ref.column.name = ref.column.name,
+        annot.df = annot.df,
+        s8.1.dir = s8.1.dir,
+        comparison.name4export = comparison.name4export,
+        outfile.postfix = ""        
     )
         
     sl.ribo.sample.groups <- grep(
         "ribo1", rownames(input.sample.data.df), value = TRUE) %>%
-        gsub("ribo1", "ribo[[:digit:]](|A|B)", .)
-
+        gsub("ribo1", "ribo[[:digit:]]$", .)
 
     mrl.count.dt <- calculateWeightedMRL(
         normalized.polysome.count.dt = normalized.polysome.count.dt,
@@ -402,6 +510,57 @@ analyzeDtg <- function(
     )
     
     fwrite(mrl.count4export.dt, file = mrl.for.export.file)
+
+    ## Considering ribo0A and ribo0B fraction as well
+    with.ribo0.formated.hp5.data <- prepareHP5dataForMrlCalculation(
+        test.count.df = test.count.with.ribo0.df,
+        input.sample.data.df = input.sample.data.with.ribo0.df,
+        poly.sizefactor.dt = poly.sizefactor.with.ribo0.dt,
+        test.fractions = paste0("ribo", c("0A", "0B", 1:8)),
+        s8.1.dir = s8.1.dir,
+        comparison.name4export = comparison.name4export,
+        outfile.postfix = "with_ribo0"
+    )
+    
+    normalized.polysome.count.with.ribo0.dt <- normalizeHP5readsByStandard(
+        polysome.count.df = with.ribo0.formated.hp5.data$count_df,
+        polysome.sizefactor.dt = with.ribo0.formated.hp5.data$sizefactor_dt,
+        sizefactor.col = sizefactor.col,
+        ref.column.name = ref.column.name,
+        annot.df = annot.df,
+        s8.1.dir = s8.1.dir,
+        comparison.name4export = comparison.name4export,
+        outfile.postfix = "with_ribo0"        
+    )
+        
+    sl.ribo.sample.groups <- grep(
+        "ribo1", rownames(input.sample.data.df), value = TRUE) %>%
+        gsub("ribo1", "ribo[[:digit:]](|A|B)", .)
+
+    mrl.count.with.ribo0.dt <- calculateWeightedMRL(
+        normalized.polysome.count.dt =
+            normalized.polysome.count.with.ribo0.dt,
+        sl.ribo.sample.groups = sl.ribo.sample.groups,
+        ref.column.name = ref.column.name
+    )
+        
+    mrl.count4export.with.ribo0.dt <- calcMrlStat(
+        mrl.count.dt = mrl.count.with.ribo0.dt,
+        annot.df = annot.df,
+        ref.column.name = ref.column.name,
+        base.input.names = base.input.names
+    )
+    
+    mrl.with.ribo0.for.export.file <- file.path(
+        s8.1.dir,
+        paste0(comparison.name4export,
+               "-mean_ribosome_loading-with_ribo0.csv")
+    )
+    
+    fwrite(
+        mrl.count4export.with.ribo0.dt,
+        file = mrl.with.ribo0.for.export.file
+    )
 
     ############################################################
     ## DESeq2 interaction model: translation regulation classification
@@ -455,47 +614,7 @@ analyzeDtg <- function(
 
     if(nrow(sl.dtg.dt) > 0){
 
-        ## kmean
-        ## sl.dtg.dt[, kmeans_cluster := kmeans(MRL_log2fc,centers = 2)$cluster - 1]
-        
-        
-        ## is.zero.higher.mrl <-
-        ##     mean(sl.dtg.dt[kmeans_cluster == 0, MRL_log2fc]) >
-        ##     mean(sl.dtg.dt[kmeans_cluster == 1, MRL_log2fc])
-
-        ## sl.dtg.dt[
-        ##   , translational_regulation := case_when(
-        ##         is.zero.higher.mrl & kmeans_cluster == 0 ~ "Up",
-        ##         is.zero.higher.mrl & kmeans_cluster == 1 ~ "Down",
-        ##         !is.zero.higher.mrl & kmeans_cluster == 0 ~ "Down",
-        ##         !is.zero.higher.mrl & kmeans_cluster == 1 ~ "Up"
-        ##     )
-        ## ]
-
-        ## Gausian mixture models
-        ## library("mixtools")
-        ## mix.model <- normalmixEM(sl.dtg.dt[, MRL_log2fc], k = 2)
-        
-        ## sl.dtg.dt <- cbind(
-        ##     sl.dtg.dt, data.table(mix.model$posterior)
-        ## )
-
-        ## setnames(
-        ##     sl.dtg.dt,
-        ##     old = c("comp.1", "comp.2"),
-        ##     new = sort(c("p_up", "p_down"), decreasing = mix.model$mu %>% {.[1] < .[2]})
-        ## )
-        
-        ## sl.dtg.dt[
-        ##    ,
-        ##     translational_regulation := case_when(
-        ##         p_down > 0.9 ~ "Down",
-        ##         p_up > 0.9 ~ "Up",
-        ##         TRUE ~ "Unclassified"
-        ##     )
-        ## ]
-
-        ## Very simple
+        ## Simple
         sl.dtg.dt[
           , translational_regulation := case_when(
                 MRL_log2fc < dtg.dt[, median(MRL_log2fc, na.rm = TRUE)] ~ "Down",
@@ -541,23 +660,6 @@ analyzeDtg <- function(
         dtg.dt[, translational_regulation := "Unclassified"]
     }
     
-    ## Export normalized count
-    tpm.poly.count4export.dt <- merge(
-        data.table(annot.df),
-        normalized.polysome.count.dt,
-        by = ref.column.name,
-        all = TRUE
-    )
-    
-    count.for.export.file <- file.path(
-        s8.1.dir,
-        paste0(comparison.name4export, "-normalized_count.csv")
-    )
-
-    fwrite(tpm.poly.count4export.dt, file = count.for.export.file)
-
-    ## Export mean ribosome loading
-    ## 1st, calculate MRL and the sd
     
     ## Export all results
     dtg4export.dt <- merge(

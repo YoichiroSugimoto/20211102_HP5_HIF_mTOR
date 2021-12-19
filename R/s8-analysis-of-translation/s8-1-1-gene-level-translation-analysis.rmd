@@ -97,7 +97,6 @@ poly.coldata.df <- poly.coldata.df[
     order(match(rownames(poly.coldata.df), poly.sample.dt[, sample_name])), 
     ]
 
-
 sample.names <- poly.sample.dt[, sample_name]
 
 count.per.tss.file <- file.path(s4.1.7.count.per.tss.dir, "count-per-confident-tss.csv")
