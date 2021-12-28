@@ -82,6 +82,10 @@ read.process.sample.dt <- file.path(
     "../../data/sample_data/to_process_reads_sample_file.csv"
 ) %>% fread
 
+## Don't process incomplete data
+read.process.sample.dt <- read.process.sample.dt[
+    no_technical_rep_sample_name %in% sample.dt[, sample_name]
+]
 
 ```
 

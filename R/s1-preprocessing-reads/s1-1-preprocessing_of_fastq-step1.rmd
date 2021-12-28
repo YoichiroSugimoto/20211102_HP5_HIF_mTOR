@@ -55,7 +55,6 @@ sample.file <- file.path("../../data/sample_data/20210306_sample-data.csv")
 lib2fqfilename.file <- file.path("../../data/sample_data/20210306_libname_to_fq_filename.csv")
 fq.dir.file <- file.path("../../data/sample_data/20210306_fastq_dirs.csv")
 tso.index.file <- file.path("../../data/sample_data/20210306_TSO-index_1.csv")
-
 processed.sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
 results.dir <- file.path("../../results")
@@ -132,12 +131,17 @@ if(nrow(sample.dt[duplicated(sample_name)]) != 0){
 
 sample.dt <- sample.dt[, c("sample_name", sample.dt.cols), with = FALSE]
 
-## No technical replicate
-processed.sample.dt <- copy(sample.dt[replicate == 1])
-processed.sample.dt[, `:=`(
+## No technical replicate: preprocessed sample file
+pre.processed.sample.dt <- copy(sample.dt[replicate == 1])
+pre.processed.sample.dt[, `:=`(
     sample_name = gsub("_[[:digit:]]$", "", sample_name),
     replicate = NULL
 )]
+
+## Some data are not analysed due to the incompleteness
+processed.sample.dt <- pre.processed.sample.dt[
+    !grepl("_1_Torin1_ribo0", sample_name)
+]
 
 fwrite(processed.sample.dt, processed.sample.file)
 
@@ -428,6 +432,30 @@ temp <- mclapply(
 
 
 ```
+
+# Delete unnecessary fq files
+
+
+```{r delete unecessary fq files}
+
+unnecessary.samples <- pre.processed.sample.dt[, sample_name] %>%
+    {.[!(. %in% processed.sample.dt[, sample_name])]}
+
+files.to.delete <- list.files(
+    processed.fq.step3.1.dir, full.names = TRUE
+) %>%
+    {.[grepl(
+         paste0("(", paste(unnecessary.samples, collapse = "|"), ")"),
+         .
+     )]} 
+
+print("The following fastq files will be deleted")
+print(files.to.delete)
+
+temp <- do.call(file.remove, list(files.to.delete))
+
+```
+
 
 # Session Info
 

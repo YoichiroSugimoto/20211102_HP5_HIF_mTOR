@@ -1,0 +1,356 @@
+---
+title: "s10-1 Validation of HP5 by RT-qPCR"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+The ability of HP5 to resolve mRNA isoforms will be evaluated in this script.
+For this purpose, the polysome distribution of selected mRNA isoforms estimated by the HP5 data (the average of three clones of RCC4 VHL) was compared with that estimated by RT-qPCR (RCC4 VHL clone 1).
+
+
+# Environment setup
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
+
+library("readxl")
+
+processors <- 8
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+## sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
+
+create.dirs(c(
+))
+
+## Load differential expression analysis
+source(file.path("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R"), chdir = TRUE)
+
+```
+
+# Load and preprocess HP5 and 5' end-Seq data
+
+## RNA standard normalised data
+
+```{r read start count data}
+
+norm.count.dt <- fread(
+    file.path(
+        s8.1.2.dir,
+        "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA-normalized_count.csv"
+    )
+)
+
+```
+
+## RNA expression data
+
+```{r load expression data}
+
+rcc4.tss.de.res.dt <- tss.de.res.dt[
+    comparison_name == "RCC4_xx_HIF1B_N__noVHL_vs_VHL"
+]
+
+rcc4.tss.de.res.dt[
+  , meanNormCount_base_gene_max := max(meanNormCount_base, na.rm = TRUE),
+    by = gene_id
+]
+
+## Only isoforms expressed more than 10% of the most highly expressed isoform were analysed
+rcc4.tss.de.res.dt <- rcc4.tss.de.res.dt[
+    meanNormCount_base > meanNormCount_base_gene_max * 0.1
+]
+
+```
+
+# Analysis of polysome distribution of the selected mRNA isoforms using the HP5 data
+
+
+```{r plot_hp5_results}
+
+sl.genes <- c("DEK", "EIF5A", "RBCK1", "TPGS2")
+
+print("The following genes and isoforms will be analysed:")
+rcc4.tss.de.res.dt[
+    gene_name %in% sl.genes, .(gene_id, gene_name, tss_name)
+]
+
+tss.per.gene.dts <- list(
+    DEK = data.table(
+        gene_name = "DEK",
+        tss_class = c("dist", "proxy"),
+        tss_name = c("ENSG00000124795_1", "ENSG00000124795_2")
+    ),
+    EIF5A = data.table(
+        gene_name = "EIF5A",
+        tss_class = c("dist", "dist", "proxy"),
+        tss_name = c(
+            "ENSG00000132507_1",
+            "ENSG00000132507_2",
+            "ENSG00000132507_3"
+        )
+    ),
+    RBCK1 = data.table(
+        gene_name = "RBCK1",
+        tss_class = c("dist", "both", "both"),
+        tss_name = c(
+            "ENSG00000125826_2",
+            "ENSG00000125826_3",
+            "ENSG00000125826_4"
+        )
+    ),
+    TPGS2 = data.table(
+        gene_name = "TPGS2",
+        tss_class = c("dist", "both"),
+        tss_name = c("ENSG00000134779_1", "ENSG00000134779_2")
+    )
+)
+
+
+```
+
+
+```{r normalised count data for plotting}
+
+sl.norm.count.dt <- merge(
+    rbindlist(tss.per.gene.dts)[, .(tss_name, tss_class)],
+    norm.count.dt,
+    by = "tss_name"
+)
+
+sl.norm.count.dt[, tss_name := paste0(gene_name, "_", tss_class)]
+
+## Collapse count data for multiple TSSs
+sl.norm.count.dt <- sl.norm.count.dt[
+  , lapply(.SD, sum, na.rm = TRUE), by = tss_name,
+    .SDcols = grep("RCC4", colnames(sl.norm.count.dt)) 
+]
+
+calcNormCountStats <- function(norm.count.dt, ref.col = "tss_name", grep.col = "^RCC4"){
+
+    m.norm.count.dt <- melt(
+        norm.count.dt,
+        id.vars = ref.col,
+        measure.vars = grep(
+            grep.col,
+            colnames(norm.count.dt)
+        ),
+        variable.name = "sample_name",
+        value.name = "norm_count"
+    ) %>%
+        {.[, `:=`(
+             VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
+             EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
+             clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
+             treatment = str_split_fixed(sample_name, "_", n = 8)[, 6],
+             fraction = str_split_fixed(sample_name, "_", n = 8)[, 7]
+         )]}
+
+    m.norm.count.dt[
+      , norm_count_sum := sum(norm_count),
+        by = list(get(ref.col), VHL, EIF4E2, clone, treatment) 
+    ][, norm_count_ratio := norm_count / norm_count_sum]
+    
+    norm.count.summary.dt <- m.norm.count.dt[, list(
+        norm_count_ratio_mean = mean(norm_count_ratio),
+        norm_count_ratio_sd = sd(norm_count_ratio)
+    ), by = list(get(ref.col), VHL, EIF4E2, treatment, fraction)]
+
+    setnames(norm.count.summary.dt, old = "get", new = ref.col)
+    
+    return(norm.count.summary.dt)
+}
+
+norm.count.summary.dt <- calcNormCountStats(
+    sl.norm.count.dt,
+    ref.col = "tss_name",
+    grep.col = "RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]"
+)
+
+norm.count.summary.dt[, `:=`(
+    gene = str_split_fixed(tss_name, "_", n = 2)[, 1],
+    type = str_split_fixed(tss_name, "_", n = 2)[, 2],
+    experiment = "HP5\n(average of 3 clones)"
+)]
+
+```
+
+# Analysis of polysome distribution of the selected mRNA isoforms using RT-qPCR data
+
+
+```{r RT-qPCR}
+
+qpcr.res.file <- file.path("../../data/others/RT-qPCR_all-results.xlsx")
+
+qpcr.res.dt <- rbind(
+    read_excel(qpcr.res.file, sheet = "replicate_1") %>% data.table %>%
+    {.[, replicate := 1]},
+    read_excel(qpcr.res.file, sheet = "replicate_2") %>% data.table %>%
+    {.[, replicate := 2]}
+)[
+  , c("fraction", "gene", "type", "Ct", "replicate"), with = FALSE
+][!is.na(fraction)]
+
+qpcr.standard.dt <- rbind(
+    read_excel(qpcr.res.file, sheet = "standard_1") %>% data.table,
+    read_excel(qpcr.res.file, sheet = "standard_2") %>% data.table
+)[, c("dilution", "gene", "type", "Ct"), with = FALSE]
+
+qpcr.standard.summary.dt <- qpcr.standard.dt[, list(
+    Ct_mean = mean(Ct),
+    Ct_sd = sd(Ct)
+), by = list(gene, type, dilution)]
+
+qpcr.primer.eff.dt <- qpcr.standard.summary.dt[, as.list(
+    coef(lm(Ct_mean ~ log10(1/dilution)))
+), by = list(gene, type)][
+  , primer_eff := 10^(-1/ get("log10(1/dilution)")) - 1
+][order(gene == "ERCC-00002", gene, type)]
+
+print(qpcr.primer.eff.dt)
+
+print("Rsquared values for confirmation:")
+qpcr.standard.summary.dt[, list(
+    rsq = summary(lm(Ct_mean ~ log10(1/dilution)))$r.squared
+), by = list(gene, type)][order(gene == "ERCC-00002", gene, type)]
+
+```
+
+
+```{r qpcr-result-analysis}
+
+quant.dt <- merge(
+    qpcr.res.dt,
+    qpcr.primer.eff.dt[, .(gene, type, primer_eff)],
+    by = c("gene", "type")
+)
+
+ercc.quant.dt <- quant.dt[gene == "ERCC-00002"]
+ercc.quant.dt[, `:=`(
+    ercc_input = (2 * primer_eff)^(-Ct)
+)]
+
+gene.quant.dt <- quant.dt[gene != "ERCC-00002"]
+gene.quant.dt[, `:=`(
+    gene_input = (2 * primer_eff)^(-Ct)
+)]
+
+all.quant.dt <- merge(
+    gene.quant.dt,
+    ercc.quant.dt[
+      , c("replicate", "fraction", "ercc_input"), with = FALSE
+    ],
+    by = c("replicate", "fraction")
+)
+
+all.quant.dt[, `:=`(
+    norm_input = gene_input / ercc_input
+)]
+all.quant.dt[
+  , norm_input_sum := sum(norm_input), by = list(replicate, gene, type)
+]
+all.quant.dt[
+    , norm_input_ratio := norm_input / norm_input_sum
+]
+
+qpcr.all.quant.res.dt <- all.quant.dt[, list(
+    norm_count_ratio_mean = mean(norm_input_ratio),
+    norm_count_ratio_sd = sd(norm_input_ratio),
+    experiment = "RT-qPCR\n(clone 1)"
+), by = list(gene, type, fraction)]
+
+```
+
+# Comparison of the HP5 data and RT-qPCR
+
+
+```{r comparison_HP5_and_RT-qPCR, fig.height = 5, fig.width = 7}
+
+all.res.dt <- rbind(
+    norm.count.summary.dt[, colnames(qpcr.all.quant.res.dt), with = FALSE],
+    qpcr.all.quant.res.dt
+)
+
+all.res.dt[
+  , fraction := case_when(
+        fraction == "ribo8" ~ "8+",
+        TRUE ~ gsub("ribo", "", fraction)
+    )
+]
+
+ggplot(
+    data = all.res.dt,
+    aes(
+        x = fraction,
+        y = norm_count_ratio_mean,
+        ymin = norm_count_ratio_mean - norm_count_ratio_sd,
+        ymax = norm_count_ratio_mean + norm_count_ratio_sd,
+        color = type,
+        fill = type,
+        group = type
+    )
+) +
+    geom_ribbon(alpha = 0.3, color = NA) +
+    geom_line(size = 1) +
+    facet_grid(experiment ~ gene) +
+    theme_bw() +
+    theme(
+        legend.position = "bottom",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+    ) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    scale_color_bright() +
+    scale_fill_bright() +
+    ylab("Relative mRNA abundance") +
+    xlab("Polysome fraction")
+
+```
+
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

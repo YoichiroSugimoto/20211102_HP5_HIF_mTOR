@@ -1,0 +1,163 @@
+---
+title: "s10-3 Comparison with orthgonal studies"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+The ability of HP5 to dynamically assess translation will be evaluated.
+
+# Environment setup
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+library("readxl")
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
+
+processors <- 8
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+create.dirs(c(
+))
+
+
+```
+
+# Comparison of significantly differentially translated genes
+
+
+```{r sig_diff_trsl_genes}
+
+ref.dt <- file.path("../../data/others/20201127_previously_reported_mTOR_target_genes.csv") %>%
+    fread
+
+sl.ref.dt <- ref.dt[
+(method == "Ribosome profiling") |
+(method == "Polysome profiling" & PP242_FDR < 0.1 & PP242_log2fc < 0)
+]
+
+rcc4.diff.trsl.dt <- file.path(
+    s8.1.1.dir, "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA.csv"
+) %>%
+    fread
+
+all.filtered.gene.dt <- file.path(
+    s8.3.dir,
+    "filtered_gene_for_polysome_analysis.csv"
+) %>% fread
+
+sl.rcc4.diff.trsl.dt <- rcc4.diff.trsl.dt[
+    gene_id %in% all.filtered.gene.dt[
+                     RCC4_VHL_NA == TRUE &
+                     RCC4_VHL_Torin1 == TRUE,
+                     gene_id
+                 ] &
+    translational_regulation == "Down"
+]
+
+
+library("eulerr")
+
+venn.dt <- data.table(
+    gene_id = unique(
+        c(
+            sl.rcc4.diff.trsl.dt[, gene_id],
+            sl.ref.dt[, gene_id]
+        )
+    )
+)
+
+venn.dt[, `:=`(
+    HP5 = gene_id %in% sl.rcc4.diff.trsl.dt[, gene_id],
+    Ribosome_profiling = gene_id %in%
+        sl.ref.dt[
+            method == "Ribosome profiling", gene_id
+        ],
+    Polysome_profiling = gene_id %in%
+        sl.ref.dt[
+            method == "Polysome profiling", gene_id
+        ],
+    Polysome_profiling_mito = gene_id %in%
+        sl.ref.dt[
+        (method == "Polysome profiling") &
+        (mitochondrial_function == TRUE), gene_id
+        ]
+)]
+
+plot(euler(venn.dt[
+  , colnames(venn.dt)[!grepl("gene_id", colnames(venn.dt))], with = FALSE
+], shape = "ellipse"), quantities = TRUE)
+
+
+```
+
+# Direct comparison with ribosome profiling translation fold change
+
+
+```{r direct_comparison}
+
+xtail.dt <- read_excel(
+    file.path("../../data/others/PMID27041671_SD3.xlsx")
+  , sheet = "TE"
+) %>%
+    data.table
+
+setnames(
+    xtail.dt,
+    old = c("Ensembl_ID", "TE_change(log2FC)"),
+    new = c("gene_id", "TE_log2fc")
+)
+
+
+
+```
+
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

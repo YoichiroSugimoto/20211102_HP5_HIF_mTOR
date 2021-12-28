@@ -108,16 +108,26 @@ d.ercc.sum.count.dt <- dcast(
 ```
 
 
-# Calculate library size factor based on read counts of ERCC RNAs
+# Excluding ribo 0A and 0B fraction
+
+This is a default procedure.
+
+## Calculate library size factor based on read counts of ERCC RNAs
 
 
 ```{r calculate normalization factor based on ERCC}
 
+non0.sl.sample.names <- sl.sample.names[!grepl("(ribo0A|ribo0B)", sl.sample.names)]
+
 dds <- DESeqDataSetFromMatrix(
     countData = ercc.count.dt[
-        grepl("^ERCC-", ERCC_id), sl.sample.names, with = FALSE
+        grepl("^ERCC-", ERCC_id),
+        non0.sl.sample.names,
+        with = FALSE
     ],
-    colData = sample.dt[sample_name %in% sl.sample.names],
+    colData = sample.dt[
+        sample_name %in% non0.sl.sample.names
+    ],
     design = ~ 1
 ) %>%
     estimateSizeFactors
@@ -147,7 +157,7 @@ sample.count.with.sizefactor.dt <- merge(
 ```
 
 
-# Comparison of DESeq2 calculated size factors and total read counts from ERCC RNAs
+## Comparison of DESeq2 calculated size factors and total read counts from ERCC RNAs
 
 
 The analysis below indicates that the choice between using DESeq2 calculated size factors and total read counts of ERCC spike-in RNAs does not have a significant impact on the downstream analyses.
@@ -155,6 +165,131 @@ Thus, I decided to use the DESeq2 calculated size factors.
 
 
 ```{r ERCC total vs DESeq2 size factors}
+
+ercc.total.size.factor.lm <- lm(
+    ERCCs ~ size_factor,
+    data = sample.count.with.sizefactor.dt[sample_name %in% non0.sl.sample.names]
+)
+
+sample.count.with.sizefactor.dt[
+    sample_name %in% non0.sl.sample.names,
+    residual2lm_ERCC_sizefactor := resid(ercc.total.size.factor.lm)
+]
+
+poly.sample.count.with.sizefactor.dt <- sample.count.with.sizefactor.dt[
+    grepl("^ribo", fraction)
+]
+
+poly.sample.count.with.sizefactor.dt[, `:=`(
+    size_factor_by_count_sum = ERCCs / mean(ERCCs)
+)]
+
+ggplot(
+    data = poly.sample.count.with.sizefactor.dt,
+    aes(
+        x = ERCCs,
+        y = size_factor,
+        color = TSO
+    )
+) +
+    geom_point() +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1
+    )
+
+ggplot(
+    data = poly.sample.count.with.sizefactor.dt,
+    aes(
+        x = size_factor_by_count_sum,
+        y = size_factor,
+        color = TSO
+    )
+) +
+    geom_point() +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1
+    )
+
+
+```
+
+
+
+## Export size factors
+
+
+```{r export predicted size factors}
+
+poly.sample.count.with.sizefactor.dt[
+   , .(sample_name, size_factor, size_factor_by_count_sum)
+] %>%
+    fwrite(
+        file = file.path(
+            s3.4.poly.size.factor.dir,
+            "library_size_factor_by_ERCC.csv"
+            )
+    )
+
+
+```
+
+
+# Including ribo 0A and 0B fraction
+
+
+## Calculate library size factor based on read counts of ERCC RNAs
+
+
+```{r calculate normalization factor based on ERCC with ribo 0}
+
+dds <- DESeqDataSetFromMatrix(
+    countData = ercc.count.dt[
+        grepl("^ERCC-", ERCC_id),
+        sl.sample.names,
+        with = FALSE
+    ],
+    colData = sample.dt[
+        sample_name %in% sl.sample.names
+    ],
+    design = ~ 1
+) %>%
+    estimateSizeFactors
+
+sizefactor.dt <- sizeFactors(dds) %>%
+    data.frame %>%
+    data.table(keep.rownames = TRUE)
+
+setnames(
+    sizefactor.dt,
+    old = c("rn", "."),
+    new = c("sample_name", "size_factor")
+)
+
+sample.count.with.sizefactor.dt <- merge(
+    sample.dt,
+    sizefactor.dt,
+    by = "sample_name",
+    all = TRUE
+) %>%
+    merge(
+        y = d.ercc.sum.count.dt,
+        by = "sample_name",
+        all = TRUE
+    )
+
+```
+
+
+## Comparison of DESeq2 calculated size factors and total read counts from ERCC RNAs
+
+
+The analysis below indicates that the choice between using DESeq2 calculated size factors and total read counts of ERCC spike-in RNAs does not have a significant impact on the downstream analyses.
+Thus, I decided to use the DESeq2 calculated size factors.
+
+
+```{r ERCC total vs DESeq2 size factors with ribo 0}
 
 ercc.total.size.factor.lm <- lm(
     ERCCs ~ size_factor,
@@ -207,10 +342,10 @@ ggplot(
 
 
 
-# Export size factors
+## Export size factors
 
 
-```{r export predicted size factors}
+```{r export predicted size factors with ribo 0}
 
 poly.sample.count.with.sizefactor.dt[
    , .(sample_name, size_factor, size_factor_by_count_sum)
@@ -218,7 +353,7 @@ poly.sample.count.with.sizefactor.dt[
     fwrite(
         file = file.path(
             s3.4.poly.size.factor.dir,
-            "library_size_factor_by_ERCC.csv"
+            "library_size_factor_with_ribo0_by_ERCC.csv"
             )
     )
 

@@ -126,6 +126,12 @@ poly.sizefactor.dt <- fread(
     )
 )
 
+poly.sizefactor.with.ribo0.dt <- fread(
+    file = file.path(
+        s3.4.poly.size.factor.dir,
+        "library_size_factor_with_ribo0_by_ERCC.csv"
+    )
+)
 
 ```
 
@@ -286,6 +292,7 @@ temp <- analyzeDtg(
     deseq2.formula = sl.translation.comparison.dt[, exp_formula][[1]],
     input.sample.data.df = test.poly.coldata.df,
     poly.sizefactor.dt = poly.sizefactor.dt,
+    poly.sizefactor.with.ribo0.dt = poly.sizefactor.with.ribo0.dt,
     sizefactor.col = "size_factor",
     s8.1.dir = s8.1.1.dir,
     processors = processors

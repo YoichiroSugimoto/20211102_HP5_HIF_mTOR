@@ -78,7 +78,7 @@ total.count.dt <- fread(total.count.file)
 ```{r non-deduplicated data}
 
 sl.sample.names <- grep(
-    "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA",
+    "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]$",
     sample.names,
     value = TRUE
 )

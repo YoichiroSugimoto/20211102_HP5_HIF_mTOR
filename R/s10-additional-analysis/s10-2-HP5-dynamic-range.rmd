@@ -1,0 +1,282 @@
+---
+title: "s10-2 Analysis of HP5 dynamic range"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Overview
+
+The ability of HP5 to dynamically assess translation will be evaluated.
+
+# Environment setup
+
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+library("DESeq2")
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
+
+processors <- 8
+
+set.seed(0)
+
+```
+
+
+```{r define directory}
+
+sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
+
+annot.dir <- normalizePath(file.path("../../annotation/"))
+annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
+annot.R.file <- list.files(
+    annot.ps.dir,
+    pattern = glob2rx("*primary_transcript_annotation*.rdata"),
+    full.names = TRUE
+)
+load(annot.R.file)
+
+results.dir <- file.path("../../results")
+
+s2.alignment.dir <- file.path(results.dir, "s2-read-alignment")
+s2.2.processed.bam.dir <-  file.path(s2.alignment.dir, "s2-2-processed-data")
+s2.2.4.gene.count.dir <- file.path(s2.2.processed.bam.dir, "s2-2-4-gene-count")
+s2.2.4.1.gene.count.total.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-1-gene-count-total")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+create.dirs(c(
+))
+
+
+```
+
+# PCA
+
+
+```{r PCA}
+
+sample.dt <- fread(sample.file)
+sample.names <- sample.dt[, sample_name]
+
+total.count.file <- file.path(s2.2.4.1.gene.count.total.dir, "total_gene_count_table.csv")
+total.count.dt <- fread(total.count.file)
+
+sl.sample.names <- grep(
+    "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA",
+    sample.names,
+    value = TRUE
+)
+
+sl.sample.dt <- sample.dt[sample_name %in% sl.sample.names]
+count.dt <- total.count.dt[biotype == "protein_coding"]
+count.df <- count.dt[, sl.sample.names, with = FALSE] %>% as.data.frame
+rownames(count.df) <- count.dt[, gene_id]
+
+dds <- DESeqDataSetFromMatrix(
+    countData = count.df,
+    colData = sl.sample.dt,
+    design = ~ 1
+)
+
+dds <- estimateSizeFactors(dds)
+vsd <- vst(dds, blind = TRUE)
+
+plotPCA(vsd, intgroup = "fraction", ntop = round(nrow(assay(vsd)) / 4)) +
+    theme(
+        aspect.ratio = 1
+    ) +
+    ggsci::scale_color_aaas(name = "Fraction")
+
+print(paste0("The number of tx analysed: ", round(nrow(assay(vsd))/4)))
+
+```
+
+
+# Assess the effect of omitting 0 ribosome fraction
+
+
+```{r assess_omitting_0_ribosome}
+
+mrl.with.ribo0.dt <- fread(
+    file.path(
+        s8.1.1.dir,
+        "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA-mean_ribosome_loading-with_ribo0.csv"
+    )
+)
+
+mrl.with.ribo0.dt <- mrl.with.ribo0.dt[
+  , c("gene_id", "MRL_treated", "MRL_base", "MRL_log2fc")
+]
+
+setnames(
+    mrl.with.ribo0.dt,
+    old = colnames(mrl.with.ribo0.dt),
+    new = gsub("MRL", "MRL_with_ribo0", colnames(mrl.with.ribo0.dt))
+)
+
+mrl.without.ribo0.dt <- fread(
+    file.path(
+        s8.1.1.dir,
+        "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA-mean_ribosome_loading.csv"
+    )
+)
+
+all.mrl.dt <- merge(
+    mrl.without.ribo0.dt,
+    mrl.with.ribo0.dt,
+    by = "gene_id"
+)
+
+all.filtered.gene.dt <- file.path(
+    s8.3.dir,
+    "filtered_gene_for_polysome_analysis.csv"
+) %>% fread
+
+all.mrl.dt[
+    gene_id %in% all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id]
+] %T>%
+    {print(
+         ggplot(
+             data = .,
+             aes(
+                 x = MRL_base,
+                 y = MRL_with_ribo0_base
+             )
+         ) +
+         geom_point(alpha = 0.2, shape = 16) +
+         geom_smooth(method = "lm") +
+         coord_cartesian(xlim = c(0, 8), ylim = c(0, 8)) +
+         xlab("MRL\n(without 0 ribosome fraction)") +
+         ylab("MRL\n(with 0 ribosome fraction)")
+     )} %$%
+    cor.test(x = MRL_base, y = MRL_with_ribo0_base)
+
+all.mrl.dt[
+    gene_id %in% all.filtered.gene.dt[
+                     RCC4_VHL_NA == TRUE &
+                     RCC4_VHL_Torin1 == TRUE,
+                     gene_id
+                 ]
+] %T>%
+    {print(
+         ggplot(
+             data = .,
+             aes(
+                 x = MRL_log2fc,
+                 y = MRL_with_ribo0_log2fc
+             )
+         ) +
+         geom_point(alpha = 0.2, shape = 16) +
+         geom_smooth(method = "lm") +
+         coord_cartesian(xlim = c(-2, 1), ylim = c(-2, 1)) +
+         xlab("MRL log2 FC with Torin 1\n(without 0 ribosome fraction)") +
+         ylab("MRL log2 FC with Torin 1\n(with 0 ribosome fraction)")
+     )} %$%
+    cor.test(x = MRL_base, y = MRL_with_ribo0_base)
+
+
+```
+
+# Assess the effect of pooling fraction with more than or equal to 8 ribosomes
+
+
+```{r fraction_over_8}
+
+norm.count.dt <- fread(
+    file.path(
+        s8.1.1.dir,
+        "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA-normalized_count.csv"
+    )
+)
+ 
+calcNormCountStats <- function(norm.count.dt, ref.col = "tss_name", grep.col = "^RCC4"){
+
+    m.norm.count.dt <- melt(
+        norm.count.dt,
+        id.vars = ref.col,
+        measure.vars = grep(
+            grep.col,
+            colnames(norm.count.dt)
+        ),
+        variable.name = "sample_name",
+        value.name = "norm_count"
+    ) %>%
+        {.[, `:=`(
+             VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
+             EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
+             clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
+             treatment = str_split_fixed(sample_name, "_", n = 8)[, 6],
+             fraction = str_split_fixed(sample_name, "_", n = 8)[, 7]
+         )]}
+
+    m.norm.count.dt[
+      , norm_count_sum := sum(norm_count),
+        by = list(get(ref.col), VHL, EIF4E2, clone, treatment) 
+    ][, norm_count_ratio := norm_count / norm_count_sum]
+    
+    norm.count.summary.dt <- m.norm.count.dt[, list(
+        norm_count_ratio_mean = mean(norm_count_ratio),
+        norm_count_ratio_sd = sd(norm_count_ratio)
+    ), by = list(get(ref.col), VHL, EIF4E2, treatment, fraction)]
+
+    setnames(norm.count.summary.dt, old = "get", new = ref.col)
+    
+    return(norm.count.summary.dt)
+}
+
+norm.count.summary.dt <- calcNormCountStats(
+    norm.count.dt[
+        gene_id %in% all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id]
+    ],
+    ref.col = "gene_id",
+    grep.col = "RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]"
+)
+
+ggplot(
+    data = norm.count.summary.dt,
+    aes(
+        x = case_when(
+            fraction == "ribo8"  ~ "8+ ribosomes",
+            fraction == "ribo1" ~ "1 ribosome",
+            TRUE ~ paste0(str_extract(fraction, "[[:digit:]]"), " ribosomes")
+        ),
+        y = norm_count_ratio_mean
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    coord_cartesian(ylim = c(0, 0.4)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    xlab("Fraction") +
+    ylab("Proportion of read count")
+
+```
+
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```

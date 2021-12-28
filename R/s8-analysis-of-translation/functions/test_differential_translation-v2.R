@@ -13,8 +13,8 @@
 ## annot.df = deseq2.poly.in.list$annot.df
 ## ref.column.name = "gene_id"
 ## sizefactor.col = "size_factor"
-## comparison.name = translation.comparison.dt[3, comparison]
-## deseq2.formula = translation.comparison.dt[, exp_formula][[3]]
+## comparison.name = translation.comparison.dt[1, comparison]
+## deseq2.formula = translation.comparison.dt[, exp_formula][[1]]
 ## input.sample.data.df = subsetColdata(comparison.name, poly.coldata.df)
 ## s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
 ## s3.4.poly.size.factor.dir <- file.path(s3.alignment.stats.dir, "polysome_size_factor")
@@ -512,56 +512,58 @@ analyzeDtg <- function(
     fwrite(mrl.count4export.dt, file = mrl.for.export.file)
 
     ## Considering ribo0A and ribo0B fraction as well
-    with.ribo0.formated.hp5.data <- prepareHP5dataForMrlCalculation(
-        test.count.df = test.count.with.ribo0.df,
-        input.sample.data.df = input.sample.data.with.ribo0.df,
-        poly.sizefactor.dt = poly.sizefactor.with.ribo0.dt,
-        test.fractions = paste0("ribo", c("0A", "0B", 1:8)),
-        s8.1.dir = s8.1.dir,
-        comparison.name4export = comparison.name4export,
-        outfile.postfix = "with_ribo0"
-    )
-    
-    normalized.polysome.count.with.ribo0.dt <- normalizeHP5readsByStandard(
-        polysome.count.df = with.ribo0.formated.hp5.data$count_df,
-        polysome.sizefactor.dt = with.ribo0.formated.hp5.data$sizefactor_dt,
-        sizefactor.col = sizefactor.col,
-        ref.column.name = ref.column.name,
-        annot.df = annot.df,
-        s8.1.dir = s8.1.dir,
-        comparison.name4export = comparison.name4export,
-        outfile.postfix = "with_ribo0"        
-    )
+    if(!is.null(poly.sizefactor.with.ribo0.dt)){
+        with.ribo0.formated.hp5.data <- prepareHP5dataForMrlCalculation(
+            test.count.df = test.count.with.ribo0.df,
+            input.sample.data.df = input.sample.data.with.ribo0.df,
+            poly.sizefactor.dt = poly.sizefactor.with.ribo0.dt,
+            test.fractions = paste0("ribo", c("0A", "0B", 1:8)),
+            s8.1.dir = s8.1.dir,
+            comparison.name4export = comparison.name4export,
+            outfile.postfix = "with_ribo0"
+        )
         
-    sl.ribo.sample.groups <- grep(
-        "ribo1", rownames(input.sample.data.df), value = TRUE) %>%
-        gsub("ribo1", "ribo[[:digit:]](|A|B)", .)
-
-    mrl.count.with.ribo0.dt <- calculateWeightedMRL(
-        normalized.polysome.count.dt =
-            normalized.polysome.count.with.ribo0.dt,
-        sl.ribo.sample.groups = sl.ribo.sample.groups,
-        ref.column.name = ref.column.name
-    )
+        normalized.polysome.count.with.ribo0.dt <- normalizeHP5readsByStandard(
+            polysome.count.df = with.ribo0.formated.hp5.data$count_df,
+            polysome.sizefactor.dt = with.ribo0.formated.hp5.data$sizefactor_dt,
+            sizefactor.col = sizefactor.col,
+            ref.column.name = ref.column.name,
+            annot.df = annot.df,
+            s8.1.dir = s8.1.dir,
+            comparison.name4export = comparison.name4export,
+            outfile.postfix = "with_ribo0"        
+        )
         
-    mrl.count4export.with.ribo0.dt <- calcMrlStat(
-        mrl.count.dt = mrl.count.with.ribo0.dt,
-        annot.df = annot.df,
-        ref.column.name = ref.column.name,
-        base.input.names = base.input.names
-    )
-    
-    mrl.with.ribo0.for.export.file <- file.path(
-        s8.1.dir,
-        paste0(comparison.name4export,
-               "-mean_ribosome_loading-with_ribo0.csv")
-    )
-    
-    fwrite(
-        mrl.count4export.with.ribo0.dt,
-        file = mrl.with.ribo0.for.export.file
-    )
+        sl.ribo.sample.groups <- grep(
+            "ribo1", rownames(input.sample.data.df), value = TRUE) %>%
+            gsub("ribo1", "ribo[[:digit:]](|A|B)", .)
 
+        mrl.count.with.ribo0.dt <- calculateWeightedMRL(
+            normalized.polysome.count.dt =
+                normalized.polysome.count.with.ribo0.dt,
+            sl.ribo.sample.groups = sl.ribo.sample.groups,
+            ref.column.name = ref.column.name
+        )
+        
+        mrl.count4export.with.ribo0.dt <- calcMrlStat(
+            mrl.count.dt = mrl.count.with.ribo0.dt,
+            annot.df = annot.df,
+            ref.column.name = ref.column.name,
+            base.input.names = base.input.names
+        )
+        
+        mrl.with.ribo0.for.export.file <- file.path(
+            s8.1.dir,
+            paste0(comparison.name4export,
+                   "-mean_ribosome_loading-with_ribo0.csv")
+        )
+        
+        fwrite(
+            mrl.count4export.with.ribo0.dt,
+            file = mrl.with.ribo0.for.export.file
+        )
+    } else {print("no analysis with ribo0 fractions")}
+    
     ############################################################
     ## DESeq2 interaction model: translation regulation classification
     print("LRT comparison")
