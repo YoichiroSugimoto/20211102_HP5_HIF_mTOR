@@ -106,14 +106,20 @@ r4.vhl.mrl.file <- "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL-mean_ribosome_loading.csv
 
 processMetaInfoDt <- function(dt){
     dt[, `:=`(
-            first75mer_mMFEpn_G4p = - first75mer_MFE_G4p / 75,
-            nonFirst75mer_mMFEpn_G4p = - nonFirst75mer_MFE_G4p /
-                if_else(min_utr5_len > 85, mean_utr5_len - 75, NA_real_),
-            cds_mMFEpn_G4p = - cds_MFE_G4p / cds_len,
-            uORF_all_capped = ifelse(uORF_all > 3, 3, uORF_all),
-            log10_cds_len = log10(cds_len),
-            log10_utr5_len = log10(mean_utr5_len)
-        )]
+        first75mer_mMFEpn_G4p = - first75mer_MFE_G4p / 75,
+        nonFirst75mer_mMFEpn_G4p = - nonFirst75mer_MFE_G4p /
+            if_else(min_utr5_len > 85, mean_utr5_len - 75, NA_real_),
+        cds_mMFEpn_G4p = - cds_MFE_G4p / cds_len,
+        uORF_all_capped = round(uORF_all) %>%
+            {case_when(
+                 . >= 3 ~ "3+",
+                 TRUE ~ as.character(.)
+             )} %>% factor
+        ,
+        TOP_motif_length = tss_p1_pTOP + tss_p2_pTOP + tss_p3_pTOP,
+        log10_cds_len = log10(cds_len),
+        log10_utr5_len = log10(mean_utr5_len)
+    )]
     return(dt)
 }
 
@@ -164,7 +170,6 @@ minMrlData <- function(dt, ref.colname, target.var, test.features){
     return(dt)
 }
 
-
 ```
 
 
@@ -197,6 +202,11 @@ tx.meta.info.dt <- merge(
 )
 
 tx.meta.info.dt <- processMetaInfoDt(tx.meta.info.dt)
+
+fwrite(
+    tx.meta.info.dt,
+    file.path(s8.3.dir, "processed-tx-meta-info.csv")
+)
 
 ## Import MRL data
 tx.level.mrl.dt <- file.path(

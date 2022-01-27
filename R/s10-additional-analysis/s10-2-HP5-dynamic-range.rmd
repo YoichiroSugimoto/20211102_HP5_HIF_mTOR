@@ -80,14 +80,59 @@ sample.names <- sample.dt[, sample_name]
 total.count.file <- file.path(s2.2.4.1.gene.count.total.dir, "total_gene_count_table.csv")
 total.count.dt <- fread(total.count.file)
 
+## collapase ribo 0A and ribo0B fraction for this analysis
+id.colnames <- c("gene_id", "gene_name", "biotype") 
+
+m.total.count.dt <- melt(
+    total.count.dt,
+    id.vars = id.colnames,
+    variable.name = "sample_name",
+    value.name = "count"
+)
+
+m.total.count.dt <- m.total.count.dt[grepl("^polysome", sample_name)]
+
+m.total.count.dt[, `:=`(
+    sample_group =
+        gsub("(_ribo[[:digit:]]$|_ribo[[:digit:]][[:alpha:]]$)", "", sample_name),
+    fraction = str_split_fixed(sample_name, "_", n = 8)[, 8] %>%
+        {gsub("(A$|B$)", "", .)}
+)]
+
+m.collapsed.total.count.dt <- m.total.count.dt[
+  , list(sum_count = sum(count)),
+    by = list(gene_id, gene_name, biotype, sample_group, fraction)
+]
+
+collapsed.total.count.dt <- dcast(
+    m.collapsed.total.count.dt,
+    gene_id + gene_name + biotype ~ sample_group + fraction,
+    value.var = "sum_count", sep = "_"
+) 
+
+collapsed.sample.dt <- copy(sample.dt)
+collapsed.sample.dt[, `:=`(
+    sample_name = gsub("(A$|B$)", "", sample_name),
+    fraction = gsub("(A$|B$)", "", fraction) %>%
+        str_extract("[[:digit:]]$") %>% as.integer %>%
+        {case_when(
+             . %in% c(0, 1) ~ paste(., "ribosome"),
+             . == 8 ~ paste0(., "+ ribosomes"),
+             TRUE ~ paste(., "ribosomes")
+         )}
+)]
+
+collapsed.sample.dt <- collapsed.sample.dt[!duplicated(sample_name)]
+
 sl.sample.names <- grep(
     "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA",
-    sample.names,
+    collapsed.sample.dt[, sample_name],
     value = TRUE
 )
 
-sl.sample.dt <- sample.dt[sample_name %in% sl.sample.names]
-count.dt <- total.count.dt[biotype == "protein_coding"]
+sl.sample.dt <- collapsed.sample.dt[sample_name %in% sl.sample.names]
+
+count.dt <- collapsed.total.count.dt[biotype == "protein_coding"]
 count.df <- count.dt[, sl.sample.names, with = FALSE] %>% as.data.frame
 rownames(count.df) <- count.dt[, gene_id]
 
@@ -100,13 +145,26 @@ dds <- DESeqDataSetFromMatrix(
 dds <- estimateSizeFactors(dds)
 vsd <- vst(dds, blind = TRUE)
 
+roll <- function(x , n){
+    ## https://stackoverflow.com/questions/18791212/circular-shift-of-vector-equivalent-to-numpy-roll
+    if(n == 0)
+        return(x)
+    c(tail(x, n), head(x, -n))
+}
+
 plotPCA(vsd, intgroup = "fraction", ntop = round(nrow(assay(vsd)) / 4)) +
     theme(
         aspect.ratio = 1
     ) +
-    ggsci::scale_color_aaas(name = "Fraction")
+    scale_color_manual(
+        values = roll(
+            ggsci::pal_aaas(palette = c("default"), alpha = 1)(9), 1
+        ),
+        name = "Fraction"
+    )
 
 print(paste0("The number of tx analysed: ", round(nrow(assay(vsd))/4)))
+
 
 ```
 
@@ -163,7 +221,7 @@ all.mrl.dt[
              )
          ) +
          geom_point(alpha = 0.2, shape = 16) +
-         geom_smooth(method = "lm") +
+         ## geom_smooth(method = "lm") +
          coord_cartesian(xlim = c(0, 8), ylim = c(0, 8)) +
          xlab("MRL\n(without 0 ribosome fraction)") +
          ylab("MRL\n(with 0 ribosome fraction)")
@@ -186,7 +244,7 @@ all.mrl.dt[
              )
          ) +
          geom_point(alpha = 0.2, shape = 16) +
-         geom_smooth(method = "lm") +
+         ## geom_smooth(method = "lm") +
          coord_cartesian(xlim = c(-2, 1), ylim = c(-2, 1)) +
          xlab("MRL log2 FC with Torin 1\n(without 0 ribosome fraction)") +
          ylab("MRL log2 FC with Torin 1\n(with 0 ribosome fraction)")
@@ -196,7 +254,7 @@ all.mrl.dt[
 
 ```
 
-# Assess the effect of pooling fraction with more than or equal to 8 ribosomes
+# Assess the distribution of mRNAs across fractions
 
 
 ```{r fraction_over_8}
@@ -251,23 +309,143 @@ norm.count.summary.dt <- calcNormCountStats(
     grep.col = "RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]"
 )
 
-ggplot(
-    data = norm.count.summary.dt,
-    aes(
-        x = case_when(
-            fraction == "ribo8"  ~ "8+ ribosomes",
-            fraction == "ribo1" ~ "1 ribosome",
-            TRUE ~ paste0(str_extract(fraction, "[[:digit:]]"), " ribosomes")
-        ),
-        y = norm_count_ratio_mean
+## Analyse peak fraction
+peak.fraction.dt <- norm.count.summary.dt[
+    order(gene_id, -norm_count_ratio_mean)
+][, head(.SD, n = 1), by = gene_id][
+  , list(
+        gene_id = gene_id,
+        peak_fraction =
+            str_extract(fraction, "[[:digit:]]$") %>% as.integer()
+    )
+]
+
+mrl.without.ribo0.dt <- merge(
+    mrl.without.ribo0.dt,
+    peak.fraction.dt,
+    by = "gene_id"
+)
+
+print("Proportion of genes by their peak fraction")
+mrl.without.ribo0.dt[, round(prop.table(table(peak_fraction)), digits = 2)]
+
+## Sorted by MRL only
+sorted.mrl.without.ribo0.dt <- mrl.without.ribo0.dt[
+    order(MRL_base)
+][gene_id %in% norm.count.summary.dt[, gene_id]]
+
+d.norm.count.summary.mat <- dcast(
+    norm.count.summary.dt,
+    gene_id ~ fraction,
+    value.var = "norm_count_ratio_mean"
+) %>%
+    {.[order(
+         match(gene_id, sorted.mrl.without.ribo0.dt[, gene_id])
+     )]} %>%
+    as.matrix(rownames = "gene_id")
+
+library("ComplexHeatmap")
+library("circlize")
+col_fun = colorRamp2(c(0, 0.3, 1), c("white", "dodgerblue", "dodgerblue4"))
+
+ht.list <- Heatmap(
+    d.norm.count.summary.mat,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    show_row_names = FALSE,
+    col = col_fun,
+    heatmap_legend_param = list(
+        col_fun = col_fun,
+        title = "Proportion",
+        legend_height = unit(6, "cm"),
+        grid_width = unit(1, "cm")
     )
 ) +
-    geom_boxplot(outlier.shape = NA) +
-    coord_cartesian(ylim = c(0, 0.4)) +
-    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-    scale_x_discrete(guide = guide_axis(angle = 90)) +
-    xlab("Fraction") +
-    ylab("Proportion of read count")
+    rowAnnotation(
+        MRL = anno_points(
+            sorted.mrl.without.ribo0.dt[, MRL_base],
+            pch = 16, size = unit(1, "mm"),
+            ylim = c(1, 8),
+            axis_param = list(
+                at = 1:8, 
+                labels = 1:8
+            ),
+            width = unit(2, "cm")
+        )
+    ) +
+    rowAnnotation(
+        Peak_fraction = anno_points(
+            sorted.mrl.without.ribo0.dt[, peak_fraction],
+            pch = 16, size = unit(1, "mm"), 
+            axis_param = list(
+                at = 1:8, 
+                labels = 1:8
+            ),
+            width = unit(2, "cm")
+        )
+    )
+
+draw(ht.list)
+
+## Sorted by peak fraction and MRL
+## Sorted by MRL only
+sorted.mrl.without.ribo0.dt <- mrl.without.ribo0.dt[
+    order(peak_fraction, MRL_base)
+][gene_id %in% norm.count.summary.dt[, gene_id]]
+
+d.norm.count.summary.mat <- dcast(
+    norm.count.summary.dt,
+    gene_id ~ fraction,
+    value.var = "norm_count_ratio_mean"
+) %>%
+    {.[order(
+         match(gene_id, sorted.mrl.without.ribo0.dt[, gene_id])
+     )]} %>%
+    as.matrix(rownames = "gene_id")
+
+library("ComplexHeatmap")
+library("circlize")
+col_fun = colorRamp2(c(0, 0.3, 1), c("white", "dodgerblue", "dodgerblue4"))
+
+ht.list <- Heatmap(
+    d.norm.count.summary.mat,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    show_row_names = FALSE,
+    col = col_fun,
+    heatmap_legend_param = list(
+        col_fun = col_fun,
+        title = "Proportion",
+        legend_height = unit(6, "cm"),
+        grid_width = unit(1, "cm")
+    )
+) +
+    rowAnnotation(
+        MRL = anno_points(
+            sorted.mrl.without.ribo0.dt[, MRL_base],
+            pch = 16, size = unit(1, "mm"),
+            ylim = c(1, 8),
+            axis_param = list(
+                at = 1:8, 
+                labels = 1:8
+            ),
+            width = unit(2, "cm")
+        )
+    ) +
+    rowAnnotation(
+        Peak_fraction = anno_points(
+            sorted.mrl.without.ribo0.dt[, peak_fraction],
+            pch = 16, size = unit(1, "mm"), 
+            axis_param = list(
+                at = 1:8, 
+                labels = 1:8
+            ),
+            width = unit(2, "cm")
+        )
+    )
+
+draw(ht.list)
+
 
 ```
 

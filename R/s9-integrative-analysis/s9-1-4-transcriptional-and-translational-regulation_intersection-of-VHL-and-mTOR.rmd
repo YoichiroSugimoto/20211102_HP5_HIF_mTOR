@@ -239,6 +239,39 @@ ggplot(
     xlab("mRNA log2 fold change upon VHL loss in RCC4") +
     ylab("MRL log2 fold change with Torin 1 in RCC4")
 
+hif.related.genes <- c(
+    "HIF1A", "EPAS1", "ARNT",
+    "EGLN1", "EGLN2", "EGLN3", "HIF1AN"   
+)
+
+ggplot(
+    th.all.de.dte.res.dt,
+    aes(
+        x = log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,
+        y = MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray40") +
+    geom_vline(xintercept = 0, color = "gray40") +
+    scale_color_manual(values = c(
+                           "VHL_loss_induced" = "firebrick",
+                           "non_VHL_target" = "black",
+                           "VHL_loss_repressed" = "black"
+                       )) +
+    geom_point(shape = 16) +
+    gghighlight::gghighlight(
+                     gene_name %in% hif.related.genes,
+                     label_key = gene_name
+                 ) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1
+    ) +
+    xlim(c(-4, 12)) + ylim(c(-1.5, 1)) +
+    xlab("mRNA log2 fold change upon VHL loss in RCC4") +
+    ylab("MRL log2 fold change with Torin 1 in RCC4")
+
+
 th.all.de.dte.res.dt %$%
     cor.test(
         x = log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL,

@@ -18,7 +18,7 @@ output:
 
 # Overview
 
-The ability of HP5 to dynamically assess translation will be evaluated.
+The ability of HP5 to assess translation will be evaluated compared to orthogonal methods was analysed..
 
 # Environment setup
 
@@ -57,24 +57,226 @@ s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
 s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
-create.dirs(c(
-))
+s9.dir <- file.path(results.dir, "s9-integrative-analysis")
 
+s10.dir <- file.path(results.dir, "s10-additional-analysis")
+
+create.dirs(c(
+    s10.dir
+))
 
 ```
 
-# Comparison of significantly differentially translated genes
+# Import the results of previous studies
 
 
-```{r sig_diff_trsl_genes}
+```{r import past studies}
 
 ref.dt <- file.path("../../data/others/20201127_previously_reported_mTOR_target_genes.csv") %>%
     fread
 
-sl.ref.dt <- ref.dt[
-(method == "Ribosome profiling") |
-(method == "Polysome profiling" & PP242_FDR < 0.1 & PP242_log2fc < 0)
+```
+
+
+```{r Hsieh_et_al}
+
+Hsieh.all.dt <- read_excel(
+    "../../data/others/PMID27041671_SD3.xlsx", sheet = "TE"
+) %>%
+    data.table
+
+Hsieh.key.cols <- c("gene_id", "trsl_eff_log2fc")
+setnames(
+    Hsieh.all.dt,
+    old = c("Ensembl_ID", "TE_change(log2FC)"), new = Hsieh.key.cols
+)
+
+Hsieh.all.dt <- Hsieh.all.dt[, Hsieh.key.cols, with = FALSE]
+
+## To filter data
+Hsieh.all.count.dt <- read_excel(
+    "../../data/others/PMID27041671_SD3.xlsx", sheet = "counts", skip = 1
+) %>%
+    data.table %>% {.[, 1:9]}
+
+setnames(
+    Hsieh.all.count.dt,
+    old = colnames(Hsieh.all.count.dt),
+    new = c(
+        "gene_id",
+        "mRNA_control_1", "mRNA_control_2",
+        "mRNA_Torin1_1", "mRNA_Torin1_2",
+        "RPF_control_1", "RPF_control_2",
+        "RPF_Torin1_1", "RPF_Torin1_2"
+    )
+)
+
+m.Hsieh.all.count.dt <- melt(
+    Hsieh.all.count.dt,
+    id.vars = "gene_id",
+    variable.name = "data_type",
+    value.name = "count"
+)
+
+m.Hsieh.all.count.dt <- m.Hsieh.all.count.dt[
+    grepl("^mRNA_", data_type)
+][
+  , `:=`(
+        condition = str_split_fixed(data_type, "_", n = 3)[, 2],
+        replicate = str_split_fixed(data_type, "_", n = 3)[, 3]
+)]
+
+gene.passed.count.th <- m.Hsieh.all.count.dt[
+    count > 256
+][, N := .N, by = gene_id][N == 4][!duplicated(gene_id)][, gene_id]
+
+## Filtration performed
+Hsieh.all.dt <- Hsieh.all.dt[gene_id %in% gene.passed.count.th]
+
+Hsieh.all.dt <- merge(
+    ref.dt[method == "Ribosome profiling", "gene_id", with = FALSE],
+    Hsieh.all.dt,
+    by = "gene_id",
+    all = TRUE
+)
+
+Hsieh.all.dt[
+  , translational_regulation := case_when(
+        gene_id %in% ref.dt[method == "Ribosome profiling", gene_id] ~
+            "Down",
+        TRUE ~ "Unclassified"
+    )
 ]
+
+```
+
+
+```{r Thoreen}
+
+Thoreen.all.dt <- read_excel("../../data/others/PMID22552098_ST1.xls", skip = 2) %>%
+    data.table
+
+Thoreen.key.cols <- c("refseq_id", "trsl_eff_log2fc")
+
+setnames(
+    Thoreen.all.dt,
+    old = c("Refseq Accession", "WT Efficiency: log2(Torin1/Vehicle)"),
+    new = Thoreen.key.cols
+)
+
+Thoreen.all.dt <- Thoreen.all.dt[, Thoreen.key.cols, with = FALSE]
+
+topN.down.refseq_ids <- Thoreen.all.dt[
+    order(trsl_eff_log2fc)
+][, head(.SD, n = 253)][, refseq_id]
+
+topN.up.refseq_ids <- Thoreen.all.dt[
+    order(trsl_eff_log2fc, decreasing = TRUE)
+][, head(.SD, n = 198)][, refseq_id]
+
+Thoreen.all.dt[
+  , translational_regulation := case_when(
+        refseq_id %in% topN.down.refseq_ids ~ "Down",
+        refseq_id %in% topN.up.refseq_ids ~ "Up",
+        TRUE ~ "Unclassified"
+    )
+]
+
+library("gprofiler2")
+
+ms2hs.dt <- gorth(
+    query = Thoreen.all.dt[, refseq_id],
+    source_organism = "mmusculus", 
+    target_organism = "hsapiens",
+    mthreshold = Inf, filter_na = TRUE,
+    numeric_ns = "ENTREZGENE_ACC"    
+) %>%
+    data.table
+
+setnames(
+    ms2hs.dt,
+    old = c("input", "input_ensg", "ortholog_ensg"),
+    new = c("refseq_id", "ms_gene_id", "gene_id")
+)
+
+ms2hs.dt <- ms2hs.dt %>%
+    group_by(refseq_id) %>%
+    filter(n() == 1) %>%
+    ungroup %>%
+    group_by(ms_gene_id) %>%
+    filter(n() == 1) %>%
+    ungroup %>%
+    group_by(gene_id) %>%
+    filter(n() == 1) %>%
+    data.table
+
+Thoreen.all.dt <- merge(
+    ms2hs.dt[, c("refseq_id", "ms_gene_id", "gene_id"), with = FALSE],
+    Thoreen.all.dt,
+    by = "refseq_id"
+)
+
+fwrite(Thoreen.all.dt, file.path(s10.dir, "Thoreen_et_al_with_human_gene_id.csv"))
+
+```
+
+
+```{r polysome profiling}
+
+Larsson.all.dt <- ref.dt[
+    method == "Polysome profiling" &
+    PP242_FDR < 0.1 & PP242_log2fc < -log2(1.5) #thereshold of PMID: 22611195
+]
+
+Larsson.all.dt[, translational_regulation := "Down"]
+
+Morita.all.dt <- Larsson.all.dt[mitochondrial_function == TRUE]
+
+```
+
+
+## Comparison of previously reported mTOR target genes
+
+
+```{r comparisons_of_known_targets}
+
+library("eulerr")
+
+venn.dt <- data.table(
+    gene_id = unique(
+        c(
+            Hsieh.all.dt[translational_regulation == "Down", gene_id],
+            Thoreen.all.dt[translational_regulation == "Down", gene_id],
+            Larsson.all.dt[translational_regulation == "Down", gene_id],
+            Morita.all.dt[translational_regulation == "Down", gene_id]
+        )
+    )
+)
+
+venn.dt[, `:=`(
+    Hsieh = gene_id %in%
+        Hsieh.all.dt[translational_regulation == "Down", gene_id],
+    Thoreen = gene_id %in%
+        Thoreen.all.dt[translational_regulation == "Down", gene_id],
+    Larsson = gene_id %in%
+        Larsson.all.dt[translational_regulation == "Down", gene_id],
+    Morita = gene_id %in%
+        Morita.all.dt[translational_regulation == "Down", gene_id]
+)]
+
+plot(euler(venn.dt[
+  , colnames(venn.dt)[!grepl("gene_id", colnames(venn.dt))], with = FALSE
+], shape = "ellipse"), quantities = TRUE)
+
+
+```
+
+
+# Analysis of the ability of HP5 to identify differential translation of previously reported targets
+
+
+
+```{r import_HP5}
 
 rcc4.diff.trsl.dt <- file.path(
     s8.1.1.dir, "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA.csv"
@@ -91,64 +293,333 @@ sl.rcc4.diff.trsl.dt <- rcc4.diff.trsl.dt[
                      RCC4_VHL_NA == TRUE &
                      RCC4_VHL_Torin1 == TRUE,
                      gene_id
-                 ] &
-    translational_regulation == "Down"
-]
-
-
-library("eulerr")
-
-venn.dt <- data.table(
-    gene_id = unique(
-        c(
-            sl.rcc4.diff.trsl.dt[, gene_id],
-            sl.ref.dt[, gene_id]
-        )
-    )
-)
-
-venn.dt[, `:=`(
-    HP5 = gene_id %in% sl.rcc4.diff.trsl.dt[, gene_id],
-    Ribosome_profiling = gene_id %in%
-        sl.ref.dt[
-            method == "Ribosome profiling", gene_id
-        ],
-    Polysome_profiling = gene_id %in%
-        sl.ref.dt[
-            method == "Polysome profiling", gene_id
-        ],
-    Polysome_profiling_mito = gene_id %in%
-        sl.ref.dt[
-        (method == "Polysome profiling") &
-        (mitochondrial_function == TRUE), gene_id
-        ]
-)]
-
-plot(euler(venn.dt[
-  , colnames(venn.dt)[!grepl("gene_id", colnames(venn.dt))], with = FALSE
-], shape = "ellipse"), quantities = TRUE)
-
+                 ]
+] %>% copy %>% {.[, data_source := "HP5_all"]}
 
 ```
 
-# Direct comparison with ribosome profiling translation fold change
+
+```{r sig_diff_trsl_genes}
 
 
-```{r direct_comparison}
+library("ggbeeswarm")
 
-xtail.dt <- read_excel(
-    file.path("../../data/others/PMID27041671_SD3.xlsx")
-  , sheet = "TE"
-) %>%
-    data.table
+compareWithBase <- function(
+                            base.dt,
+                            base.data.source,
+                            subject.dts,
+                            subject.data.sources,
+                            value.col,
+                            yaxis.title
+                            ){
 
-setnames(
-    xtail.dt,
-    old = c("Ensembl_ID", "TE_change(log2FC)"),
-    new = c("gene_id", "TE_log2fc")
+    base.dt[, data_source := base.data.source]
+    
+    subsetRows <- function(dt, mtor.target.dt, data.source){
+        sl.dt <- dt[
+            gene_id %in% mtor.target.dt[
+                             translational_regulation == "Down", gene_id
+                         ]
+        ] %>% copy
+        sl.dt[, data_source := data.source]
+        return(sl.dt)
+    }
+
+    all.subjects.dt <- mapply(
+        subsetRows,
+        dt = list(base.dt),
+        mtor.target.dt = subject.dts,
+        data.source = subject.data.sources,
+        SIMPLIFY = FALSE
+    ) %>%
+        rbindlist
+
+    all.dt <- rbind(
+        base.dt, all.subjects.dt
+    )
+
+    all.dt[
+      , data_source := factor(data_source, levels = c(
+                                               base.data.source,
+                                               subject.data.sources
+                                           ))]
+    
+    all.dt <- all.dt[!is.na(get(value.col))]
+   
+    g1 <- ggplot(
+        data = all.dt,
+        aes_string(
+            x = "data_source",
+            y = value.col
+        )
+    ) +
+        geom_hline(
+            yintercept = quantile(
+                all.dt[data_source == base.data.source, get(value.col)],
+                probs = c(0.5)
+            ),
+            linetype = c("solid")
+        ) +
+        geom_violin(
+            aes(
+                fill = ifelse(
+                    data_source == base.data.source, "gray60", "NA"
+                ),
+                color = ifelse(
+                    data_source == base.data.source, "gray60", "NA"
+                )
+            ),
+            alpha = 0.6
+        ) +
+        geom_quasirandom(
+            data = all.dt[data_source != base.data.source],
+            aes_string(
+                x = "data_source",
+                y = value.col
+            ),
+            alpha = 0.3,
+            shape = 16,
+            varwidth = TRUE
+        ) +
+        geom_boxplot(fill = "white", outlier.shape = NA, alpha = 0.6) +
+        scale_color_manual(values = c("gray60" = "gray60", "NA" = NA)) +
+        scale_fill_manual(values = c("gray60" = "gray60", "NA" = NA)) +
+        theme(
+            aspect.ratio = 2,
+            legend.position = "none",
+            axis.title.x = element_blank()
+        ) +
+        scale_x_discrete(guide = guide_axis(angle = 90)) +
+        ylab(yaxis.title)
+
+    print(g1)
+
+    print("The number of samples")
+    print(all.dt[, .N, by = data_source])
+
+    print("The statistical significance")
+
+    all.dt %$%
+        pairwise.wilcox.test(
+            x = get(value.col), g = data_source, p.adjust.method = "none"
+        )$p.value[, base.data.source] %>%
+        p.adjust(method = "holm") %>%
+        print
+    
+    return(all.dt)
+}
+
+hp5.vs.others.dt <- compareWithBase(
+    base.dt = sl.rcc4.diff.trsl.dt,
+    base.data.source = "HP5_all",
+    subject.dts = list(
+        Hsieh.all.dt,
+        Thoreen.all.dt,
+        Larsson.all.dt,
+        Morita.all.dt
+    ),
+    subject.data.sources = c(
+        "Hsieh", "Thoreen", "Larsson", "Morita"
+    ),
+    value.col = "MRL_log2fc",
+    yaxis.title = "MRL log2 fold change with Torin 1\n(defined by HP5 data)"
 )
 
+ 
+```
 
+## Using Hsieh et al. data as the base
+
+
+```{r Hsieh_as_base}
+
+Hsieh.vs.others.dt <- compareWithBase(
+    base.dt = Hsieh.all.dt,
+    base.data.source = "Hsieh_all",
+    subject.dts = list(
+        Hsieh.all.dt,
+        Thoreen.all.dt,
+        Larsson.all.dt,
+        Morita.all.dt
+    ),
+    subject.data.sources = c(
+        "Hsieh", "Thoreen", "Larsson", "Morita"
+    ),
+    value.col = "trsl_eff_log2fc",
+    yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Hsieh et al. data)"
+)
+
+```
+
+
+## Using Thoreen et al. data as the base
+
+
+```{r Thoreen_as_base}
+
+Thoreen.vs.others.dt <- compareWithBase(
+    base.dt = Thoreen.all.dt,
+    base.data.source = "Thoreen_all",
+    subject.dts = list(
+        Hsieh.all.dt,
+        Thoreen.all.dt,
+        Larsson.all.dt,
+        Morita.all.dt
+    ),
+    subject.data.sources = c(
+        "Hsieh", "Thoreen", "Larsson", "Morita"
+    ),
+    value.col = "trsl_eff_log2fc",
+    yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Thoreen et al. data)"
+)
+
+```
+
+# Orthogonal validation of mTOR dependency of HIF-target genes
+
+
+
+```{r import_RCC4_noVHL_data}
+
+rcc4.noVHL.diff.trsl.dt <- file.path(
+    s8.1.1.dir, "RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA.csv"
+) %>%
+    fread
+
+sl.rcc4.noVHL.diff.trsl.dt <- rcc4.noVHL.diff.trsl.dt[
+    gene_id %in% all.filtered.gene.dt[
+                     RCC4_noVHL_NA == TRUE &
+                     RCC4_noVHL_Torin1 == TRUE,
+                     gene_id
+                 ]
+] 
+
+```
+
+
+```{r orthogonal_validation}
+
+mtor.hif.dt <- fread(
+    file.path(s9.dir, "mTOR_sensitivity_of_HIF_targets_by_class.csv")
+)
+
+mtor.hif.dt[
+  , Functional_classes := factor(
+        Functional_classes,
+        levels = c("Glycolysis", "Angiogenesis or vascular process")
+    )]
+
+mtor.hif.dt <- mtor.hif.dt[order(
+    Functional_classes,
+    MRL_log2FC_with_Torin_1
+)][, gene_name := factor(gene_name, levels = gene_name)]
+
+mergeWithClassDt <- function(mtor.hif.dt, dt, data.source){
+
+    if(
+    (any(colnames(dt) == "MRL_log2fc")) &
+     !(any(colnames(dt) == "trsl_eff_log2fc"))
+    ){
+        dt[, trsl_eff_log2fc := MRL_log2fc]
+    } else {}
+
+    dt[, median_trsl_eff_log2fc := median(trsl_eff_log2fc, na.rm = TRUE)]
+    dt[, translational_change := case_when(
+             trsl_eff_log2fc < median_trsl_eff_log2fc ~ "Downregulated",
+             TRUE ~ "Presearved / Upregulated",
+         )]
+    
+    merged.dt <- merge(
+        mtor.hif.dt,
+        dt[, .(gene_id, trsl_eff_log2fc, median_trsl_eff_log2fc, translational_change)],
+        by = "gene_id"
+    )
+    merged.dt[, data_source := data.source]
+    return(merged.dt)
+}
+
+
+all.mtor.hif.dt <- rbindlist(list(
+    mergeWithClassDt(
+        mtor.hif.dt, dt = sl.rcc4.noVHL.diff.trsl.dt,
+        data.source = "HP5_RCC4_noVHL"
+    ),
+    mergeWithClassDt(
+        mtor.hif.dt, dt = sl.rcc4.diff.trsl.dt,
+        data.source = "HP5_RCC4_VHL"
+    ),
+    mergeWithClassDt(
+        mtor.hif.dt, dt = Hsieh.all.dt,
+        data.source = "Hsieh"
+    ),
+    mergeWithClassDt(
+        mtor.hif.dt, dt = Thoreen.all.dt,
+        data.source = "Thoreen"
+    )
+))
+
+all.mtor.hif.dt[, data_source := factor(
+                      data_source,
+                      levels = c("HP5_RCC4_noVHL", "HP5_RCC4_VHL", "Hsieh", "Thoreen")
+                  )]
+    
+
+```
+
+
+```{r another_visualization}
+
+print(all.mtor.hif.dt[, table(data_source, Functional_classes)])
+
+gs <- lapply(
+    unique(all.mtor.hif.dt[, data_source]),
+    FUN = function(x){
+
+        med.val <- all.mtor.hif.dt[
+            data_source == x
+        ][!duplicated(data_source)][, median_trsl_eff_log2fc]
+
+        g <- ggplot(
+            data = all.mtor.hif.dt[data_source == x],
+            aes(
+                x = gsub("or", "or\n", Functional_classes),
+                y = trsl_eff_log2fc,
+                color = translational_change
+            )
+        ) +
+            geom_hline(
+                yintercept = med.val,
+                color = "gray60"
+            ) +
+            geom_boxplot(
+                outlier.shape = NA, fill = NA, color = "black"
+            ) +
+            geom_quasirandom(size = 2, varwidth = TRUE) +
+            scale_x_discrete(
+                guide = guide_axis(angle = 90), limits = rev
+            ) +
+            scale_color_manual(values = c(
+                                   "Downregulated" = "#EE6677",
+                                   "Presearved / Upregulated" = "#4477AA"
+                               )) +
+            theme(
+                legend.position = "none",
+                axis.title = element_blank()
+            ) +
+            ylab("Changes in MRL or translation with Torin 1") +
+            ggtitle(x) +
+            coord_cartesian(ylim = c(med.val - 1.2, med.val + 1.2))
+        print(as.character(x))
+        all.mtor.hif.dt[data_source == x] %$%
+            pairwise.wilcox.test(
+                x = trsl_eff_log2fc, g = Functional_classes
+            ) %>%
+            print
+        return(g)
+    }
+)
+
+cowplot::plot_grid(plotlist = gs, nrow = 1)
 
 ```
 
