@@ -1,7 +1,7 @@
 ---
 title: "s9-2-2 The effect of alternate TSS usage on translation"
 author: "Yoichiro Sugimoto"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+date: "06 January, 2022"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
@@ -18,8 +18,8 @@ output:
 
 # Environment setup and data preprocessing
 
-```{r load libraries, message = FALSE, warning = FALSE}
 
+```r
 ## Specify the number of CPUs to be used
 processors <- 8
 
@@ -29,12 +29,25 @@ processors <- 8
 temp <- sapply(list.files("../functions", full.names = TRUE), source)
 temp <- sapply(list.files("./functions", full.names = TRUE), source)  
 source(file.path("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R"), chdir = TRUE)
+```
+
+```
+## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
+## [1] "The following R objects were exported: total.sample.dt, total.coldata.df, total.comparison.dt"
+## [1] "Comparison information was loaded"
+## [1] "/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/results"
+## [1] "The following objects were loaded: tss.de.res.dt, tss.ratio.res.dt, diff.tss.res.dt"
+```
+
+```r
 source(file.path("../s8-analysis-of-translation/functions/test_differential_translation-v2.R"))
+```
 
-s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
-s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
-s4.2.1.tss.tx.map.RCC4.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-1-tss-transcript-mapping-RCC4")
+```
+## [1] "The following functions were exported: analyzeDtg(), subsetColdata()"
+```
 
+```r
 s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
 s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
 s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
@@ -45,7 +58,6 @@ s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
 
 set.seed(0)
-
 ```
 
 # Data preparation
@@ -54,8 +66,8 @@ set.seed(0)
 
 Alternate TSS usage data will be imported.
 
-```{r import alternate TSS summary data}
 
+```r
 ## Alternative TSS usage data of all alternative TSS genes
 sl.tss.all.res.dt <- fread(
     file.path(
@@ -150,63 +162,28 @@ fwrite(
         "VHL-dependent-alternate-TSS-and-translation-long.csv"
     )    
 )
-
-## Tx annotation data
-tss.tx.assignment.dt <- file.path(
-    s4.2.1.tss.tx.map.RCC4.dir,
-    "transcripts-per-TSS-for-RCC4.gtf"
-) %>%
-    {rtracklayer::import(.)} %>%
-as.data.frame %>% data.table
-
-tss.startcodon.dt <- tss.tx.assignment.dt[type == "CDS"][
-  , list(
-        start_codon_start = case_when(
-            strand == "+" ~ min(start),
-            strand == "-" ~ max(end)
-        ),
-        CDS_canonical
-    ), by = tss_name][!duplicated(tss_name)]
-
-tx.meta.info.dt <- file.path(
-    s8.3.dir,
-    "processed-tx-meta-info.csv"
-) %>%
-    fread %>%
-{merge(tss.startcodon.dt, ., by = "tss_name", all = TRUE)}
-
-meta.cols <- c(
-    "start_codon_start", "CDS_canonical",
-    "cds_len", "mean_utr5_len", "uORF_all", "TOP_motif_length"
-)
-
-tx.meta.info.dt <- tx.meta.info.dt[, c(
-    "tss_name", meta.cols
-), with = FALSE]
-
 ```
 
 
 ### Data for filtration
 
 
-```{r data filteration}
 
+```r
 all.filtered.tss.dt <- fread(
     file.path(
         s8.3.dir,
         "filtered_tss_for_polysome_analysis.csv"
     )
 )
-
 ```
 
 
 # Translational efficiency differences between alternate TSS isoforms against other isoforms of same gene
 
 
-```{r stats}
 
+```r
 alt.tss.res.dt <- sl.tss.all.trsl.res.dt[base_alt_TSS_flag == "alternative_TSS"]
 alt.tss.res.dt[, `:=`(
     alt_TSS_diff_poly = if_else(
@@ -219,23 +196,54 @@ print(paste0(
     "The number of alternative TSS genes before filteration: ",
     nrow(alt.tss.res.dt)
 ))
+```
 
+```
+## [1] "The number of alternative TSS genes before filteration: 149"
+```
+
+```r
 print("The number of genes after filtration for translational efficiency analysis:")
+```
+
+```
+## [1] "The number of genes after filtration for translational efficiency analysis:"
+```
+
+```r
 alt.tss.res.dt <- alt.tss.res.dt[
     tss_name %in% all.filtered.tss.dt[RCC4_noVHL_NA == TRUE, tss_name]
 ]
 
 print("The number and proportion of genes where the alternate TSS mRNA isoforms had different polysome distribution compared to other isoforms of same gene")
+```
+
+```
+## [1] "The number and proportion of genes where the alternate TSS mRNA isoforms had different polysome distribution compared to other isoforms of same gene"
+```
+
+```r
 alt.tss.res.dt[, table(alt_TSS_diff_poly)] %T>%
     print %>%
     prop.table %>%
     round(digit = 2)
+```
 
+```
+## alt_TSS_diff_poly
+##     Different Not different 
+##            75            42
+```
+
+```
+## alt_TSS_diff_poly
+##     Different Not different 
+##          0.64          0.36
 ```
 
 
-```{r plot te differences, fig.width = 7, fig.height = 14}
 
+```r
 ## From here MRL of isoforms from alternate TSS and other isoforms will be calculated
 normalized.polysome.count.dt <- file.path(
     s8.1.2.dir, "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL-normalized_count.csv"
@@ -279,7 +287,7 @@ cl.normalized.polysome.count.dt <- normalized.polysome.count.dt[
 sl.ribo.sample.groups <- grep(
     "ribo1", sample.colnames, value = TRUE
 ) %>%
-    gsub("ribo1", "ribo[[:digit:]]$", .)
+    gsub("ribo1", "ribo[[:digit:]](|A|B)", .)
 
 mrl.count.dt <- calculateWeightedMRL(
     normalized.polysome.count.dt = cl.normalized.polysome.count.dt,
@@ -360,64 +368,9 @@ ggplot(
     ) +
     ylab("Gene name") +
     xlab("MRL log2 fold change (alternate TSS mRNA isoform / other TSS mRNA isoform")
-
 ```
 
-
-# Sequence features of alternate TSS compared with base TSS
-
-
-```{r alternate_vs_base_TSS_sequence_features}
-
-alt.vs.base.dt <- sl.tss.all.trsl.res.dt[
-    gene_id %in% alt.tss.res.dt[alt_TSS_diff_poly == "Different", gene_id]
-][base_alt_TSS_flag != ""]
-
-alt.vs.base.dt <- merge(
-    alt.vs.base.dt,
-    tx.meta.info.dt,
-    by = "tss_name"
-)
-
-d.alt.vs.base.dt <- dcast(
-    alt.vs.base.dt,
-    gene_id + strand ~ base_alt_TSS_flag,
-    value.var = c("MRL_treated", "MRL_base", "q50", meta.cols)
-)
-
-d.alt.vs.base.dt[, `:=`(
-    MRL_log2fc = log2(MRL_treated_alternative_TSS / MRL_treated_base_TSS),
-    d_utr5_len = mean_utr5_len_alternative_TSS - mean_utr5_len_base_TSS,
-    d_uORF = uORF_all_alternative_TSS - uORF_all_base_TSS,
-    base_vs_alternate_CDS = case_when(
-        start_codon_start_alternative_TSS != start_codon_start_base_TSS ~ "Different",
-        start_codon_start_alternative_TSS == start_codon_start_base_TSS ~ "Same"
-    )
-)]
-
-d.alt.vs.base.dt[, table(base_vs_alternate_CDS, useNA = "always")]
-
-d.alt.vs.base.dt[
-   ,
-    table(
-        translation_alt_vs_base = ifelse(MRL_log2fc > 0, "Higher", "Lower"),
-        uORF_alt_vs_base = case_when(
-            d_uORF > 0 ~ "More",
-            d_uORF == 0 ~ "Same",
-            d_uORF < 0 ~ "Less"
-        ),
-        useNA = "always"
-        )] %T>%
-    print
-
-d.alt.vs.base.dt[, table(
-    translation_alt_vs_base = ifelse(MRL_log2fc > 0, "Higher", "Lower"),
-    utr5_len__alt_vs_base = ifelse(d_utr5_len > 0, "Longer", "Shorter"),
-    useNA = "always"
-)] %T>%
-    print
-
-```
+![](s9-2-2-alt-TSS-translation-v2_files/figure-html/plot te differences-1.png)<!-- -->
 
 
 
@@ -431,14 +384,14 @@ Two models will be considered here:
 2. Omitting mRNA abundance change in each mRNA isoform
 
 
-```{r data preprocessing for simulation}
 
+```r
 sl.tss.all.trsl.res.dt[, `:=`(
     ## Upon VHL loss
     mean_MRL = rowMeans(cbind(
         MRL_treated, MRL_base
     ), na.rm = TRUE),
-    mean_proportion = rowMeans(cbind(
+     mean_proportion = rowMeans(cbind(
         corrected_proportion_treated, corrected_proportion_base
     ), na.rm = TRUE),
     alt_TSS_diff_trsl =
@@ -457,37 +410,27 @@ sl.tss.all.trsl.res.dt[, `:=`(
     dMRL_alt_TSS_indep_noVHL = MRL_treated * mean_proportion,
     dMRL_alt_TSS_indep_VHL = MRL_base * mean_proportion
 )]
-
-
 ```
-
-
 
 
 ## Data export for publication
 
 
-```{r data export for publication}
 
-for.export.dt <- merge(
-    sl.tss.all.trsl.res.dt,
-    d.alt.vs.base.dt[, .(gene_id, base_vs_alternate_CDS)],
-    by = "gene_id",
-    all.x = TRUE
-) %>% {.[, .(
-           tss_name,
-           alt_tss_reg_mode, 
-           base_alt_TSS_flag,
-           base_vs_alternate_CDS,
-           de_log2fc,
-           tx_FDR,                         
-           corrected_proportion_base, corrected_proportion_treated,
-           dProportion,
-           meanNormCount_base, meanNormCount_treated,
-           alt_TSS_diff_trsl,
-           gene_FDR_for_isoDTE, tx_FDR_for_isoDTE,
-           gene_MRL_log2fc, MRL_log2fc, MRL_base, MRL_treated
-       )]}
+```r
+for.export.dt <- copy(sl.tss.all.trsl.res.dt)[, .(
+                         tss_name,
+                         alt_tss_reg_mode, 
+                         base_alt_TSS_flag,
+                         de_log2fc,
+                         tx_FDR,                         
+                         corrected_proportion_base, corrected_proportion_treated,
+                         dProportion,
+                         meanNormCount_base, meanNormCount_treated,
+                         alt_TSS_diff_trsl,
+                         gene_FDR_for_isoDTE, tx_FDR_for_isoDTE,
+                         gene_MRL_log2fc, MRL_log2fc, MRL_base, MRL_treated
+                     )]
 
 for.export.dt <- merge(
     filtered.tss.with.quantile.dt[, .(
@@ -566,26 +509,37 @@ fwrite(
         s9.dir, "alteranate_TSS_and_translation_in_RCC4.csv"
     )
 )
-
 ```
 
 
 ## Simulation
 
 
-```{r calculate blocked gene level MRL estimate, fig.width = 7}
 
+```r
 ## The analysis will be performed for genes with an alternate TSS isoform differentially translated compared to other isoforms of the same gene
 sl.tss.all.trsl.res.dt <- sl.tss.all.trsl.res.dt[alt_TSS_diff_trsl == TRUE]
 
 print("Confirmation")
+```
+
+```
+## [1] "Confirmation"
+```
+
+```r
 sl.tss.all.trsl.res.dt[, .(
     tss_name, gene_name,
     gene_MRL_log2fc, mean_MRL, mean_proportion
 )] %>%
     {.[!complete.cases(.)]}
+```
 
+```
+## Empty data.table (0 rows and 5 cols): tss_name,gene_name,gene_MRL_log2fc,mean_MRL,mean_proportion
+```
 
+```r
 measured.vs.estimated.dt <- sl.tss.all.trsl.res.dt[
     ,
     list(
@@ -652,13 +606,53 @@ g2 <- ggplot(
     ggtitle("Model ii")
 
 cowplot::plot_grid(g1, g2)
+```
 
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
 
+```
+## Warning: Removed 74 rows containing missing values (geom_text_repel).
+```
+
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+```
+## Warning: Removed 5 rows containing non-finite values (stat_smooth).
+```
+
+```
+## Warning: Removed 5 rows containing missing values (geom_point).
+```
+
+```
+## Warning: Removed 74 rows containing missing values (geom_text_repel).
+```
+
+![](s9-2-2-alt-TSS-translation-v2_files/figure-html/calculate blocked gene level MRL estimate-1.png)<!-- -->
+
+```r
 print("The number of genes analysed for model i")
+```
+
+```
+## [1] "The number of genes analysed for model i"
+```
+
+```r
 measured.vs.estimated.dt[
   , .(simulated_gene_MRL_log2fc_alt_TSS_dep, gene_MRL_log2fc)
 ] %>% {nrow(.[complete.cases(.)])}
+```
 
+```
+## [1] 75
+```
+
+```r
 measured.vs.estimated.dt %$%
     cor.test(
         x = simulated_gene_MRL_log2fc_alt_TSS_dep,
@@ -666,13 +660,41 @@ measured.vs.estimated.dt %$%
         method = "pearson",
         alternative = "two.sided"
     )
+```
 
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  simulated_gene_MRL_log2fc_alt_TSS_dep and gene_MRL_log2fc
+## t = 12.688, df = 73, p-value < 2.2e-16
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  0.7422396 0.8890586
+## sample estimates:
+##       cor 
+## 0.8294691
+```
 
+```r
 print("The number of genes analysed for model ii")
+```
+
+```
+## [1] "The number of genes analysed for model ii"
+```
+
+```r
 measured.vs.estimated.dt[
   , .(simulated_gene_MRL_log2fc_alt_TSS_indep, gene_MRL_log2fc)
 ] %>% {nrow(.[complete.cases(.)])}
+```
 
+```
+## [1] 70
+```
+
+```r
 measured.vs.estimated.dt %$%
     cor.test(
         x = simulated_gene_MRL_log2fc_alt_TSS_indep,
@@ -680,7 +702,23 @@ measured.vs.estimated.dt %$%
         method = "pearson",
         alternative = "two.sided"
     )
+```
 
+```
+## 
+## 	Pearson's product-moment correlation
+## 
+## data:  simulated_gene_MRL_log2fc_alt_TSS_indep and gene_MRL_log2fc
+## t = 5.3558, df = 68, p-value = 1.09e-06
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  0.3551665 0.6911944
+## sample estimates:
+##      cor 
+## 0.544684
+```
+
+```r
 cocor::cocor(
            formula = ~ gene_MRL_log2fc + simulated_gene_MRL_log2fc_alt_TSS_indep |
                gene_MRL_log2fc + simulated_gene_MRL_log2fc_alt_TSS_dep,
@@ -688,14 +726,31 @@ cocor::cocor(
            alternative = "two.sided",
            test = "williams1959"
        )
+```
 
+```
+## 
+##   Results of a comparison of two overlapping correlations based on dependent groups
+## 
+## Comparison between r.jk (gene_MRL_log2fc, simulated_gene_MRL_log2fc_alt_TSS_indep) = 0.5447 and r.jh (gene_MRL_log2fc, simulated_gene_MRL_log2fc_alt_TSS_dep) = 0.8
+## Difference: r.jk - r.jh = -0.2553
+## Related correlation: r.kh = 0.0729
+## Data: measured.vs.estimated.dt: j = gene_MRL_log2fc, k = simulated_gene_MRL_log2fc_alt_TSS_indep, h = simulated_gene_MRL_log2fc_alt_TSS_dep
+## Group size: n = 70
+## Null hypothesis: r.jk is equal to r.jh
+## Alternative hypothesis: r.jk is not equal to r.jh (two-sided)
+## Alpha: 0.05
+## 
+## williams1959: Williams' t (1959)
+##   t = -2.8114, df = 67, p-value = 0.0065
+##   Null hypothesis rejected
 ```
 
 
 ## Plot range of gene level MRL log2 FC
 
-```{r plot a range of gene level MRL log2 fold change}
 
+```r
 all.filtered.gene.dt <- fread(
     file.path(
         s8.3.dir,
@@ -726,106 +781,171 @@ dte.gene.res.dt[
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
     ylab("Proportion") +
     xlab("MRL log2 fold change upon VHL loss")
-
 ```
 
-
-
-# Examples
-
-The following genes are candidate of interesting examples.
-
-```{r examples}
-
-measured.vs.estimated.dt[order(gene_MRL_log2fc)][
-  , .(gene_id, gene_name, gene_MRL_log2fc, simulated_gene_MRL_log2fc_alt_TSS_dep)
-] %>% slice_max(gene_MRL_log2fc, n = 15)
-
-measured.vs.estimated.dt[order(gene_MRL_log2fc)][
-  , .(gene_id, gene_name, gene_MRL_log2fc, simulated_gene_MRL_log2fc_alt_TSS_dep)
-] %>% slice_min(gene_MRL_log2fc, n = 15)
-
+```
+## Warning: Removed 4 rows containing non-finite values (stat_bin).
 ```
 
-## Preprocess data for gene and TSS level analysis
+![](s9-2-2-alt-TSS-translation-v2_files/figure-html/plot a range of gene level MRL log2 fold change-1.png)<!-- -->
+
+# MXI1
 
 
-```{r preprocess data for gene level analysis}
+MXI1 was one of the most significantly differentially translated mRNAs upon VHL loss, and the analysis above indicated the strong contribution of the alternate TSS usage.
+Here, the mode of action of the translational efficiency change will be examined.
 
-proportionPerFraction <- function(count.per.fraction.dt, ref.col = "gene_id", data.col.grep = "^RCC4"){
+## Gene level
 
-    base.cols <- c("gene_id", "gene_name", "biotype")
 
-    m.count.per.fraction.dt <- melt(
-        count.per.fraction.dt,
-        id.vars = unique(c(ref.col, base.cols)),
-        measure.vars = grep(data.col.grep, colnames(count.per.fraction.dt), value = TRUE),
-        value.name = "normalized_count",
-        variable.name = "sample_name"
-    )
 
-    m.count.per.fraction.dt[, `:=`(
-        sample_group = sub("(.*?_.*?_.*?)_.*", "\\1", sample_name),
-        VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
-        EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
-        clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
-        fraction = str_split_fixed(sample_name, "_", n = 8)[, 7]
-    )]
-
-    m.count.per.fraction.dt[, `:=`(
-        sum_across_fraction = sum(normalized_count, na.rm = TRUE)
-    ), by = list(get(ref.col), gene_id, gene_name, sample_group, clone)]
-
-    m.count.per.fraction.dt[, `:=`(
-        ratio_across_fraction = normalized_count / sum_across_fraction
-    )]
-
-    m.count.per.fraction.dt[, `:=`(
-        sd_norm_count = sd(normalized_count),
-        mean_norm_count = mean(normalized_count),
-        sd_ratio = sd(ratio_across_fraction),
-        mean_ratio = mean(ratio_across_fraction),
-        lower_ratio_range = mean(ratio_across_fraction) - sd(ratio_across_fraction),
-        upper_ratio_range = mean(ratio_across_fraction) + sd(ratio_across_fraction)
-    ), by = list(get(ref.col), gene_id, gene_name, sample_group, fraction)]
-
-    m.count.per.fraction.dt <- m.count.per.fraction.dt[clone == 1]
-
-    return(m.count.per.fraction.dt)
-}
-
-## Gene level data
+```r
 count.per.fraction.dt <- fread(file.path(
     s8.1.1.dir,
     "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL-normalized_count.csv"
 ))
 
-m.count.per.fraction.dt <- proportionPerFraction(
-    count.per.fraction.dt = count.per.fraction.dt,
-    ref.col = "gene_id",
-    data.col.grep = "^RCC4"
+base.cols <- c("gene_id", "gene_name", "biotype")
+
+m.count.per.fraction.dt <- melt(
+    count.per.fraction.dt,
+    id.vars = base.cols,
+    value.name = "normalized_count",
+    variable.name = "sample_name"
 )
 
-## TSS level data
-tss.count.per.fraction.dt <- fread(file.path(
+m.count.per.fraction.dt[, `:=`(
+    sample_group = sub("(.*?_.*?_.*?)_.*", "\\1", sample_name),
+    VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
+    EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
+    clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
+    fraction = str_split_fixed(sample_name, "_", n = 8)[, 7]
+)]
+
+m.count.per.fraction.dt[, `:=`(
+    sum_across_fraction = sum(normalized_count, na.rm = TRUE)
+), by = list(gene_id, gene_name, sample_group, clone)]
+
+m.count.per.fraction.dt[, `:=`(
+    ratio_across_fraction = normalized_count / sum_across_fraction
+)]
+
+m.count.per.fraction.dt[, `:=`(
+    sd_norm_count = sd(normalized_count),
+    mean_norm_count = mean(normalized_count),
+    sd_ratio = sd(ratio_across_fraction),
+    mean_ratio = mean(ratio_across_fraction),
+    lower_ratio_range = mean(ratio_across_fraction) - sd(ratio_across_fraction),
+    upper_ratio_range = mean(ratio_across_fraction) + sd(ratio_across_fraction)
+), by = list(gene_id, gene_name, sample_group, fraction)]
+
+m.count.per.fraction.dt <- m.count.per.fraction.dt[clone == 1]
+
+m.count.per.fraction.dt[gene_name == "MXI1"] %>%
+    ggplot(
+        aes(
+            x = fraction,
+            y = mean_ratio,
+            color = VHL,
+            group = VHL
+        )
+    ) +
+    geom_ribbon(
+        aes(
+            ymin = lower_ratio_range, ymax = upper_ratio_range, fill = VHL
+        ),
+        color = NA, alpha = 0.2
+    ) +
+    geom_line(
+        size = 1.25
+    ) +
+    ylab("% of mRNA in each polysome fraction in RCC-4") +
+    xlab("Fraction") +
+    ggsci::scale_color_npg() +
+    ggsci::scale_fill_npg() +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    geom_hline(yintercept = 0) +
+    coord_cartesian(ylim = c(0, 0.4)) +
+    theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        aspect.ratio = 2
+    )
+```
+
+![](s9-2-2-alt-TSS-translation-v2_files/figure-html/gene level-1.png)<!-- -->
+
+
+## mRNA TSS isoforms
+
+
+```r
+count.per.fraction.dt <- fread(file.path(
     s8.1.2.dir,
     "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL-normalized_count.csv"
 ))
 
-m.tss.count.per.fraction.dt <- proportionPerFraction(
-    count.per.fraction.dt = tss.count.per.fraction.dt,
-    ref.col = "tss_name",
-    data.col.grep = "^RCC4"
+base.cols <- c("tss_name", "gene_id", "gene_name", "biotype")
+
+m.count.per.fraction.dt <- melt(
+    count.per.fraction.dt,
+    id.vars = base.cols,
+    value.name = "normalized_count",
+    variable.name = "sample_name"
 )
 
+## Filter TSS not expressed
+m.count.per.fraction.dt <- m.count.per.fraction.dt[
+    tss_name %in% sl.tss.all.trsl.res.dt[, tss_name]
+]
 
-```
+top3.tss.dt <- sl.tss.all.trsl.res.dt[
+  , rowMeans(.SD), .SDcols = c("proportion_treated", "proportion_base"),
+    by = list(gene_id, gene_name, tss_name)
+][order(V1, decreasing = TRUE)][, head(.SD, 3), by = list(gene_id)]
 
-## Import TSS expression data
+m.count.per.fraction.dt[
+  , tss_name := case_when(
+        tss_name %in% top3.tss.dt[, tss_name] ~ tss_name,
+        TRUE ~ paste0(gene_id, "_", "others")
+    )
+]
 
+## Only plot top 3
+m.count.per.fraction.dt <- m.count.per.fraction.dt[!grepl("_others$", tss_name)]
 
-```{r import_expression_data}
+m.count.per.fraction.dt <- m.count.per.fraction.dt[, list(
+    gene_id, gene_name, biotype, normalized_count = sum(normalized_count)
+), by = list(sample_name, tss_name)][!duplicated(paste0(sample_name, "_", tss_name))]
 
+m.count.per.fraction.dt[, `:=`(
+    sample_group = sub("(.*?_.*?_.*?)_.*", "\\1", sample_name),
+    VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
+    EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
+    clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
+    fraction = str_split_fixed(sample_name, "_", n = 8)[, 7],
+    tss_index = str_split_fixed(tss_name, "_", n = 2)[, 2]
+)]
+
+m.count.per.fraction.dt[, `:=`(
+    sum_across_fraction = sum(normalized_count, na.rm = TRUE)
+), by = list(tss_name, sample_group, clone)]
+
+m.count.per.fraction.dt[, `:=`(
+    ratio_across_fraction = normalized_count / sum_across_fraction
+)]
+
+m.count.per.fraction.dt[, `:=`(
+    sd_norm_count = sd(normalized_count),
+    mean_norm_count = mean(normalized_count),
+    sd_ratio = sd(ratio_across_fraction),
+    mean_ratio = mean(ratio_across_fraction),
+    lower_ratio_range = mean(ratio_across_fraction) - sd(ratio_across_fraction),
+    upper_ratio_range = mean(ratio_across_fraction) + sd(ratio_across_fraction)
+), by = list(tss_name, sample_group, fraction)]
+
+m.count.per.fraction.dt <- m.count.per.fraction.dt[clone == 1]
+
+## DE data
 total.rcc4.vhl.loss.comp.name <- "RCC4_xx_HIF1B_N__noVHL_vs_VHL"
 rcc4.tss.de.res.dt <- tss.de.res.dt[comparison_name == total.rcc4.vhl.loss.comp.name]
 
@@ -836,18 +956,6 @@ m.rcc4.tss.de.res.dt <- melt(
     value.name = "TPM",
     variable.name = "data_source"
 )
-
-top3.tss.dt <- sl.tss.all.trsl.res.dt[
-  , rowMeans(.SD), .SDcols = c("proportion_treated", "proportion_base"),
-    by = list(gene_id, gene_name, tss_name)
-][order(V1, decreasing = TRUE)][, head(.SD, 3), by = list(gene_id)]
-
-
-```
-
-Only the top3 the most expressed TSS will be analysed.
-
-```{r processing_data_for_TSS_analysis}
 
 m.rcc4.tss.de.res.dt[
   , tss_name := case_when(
@@ -872,170 +980,129 @@ m.rcc4.tss.de.res.dt[, `:=`(
     tss_index = str_split_fixed(tss_name, "_", n = 2)[, 2]
 )]
 
-```
 
-## Plot data for the selected examples
+sl.gene.name <- "MXI1"
 
+tss.to.plot.dt <- data.table(
+    tss_name = unique(m.rcc4.tss.de.res.dt[gene_name == sl.gene.name, tss_name])
+)[order(tss_name)]
 
-```{r plot_data_for_examples}
- 
-plotExamples <- function(gene.id, m.count.per.fraction.dt, m.tss.count.per.fraction.dt, m.rcc4.tss.de.res.dt){
+tss.to.plot.dt[, `:=`(
+    tss_index = str_split_fixed(tss_name, "_", n = 2)[, 2],
+    assigned_color = c("#D33F6A", "#023FA5", "#7D87B9")#, "gray40")
+)]
 
-    gene.name <- m.count.per.fraction.dt[gene_id == gene.id][1, gene_name]
-    ## Gene level
-    g <- m.count.per.fraction.dt[gene_id == gene.id] %>%
-        ggplot(
-            aes(
-                x = fraction,
-                y = mean_ratio,
-                color = VHL,
-                group = VHL
-            )
-        ) +
-        geom_ribbon(
-            aes(
-                ymin = lower_ratio_range, ymax = upper_ratio_range, fill = VHL
-            ),
-            color = NA, alpha = 0.2
-        ) +
-        geom_line(
-            size = 1.25
-        ) +
-        ylab("% of mRNA in each polysome fraction in RCC-4") +
-        xlab("Fraction") +
-        ggsci::scale_color_npg() +
-        ggsci::scale_fill_npg() +
-        scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-        geom_hline(yintercept = 0) +
-        coord_cartesian(ylim = c(0, 0.4)) +
-        theme(
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-            aspect.ratio = 2
-        ) +
-        ggtitle(paste0(gene.name, " (gene level)"))
+tss.exp.dt <- m.rcc4.tss.de.res.dt[gene_name == sl.gene.name]
 
-    print(g)
+tss.poly.dt <- m.count.per.fraction.dt[
+    gene_name == sl.gene.name &
+    VHL == "noVHL"    
+]
 
-    ## TSS level
-    tss.to.plot.dt <- data.table(
-        tss_name = unique(m.rcc4.tss.de.res.dt[gene_id == gene.id, tss_name])
-    )[order(tss_name)]
-
-    tss.to.plot.dt[, `:=`(
-        tss_index = str_split_fixed(tss_name, "_", n = 2)[, 2],
-        assigned_color = c("#D33F6A", "#023FA5", "#7D87B9")[1:nrow(tss.to.plot.dt)]#, "gray40")
-    )]
-
-    tss.exp.dt <- m.rcc4.tss.de.res.dt[tss_name %in% tss.to.plot.dt[, tss_name]]
-
-    tss.poly.dt <- m.tss.count.per.fraction.dt[
-    (tss_name %in% tss.to.plot.dt[, tss_name]) &
-    (VHL == "noVHL")
-    ]
-
-    tss.poly.dt[, tss_index := str_split_fixed(tss_name, "_", 2)[, 2]]
-
-    g2 <- ggplot(
-        data = tss.exp.dt,
-        aes(
-            x = VHL,
-            y = TPM,
-            fill = tss_index
-        )
+ggplot(
+    data = tss.exp.dt,
+    aes(
+        x = VHL,
+        y = TPM,
+        fill = tss_index
+    )
+) +
+    geom_bar(stat = "identity") +
+    scale_fill_manual(
+        values = setNames(tss.to.plot.dt[, assigned_color], nm = tss.to.plot.dt[, tss_index])
     ) +
-        geom_bar(stat = "identity") +
-        scale_fill_manual(
-            values = setNames(tss.to.plot.dt[, assigned_color], nm = tss.to.plot.dt[, tss_index])
-        ) +
-        xlab("VHL status") +
-        ylab("mRNA abundance (TPM)") +
-        theme(
-            legend.position = "none",
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-            aspect.ratio = 4
-        )
+    xlab("VHL status") +
+    ylab("mRNA abundance (TPM)") +
+    theme(
+        legend.position = "none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        aspect.ratio = 4
+    )
+```
 
-    g3 <- ggplot(
-        data = tss.poly.dt,
+![](s9-2-2-alt-TSS-translation-v2_files/figure-html/MXI1 isoforms-1.png)<!-- -->
+
+```r
+ggplot(
+    data = tss.poly.dt,
+    aes(
+        x = fraction,
+        y = mean_ratio,
+        color = tss_index,
+        group = tss_index
+    )
+) +
+    geom_ribbon(
         aes(
-            x = fraction,
-            y = mean_ratio,
-            color = tss_index,
-            group = tss_index
-        )
+            ymin = lower_ratio_range, ymax = upper_ratio_range, fill = tss_index
+        ),
+        color = NA, alpha = 0.2
     ) +
-        geom_ribbon(
-            aes(
-                ymin = lower_ratio_range, ymax = upper_ratio_range, fill = tss_index
-            ),
-            color = NA, alpha = 0.2
-        ) +
-        geom_line(
-            size = 1.25
-        ) +
-        ylab("% of mRNA in each polysome fraction in RCC-4") +
-        xlab("Fraction") +
-        scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-        scale_fill_manual(
-            values = setNames(tss.to.plot.dt[, assigned_color], nm = tss.to.plot.dt[, tss_index])
-        ) +
-        geom_hline(yintercept = 0) +
-        coord_cartesian(ylim = c(0, 0.4)) +
-        scale_color_manual(
-            values = setNames(tss.to.plot.dt[, assigned_color], nm = tss.to.plot.dt[, tss_index])
-        ) +
-        theme(
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-            aspect.ratio = 2
-        )
-
-    print(g2)
-    print(g3)
-
-    return()
-}
-
-
+    geom_line(
+        size = 1.25
+    ) +
+    ylab("% of mRNA in each polysome fraction in RCC-4") +
+    xlab("Fraction") +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    scale_fill_manual(
+        values = setNames(tss.to.plot.dt[, assigned_color], nm = tss.to.plot.dt[, tss_index])
+    ) +
+    geom_hline(yintercept = 0) +
+    coord_cartesian(ylim = c(0, 0.4)) +
+    scale_color_manual(
+        values = setNames(tss.to.plot.dt[, assigned_color], nm = tss.to.plot.dt[, tss_index])
+    ) +
+    theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        aspect.ratio = 2
+    )
 ```
 
-
-## Plot examples
-
-The following genes were selected as the examples.
-
-- Translationally up-regulated genes
-  - Dispropotionally upregulated: MXI1, WFDC3
-- Translationally down-regulated genes
-  - Dispropotionally upregulated: EVA1A
-  - Dispropotionally downregulated: RGS5
-
-
-```{r plot_examples}
-
-selected.gene.id <- c(
-    "MXI1" = "ENSG00000119950",
-    "WFDC3" = "ENSG00000124116",
-    "EVA1A" = "ENSG00000115363",
-    "RGS5" = "ENSG00000143248"
-)
-
-temp <- lapply(
-    selected.gene.id,
-    plotExamples,
-    m.count.per.fraction.dt = m.count.per.fraction.dt,
-    m.tss.count.per.fraction.dt = m.tss.count.per.fraction.dt,
-    m.rcc4.tss.de.res.dt = m.rcc4.tss.de.res.dt
-)
-
-```
+![](s9-2-2-alt-TSS-translation-v2_files/figure-html/MXI1 isoforms-2.png)<!-- -->
 
 
 
 
 # Session information
 
-```{r sessionInfo}
 
+```r
 sessionInfo()
+```
 
+```
+## R version 4.0.0 (2020-04-24)
+## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+## Running under: CentOS Linux 7 (Core)
+## 
+## Matrix products: default
+## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
+## [8] base     
+## 
+## other attached packages:
+## [1] knitr_1.28        stringr_1.4.0     magrittr_1.5      data.table_1.12.8
+## [5] dplyr_1.0.0       khroma_1.3.0      ggplot2_3.3.1     rmarkdown_2.2    
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_1.0.4.6     pillar_1.4.4     compiler_4.0.0   tools_4.0.0     
+##  [5] digest_0.6.25    lattice_0.20-41  nlme_3.1-148     evaluate_0.14   
+##  [9] lifecycle_0.2.0  tibble_3.0.1     gtable_0.3.0     mgcv_1.8-31     
+## [13] pkgconfig_2.0.3  rlang_0.4.10     Matrix_1.2-18    ggsci_2.9       
+## [17] ggrepel_0.8.2    yaml_2.2.1       xfun_0.14        cocor_1.1-3     
+## [21] withr_2.4.1      generics_0.0.2   vctrs_0.3.1      cowplot_1.0.0   
+## [25] grid_4.0.0       tidyselect_1.1.0 glue_1.4.1       R6_2.4.1        
+## [29] purrr_0.3.4      farver_2.0.3     splines_4.0.0    scales_1.1.1    
+## [33] ellipsis_0.3.1   htmltools_0.4.0  colorspace_1.4-1 labeling_0.3    
+## [37] stringi_1.4.6    munsell_0.5.0    crayon_1.3.4
 ```

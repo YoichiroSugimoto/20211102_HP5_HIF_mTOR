@@ -7,7 +7,7 @@
 #SBATCH --partition=cpu
 
 ## Run with the following commands
-# sbatch --dependency=afterok:24925458 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/3_run_individual_rmds_sbatch.sh
+# sbatch /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/3_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
 conda activate five_prime_seq_for_VHL_loss_v0.1.1

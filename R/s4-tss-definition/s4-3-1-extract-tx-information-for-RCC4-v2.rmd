@@ -117,7 +117,7 @@ tss.count.per.pos.dt <- tssWeightByPosition(
 
 ```
 
-# Extract transcript meta information
+# Extract transcript meta information for RCC4 VHL
 
 ```{r export tx meta infor}
 
