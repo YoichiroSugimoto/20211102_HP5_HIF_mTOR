@@ -151,6 +151,13 @@ fwrite(
     )    
 )
 
+```
+
+## TSS isoform annotation
+
+
+```{r data for annotation}
+
 ## Tx annotation data
 tss.tx.assignment.dt <- file.path(
     s4.2.1.tss.tx.map.RCC4.dir,
@@ -184,11 +191,50 @@ tx.meta.info.dt <- tx.meta.info.dt[, c(
     "tss_name", meta.cols
 ), with = FALSE]
 
+
+```
+
+## Extract meta information for alternate and base TSS
+
+```{r alternate_vs_base_TSS_sequence_features}
+
+alt.vs.base.dt <- sl.tss.all.trsl.res.dt[base_alt_TSS_flag != ""]
+
+alt.vs.base.dt <- merge(
+    alt.vs.base.dt,
+    tx.meta.info.dt,
+    by = "tss_name",
+    all.x = TRUE
+)
+
+d.alt.vs.base.dt <- dcast(
+    alt.vs.base.dt,
+    gene_id + strand ~ base_alt_TSS_flag,
+    value.var = c("MRL_treated", "MRL_base", "q50", meta.cols)
+)
+
+d.alt.vs.base.dt[, `:=`(
+    MRL_log2fc_alt_vs_base = log2(
+        MRL_treated_alternative_TSS / MRL_treated_base_TSS
+    ),
+    d_utr5_len = mean_utr5_len_alternative_TSS - mean_utr5_len_base_TSS,
+    d_uORF = uORF_all_alternative_TSS - uORF_all_base_TSS,
+    base_vs_alternate_CDS = case_when(
+        start_codon_start_alternative_TSS != start_codon_start_base_TSS ~
+            "Different",
+        start_codon_start_alternative_TSS == start_codon_start_base_TSS ~
+            "Same"
+    )
+)]
+
+d.alt.vs.base.dt <- d.alt.vs.base.dt[, .(
+    gene_id, base_vs_alternate_CDS, d_utr5_len, d_uORF
+)]
+
 ```
 
 
-### Data for filtration
-
+## Data for filtration
 
 ```{r data filteration}
 
@@ -210,20 +256,34 @@ all.filtered.tss.dt <- fread(
 alt.tss.res.dt <- sl.tss.all.trsl.res.dt[base_alt_TSS_flag == "alternative_TSS"]
 alt.tss.res.dt[, `:=`(
     alt_TSS_diff_poly = if_else(
-        gene_FDR_for_isoDTE < 0.1 & tx_FDR_for_isoDTE < 0.1, "Different", "Not different",
+        gene_FDR_for_isoDTE < 0.1 & tx_FDR_for_isoDTE < 0.1,
+        true = "Different", false = "Not different",
         missing = "Not different"
     )
 )]
+
+alt.tss.res.dt <- merge(
+    alt.tss.res.dt,
+    d.alt.vs.base.dt,
+    by = "gene_id",
+    all.x = TRUE
+)
 
 print(paste0(
     "The number of alternative TSS genes before filteration: ",
     nrow(alt.tss.res.dt)
 ))
 
+print("Differentially CDS isoforms (between alternate TSS and base TSS isoforms)")
+alt.tss.res.dt[, table(base_vs_alternate_CDS, useNA = "always")] %T>%
+    print %>%
+    {prop.table(.[!is.na(names(.))])} %>%
+    round(digits = 2)
+
 print("The number of genes after filtration for translational efficiency analysis:")
 alt.tss.res.dt <- alt.tss.res.dt[
     tss_name %in% all.filtered.tss.dt[RCC4_noVHL_NA == TRUE, tss_name]
-]
+] %T>% {print(nrow(.))}
 
 print("The number and proportion of genes where the alternate TSS mRNA isoforms had different polysome distribution compared to other isoforms of same gene")
 alt.tss.res.dt[, table(alt_TSS_diff_poly)] %T>%
@@ -233,8 +293,10 @@ alt.tss.res.dt[, table(alt_TSS_diff_poly)] %T>%
 
 ```
 
+## Calculate translational efficiency difference between alternate TSS vs all other TSS
 
-```{r plot te differences, fig.width = 7, fig.height = 14}
+
+```{r calculate te differences}
 
 ## From here MRL of isoforms from alternate TSS and other isoforms will be calculated
 normalized.polysome.count.dt <- file.path(
@@ -310,7 +372,8 @@ bin.mrl.alt.other.dt[, MRL_log2fc_alt_others := log2(alternate / others)]
 bin.mrl.alt.other.dt <- merge(
     alt.tss.res.dt[, .(
         gene_id, gene_name, alt_TSS_diff_poly,
-        dProportion, alt_tss_reg_mode
+        dProportion, alt_tss_reg_mode,
+        base_vs_alternate_CDS, d_utr5_len, d_uORF
     )],
     bin.mrl.alt.other.dt,
     by = "gene_id"
@@ -326,7 +389,16 @@ bin.mrl.alt.other.dt <- merge(
          alt_tss_reg_mode = factor(alt_tss_reg_mode, levels = c("Up", "Down"))
      )]
 }
-ggplot(
+
+
+```
+
+## Data visualization
+
+
+```{r plot te differences, fig.width = 7, fig.height = 20}
+
+g1 <- ggplot(
     data = bin.mrl.alt.other.dt,
     aes(
         y = gene_name,
@@ -345,10 +417,12 @@ ggplot(
                            "Different" = "black",
                            "Not different" = "gray60"
                        )) +
+    scale_size_area() +
     facet_grid(alt_tss_reg_mode ~ ., scales = "free_y", space = "free_y") +
     theme_bw(12) +
     theme(
-        legend.box = "vertical"
+        ## legend.box = "vertical",
+        legend.position = "bottom"
     ) +
     guides(
         size = guide_legend(
@@ -361,64 +435,160 @@ ggplot(
     ylab("Gene name") +
     xlab("MRL log2 fold change (alternate TSS mRNA isoform / other TSS mRNA isoform")
 
-```
-
-
-# Sequence features of alternate TSS compared with base TSS
-
-
-```{r alternate_vs_base_TSS_sequence_features}
-
-alt.vs.base.dt <- sl.tss.all.trsl.res.dt[
-    gene_id %in% alt.tss.res.dt[alt_TSS_diff_poly == "Different", gene_id]
-][base_alt_TSS_flag != ""]
-
-alt.vs.base.dt <- merge(
-    alt.vs.base.dt,
-    tx.meta.info.dt,
-    by = "tss_name"
-)
-
-d.alt.vs.base.dt <- dcast(
-    alt.vs.base.dt,
-    gene_id + strand ~ base_alt_TSS_flag,
-    value.var = c("MRL_treated", "MRL_base", "q50", meta.cols)
-)
-
-d.alt.vs.base.dt[, `:=`(
-    MRL_log2fc = log2(MRL_treated_alternative_TSS / MRL_treated_base_TSS),
-    d_utr5_len = mean_utr5_len_alternative_TSS - mean_utr5_len_base_TSS,
-    d_uORF = uORF_all_alternative_TSS - uORF_all_base_TSS,
-    base_vs_alternate_CDS = case_when(
-        start_codon_start_alternative_TSS != start_codon_start_base_TSS ~ "Different",
-        start_codon_start_alternative_TSS == start_codon_start_base_TSS ~ "Same"
+g2 <- ggplot(
+    data = bin.mrl.alt.other.dt,
+    aes(
+        y = gene_name,
+        x = 1
     )
-)]
+) +
+    geom_text(
+        aes(
+            label = if_else(
+                base_vs_alternate_CDS == "Different", "Yes", NA_character_,
+                missing = "(NA)"
+            )
+        )
+    ) +
+    scale_y_discrete(expand = expansion(mult = c(0.04))) +
+    facet_grid(alt_tss_reg_mode ~ ., scales = "free_y", space = "free_y") +
+    theme_classic(12) +
+    theme(
+        ## legend.position = "bottom",
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank()
+    ) +
+    ylab("Gene name")
 
-d.alt.vs.base.dt[, table(base_vs_alternate_CDS, useNA = "always")]
-
-d.alt.vs.base.dt[
-   ,
-    table(
-        translation_alt_vs_base = ifelse(MRL_log2fc > 0, "Higher", "Lower"),
-        uORF_alt_vs_base = case_when(
-            d_uORF > 0 ~ "More",
-            d_uORF == 0 ~ "Same",
-            d_uORF < 0 ~ "Less"
-        ),
-        useNA = "always"
-        )] %T>%
-    print
-
-d.alt.vs.base.dt[, table(
-    translation_alt_vs_base = ifelse(MRL_log2fc > 0, "Higher", "Lower"),
-    utr5_len__alt_vs_base = ifelse(d_utr5_len > 0, "Longer", "Shorter"),
-    useNA = "always"
-)] %T>%
-    print
+library("cowplot")
+plot_grid(
+    g1, g2,
+    align = "h", nrow = 1, rel_widths = c(10, 1), axis = "bt"
+)
 
 ```
 
+# Sequence features of alternate TSS for translationally upregulated genes vs downregulated genes
+
+UTR5_len = ifelse(d_utr5_len > 0, "longer", "shorter")
+
+```{r sequence_features}
+
+library("ggrepel")
+
+## uORF
+uORF.count.dt <- bin.mrl.alt.other.dt[
+    alt_TSS_diff_poly == "Different",
+    .N,
+    by = list(
+        dMRL = ifelse(
+            MRL_log2fc_alt_others > 0,
+            "alternative TSS\n> base TSS",
+            "alternative TSS\n< base TSS"
+        ),
+        uORF_num = case_when(
+            d_uORF > 0 ~ "alternative TSS\n> base TSS",
+            d_uORF == 0 ~ "alternative TSS\n= base TSS",
+                d_uORF < 0 ~ "alternative TSS\n< base TSS"
+        )
+    )
+][order(dMRL, uORF_num)] %T>%
+    {print(copy(.)[, class_sum := sum(N), by = dMRL])}
+uORF.count.dt <- uORF.count.dt[!is.na(uORF_num)]
+
+uORF.count.dt[, class_sum := sum(N), by = dMRL]
+uORF.count.dt[, proportion := N/class_sum]
+print(uORF.count.dt)
+
+ggplot(
+    data = uORF.count.dt,
+    aes(
+        x = uORF_num,
+        y = dMRL
+    )
+) +
+    geom_point(
+        aes(
+            size = proportion
+        )
+    ) +
+    geom_text_repel(
+        aes(label = paste0(round(proportion * 100), "%")),
+        nudge_x = 0,
+        nudge_y = -0.5,
+        min.segment.length = Inf
+    ) +
+    ## scale_color_manual(values = go.annot.colors, guide = "none") +
+    scale_size_area(max_size = 15) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    theme(
+        aspect.ratio = 1/2,
+        legend.position = "none"
+    ) +
+    xlab("uORF number") +
+    ylab("dMRL") +
+    expand_limits(y = c(0, 1.25))
+
+
+## utr5_len
+utr5_len.count.dt <- bin.mrl.alt.other.dt[
+    alt_TSS_diff_poly == "Different",
+    .N,
+    by = list(
+        dMRL = ifelse(
+            MRL_log2fc_alt_others > 0,
+            "alternative TSS\n> base TSS",
+            "alternative TSS\n< base TSS"
+        ),
+        utr5_len_num = case_when(
+            d_utr5_len > 0 ~ "alternative TSS\n> base TSS",
+            d_utr5_len == 0 ~ "alternative TSS\n= base TSS",
+            d_utr5_len < 0 ~ "alternative TSS\n< base TSS"
+        )
+    )
+][order(dMRL, utr5_len_num)] %T>%
+    {print(copy(.)[, class_sum := sum(N), by = dMRL])}
+utr5_len.count.dt <- utr5_len.count.dt[!is.na(utr5_len_num)]
+
+utr5_len.count.dt[, class_sum := sum(N), by = dMRL]
+utr5_len.count.dt[, proportion := N/class_sum]
+print(utr5_len.count.dt)
+
+ggplot(
+    data = utr5_len.count.dt,
+    aes(
+        x = utr5_len_num,
+        y = dMRL
+    )
+) +
+    geom_point(
+        aes(
+            size = proportion
+        )
+    ) +
+    geom_text_repel(
+        aes(label = paste0(round(proportion * 100), "%")),
+        nudge_x = 0,
+        nudge_y = -0.5,
+        min.segment.length = Inf
+    ) +
+    ## scale_color_manual(values = go.annot.colors, guide = "none") +
+    scale_size_area(max_size = 15) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    theme(
+        aspect.ratio = 1/2,
+        legend.position = "none"
+    ) +
+    xlab("5' UTR length") +
+    ylab("dMRL") +
+    expand_limits(y = c(0, 1.25))
+
+
+
+```
 
 
 # Simulate MRL change with omitting a parameter
@@ -501,6 +671,7 @@ for.export.dt <- merge(
 for.export.dt[, `:=`(
     base_alt_TSS_flag = case_when(
         base_alt_TSS_flag == "alternative_TSS" ~ "alternate_TSS",
+        base_alt_TSS_flag == "base_TSS" ~ "base_TSS",
         TRUE ~ base_alt_TSS_flag
     )
 )]
@@ -523,6 +694,7 @@ for.export.dt <- for.export.dt[, .(
     tss_name,
     chr, strand, start, end,
     base_alt_TSS_flag,
+    base_vs_alternate_CDS,
     de_log2fc,
     tx_FDR,                         
     corrected_proportion_base, corrected_proportion_treated,
@@ -537,6 +709,7 @@ setnames(
     for.export.dt,
     old = c(
         "chr", "base_alt_TSS_flag",
+        "base_vs_alternate_CDS",
         "de_log2fc",
         "tx_FDR",
         "corrected_proportion_base", "corrected_proportion_treated", "dProportion",
@@ -548,6 +721,7 @@ setnames(
     ),
     new = c(
         "chromosome", "TSS class",
+        "CDS of alternate TSS vs CDS of base TSS",
         "mRNA log2FC",
         "FDR (TSS usage change)",
         "TSS usage (RCC4 VHL)", "TSS usage (RCC4)", "delta TSS usage",
@@ -751,48 +925,6 @@ measured.vs.estimated.dt[order(gene_MRL_log2fc)][
 
 
 ```{r preprocess data for gene level analysis}
-
-proportionPerFraction <- function(count.per.fraction.dt, ref.col = "gene_id", data.col.grep = "^RCC4"){
-
-    base.cols <- c("gene_id", "gene_name", "biotype")
-
-    m.count.per.fraction.dt <- melt(
-        count.per.fraction.dt,
-        id.vars = unique(c(ref.col, base.cols)),
-        measure.vars = grep(data.col.grep, colnames(count.per.fraction.dt), value = TRUE),
-        value.name = "normalized_count",
-        variable.name = "sample_name"
-    )
-
-    m.count.per.fraction.dt[, `:=`(
-        sample_group = sub("(.*?_.*?_.*?)_.*", "\\1", sample_name),
-        VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
-        EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
-        clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
-        fraction = str_split_fixed(sample_name, "_", n = 8)[, 7]
-    )]
-
-    m.count.per.fraction.dt[, `:=`(
-        sum_across_fraction = sum(normalized_count, na.rm = TRUE)
-    ), by = list(get(ref.col), gene_id, gene_name, sample_group, clone)]
-
-    m.count.per.fraction.dt[, `:=`(
-        ratio_across_fraction = normalized_count / sum_across_fraction
-    )]
-
-    m.count.per.fraction.dt[, `:=`(
-        sd_norm_count = sd(normalized_count),
-        mean_norm_count = mean(normalized_count),
-        sd_ratio = sd(ratio_across_fraction),
-        mean_ratio = mean(ratio_across_fraction),
-        lower_ratio_range = mean(ratio_across_fraction) - sd(ratio_across_fraction),
-        upper_ratio_range = mean(ratio_across_fraction) + sd(ratio_across_fraction)
-    ), by = list(get(ref.col), gene_id, gene_name, sample_group, fraction)]
-
-    m.count.per.fraction.dt <- m.count.per.fraction.dt[clone == 1]
-
-    return(m.count.per.fraction.dt)
-}
 
 ## Gene level data
 count.per.fraction.dt <- fread(file.path(
@@ -1006,7 +1138,7 @@ The following genes were selected as the examples.
 - Translationally up-regulated genes
   - Dispropotionally upregulated: MXI1, WFDC3
 - Translationally down-regulated genes
-  - Dispropotionally upregulated: EVA1A
+  - Dispropotionally upregulated: DERA
   - Dispropotionally downregulated: RGS5
 
 
@@ -1015,7 +1147,7 @@ The following genes were selected as the examples.
 selected.gene.id <- c(
     "MXI1" = "ENSG00000119950",
     "WFDC3" = "ENSG00000124116",
-    "EVA1A" = "ENSG00000115363",
+    "DERA" = "ENSG00000023697",
     "RGS5" = "ENSG00000143248"
 )
 

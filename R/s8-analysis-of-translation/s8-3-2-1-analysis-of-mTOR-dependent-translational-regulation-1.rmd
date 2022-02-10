@@ -333,6 +333,84 @@ all.term.sig.dt <- plotTrslChangeByClass(
 Known mTOR hypersensitive classes were defined based on previous genome-wide studies.
 
 
+## Map mouse genes in the data by Thoreen et al. to human genes
+
+
+```{r map mouse genes to human genes}
+
+library("readxl")
+library("gprofiler2")
+set_base_url("https://biit.cs.ut.ee/gprofiler_archive3/e102_eg49_p15") # For reproducibility, use archive version
+
+Thoreen.all.dt <- read_excel("../../data/others/PMID22552098_ST1.xls", skip = 2) %>%
+    data.table
+
+Thoreen.key.cols <- c("refseq_id", "trsl_eff_log2fc")
+
+setnames(
+    Thoreen.all.dt,
+    old = c("Refseq Accession", "WT Efficiency: log2(Torin1/Vehicle)"),
+    new = Thoreen.key.cols
+)
+
+Thoreen.all.dt <- Thoreen.all.dt[, Thoreen.key.cols, with = FALSE]
+
+topN.down.refseq_ids <- Thoreen.all.dt[
+    order(trsl_eff_log2fc)
+][, head(.SD, n = 253)][, refseq_id]
+
+topN.up.refseq_ids <- Thoreen.all.dt[
+    order(trsl_eff_log2fc, decreasing = TRUE)
+][, head(.SD, n = 198)][, refseq_id]
+
+Thoreen.all.dt[
+  , translational_regulation := case_when(
+        refseq_id %in% topN.down.refseq_ids ~ "Down",
+        refseq_id %in% topN.up.refseq_ids ~ "Up",
+        TRUE ~ "Unclassified"
+    )
+]
+
+ms2hs.dt <- gorth(
+    query = Thoreen.all.dt[, refseq_id],
+    source_organism = "mmusculus", 
+    target_organism = "hsapiens",
+    mthreshold = Inf, filter_na = TRUE,
+    numeric_ns = "ENTREZGENE_ACC"    
+) %>%
+    data.table
+
+setnames(
+    ms2hs.dt,
+    old = c("input", "input_ensg", "ortholog_ensg"),
+    new = c("refseq_id", "ms_gene_id", "gene_id")
+)
+
+ms2hs.dt <- ms2hs.dt %>%
+    group_by(refseq_id) %>%
+    filter(n() == 1) %>%
+    ungroup %>%
+    group_by(ms_gene_id) %>%
+    filter(n() == 1) %>%
+    ungroup %>%
+    group_by(gene_id) %>%
+    filter(n() == 1) %>%
+    data.table
+
+Thoreen.all.dt <- merge(
+    ms2hs.dt[, c("refseq_id", "ms_gene_id", "gene_id"), with = FALSE],
+    Thoreen.all.dt,
+    by = "refseq_id"
+)
+
+fwrite(Thoreen.all.dt, file.path(s8.3.dir, "Thoreen_et_al_with_human_gene_id.csv"))
+
+```
+
+
+## Other data
+
+
 ```{r class of mTOR targets}
 
 known.mtor.target.dt <- file.path(
@@ -342,8 +420,18 @@ known.mtor.target.dt <- file.path(
 
 known.mtor.target.dt <- known.mtor.target.dt[
     (method == "Ribosome profiling"  & reported_gene_name != "C3ORF38") |
-    (method == "Polysome profiling" & PP242_log2fc < 0 & PP242_FDR < 0.05)
-]
+    (method == "Polysome profiling" & PP242_log2fc < -log2(1.5) & PP242_FDR < 0.15)
+][, .(gene_id, method)]
+
+Thoreen.all.dt[, method := paste0("RP_Thoreen_", translational_regulation)]
+
+known.mtor.target.dt <- rbind(
+    known.mtor.target.dt,
+    copy(Thoreen.all.dt)[
+        , method := paste0("RP_Thoreen_", translational_regulation)
+    ][translational_regulation != "Unclassified", .(gene_id, method)],
+    use.names = TRUE, fill = TRUE
+)
 
 kegg.all.dt <- file.path(s8.3.dir, "key_KEGG_genes.csv") %>%
     fread
@@ -352,14 +440,14 @@ kegg.all.dt[, term_count := .N, by = term_name]
 
 known.mtor.target.kegg.dt <- merge(
     kegg.all.dt,
-    known.mtor.target.dt[, .(gene_id, gene_name, method)],
+    known.mtor.target.dt[, .(gene_id, method)],
     by = "gene_id"
 )
 
 known.mtor.target.kegg.dt[, target_count := .N, by = list(term_name, method)]
 
 target.count.per.term.dt <- known.mtor.target.kegg.dt[
-    !duplicated(term_name, method),
+    !duplicated(paste(term_name, method)),
     .(term_group, term_name, method, target_count, term_count)
 ]
 
@@ -375,10 +463,13 @@ target.count.per.term.dt[, `:=`(
 )]
 
 target.count.per.term.dt[, `:=`(
-    systematic_flag = target_ratio_to_N_RCC4VHL >= 0.1
+    systematic_flag = target_ratio >= 0.1
 )]
 
-target.count.per.term.dt[order(target_ratio_to_N_RCC4VHL, decreasing = TRUE)]
+target.count.per.term.dt[
+    order(term_name, method, -target_ratio_to_N_RCC4VHL)
+][systematic_flag == TRUE]
+
 
 ```
 

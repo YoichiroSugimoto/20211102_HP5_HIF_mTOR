@@ -106,3 +106,69 @@ plotTrslDistByIntervention <- function(m.all.de.dte.res.dt, show.quantile = TRUE
     
     return()
 }
+
+
+proportionPerFraction <- function(count.per.fraction.dt, ref.col = "gene_id", data.col.grep = "^RCC4"){
+
+    base.cols <- c("gene_id", "gene_name", "biotype")
+
+    m.count.per.fraction.dt <- melt(
+        count.per.fraction.dt,
+        id.vars = unique(c(ref.col, base.cols)),
+        measure.vars = grep(data.col.grep, colnames(count.per.fraction.dt), value = TRUE),
+        value.name = "normalized_count",
+        variable.name = "sample_name"
+    )
+
+    m.count.per.fraction.dt[, `:=`(
+        sample_group = sub("(.*?_.*?_.*?)_.*", "\\1", sample_name),
+        cell = str_split_fixed(sample_name, "_", n = 8)[, 1],
+        VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
+        EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
+        clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
+        treatment = str_split_fixed(sample_name, "_", n = 8)[, 6],
+        fraction = str_split_fixed(sample_name, "_", n = 8)[, 7]
+    )]
+
+    m.count.per.fraction.dt[, `:=`(
+        sample_group = paste(cell, VHL, EIF4E2, treatment, sep = "_")
+    )]
+
+    ## Across fractions
+    m.count.per.fraction.dt[, `:=`(
+        sum_across_fraction = sum(normalized_count, na.rm = TRUE)
+    ), by = list(get(ref.col), gene_id, gene_name, sample_group, clone)]
+
+    m.count.per.fraction.dt[, `:=`(
+        ratio_across_fraction = normalized_count / sum_across_fraction
+    )]
+
+    m.count.per.fraction.dt[, `:=`(
+        sd_norm_count = sd(normalized_count),
+        mean_norm_count = mean(normalized_count),
+        mean_ratio = mean(ratio_across_fraction),
+        sd_ratio = sd(ratio_across_fraction),
+        lower_ratio_range = mean(ratio_across_fraction) - sd(ratio_across_fraction),
+        upper_ratio_range = mean(ratio_across_fraction) + sd(ratio_across_fraction)
+    ), by = list(get(ref.col), gene_id, gene_name, sample_group, fraction)]
+
+    ## By fractions (only useful for TSS data)
+    m.count.per.fraction.dt[, `:=`(
+        sum_by_fraction = sum(normalized_count, na.rm = TRUE)
+    ), by = list(gene_id, gene_name, sample_group, clone, fraction)]
+
+    m.count.per.fraction.dt[, `:=`(
+        ratio_by_fraction = normalized_count / sum_by_fraction
+    )]
+
+    m.count.per.fraction.dt[, `:=`(
+        mean_ratio_by_fraction = mean(ratio_by_fraction),
+        sd_ratio_by_fraction = sd(ratio_by_fraction),
+        lower_ratio_range_by_fraction = mean(ratio_by_fraction) - sd(ratio_by_fraction),
+        upper_ratio_range_by_fraction = mean(ratio_by_fraction) + sd(ratio_by_fraction)
+    ), by = list(get(ref.col), gene_id, gene_name, sample_group, fraction)]
+
+    m.count.per.fraction.dt <- m.count.per.fraction.dt[clone == 3]
+
+    return(m.count.per.fraction.dt)
+}

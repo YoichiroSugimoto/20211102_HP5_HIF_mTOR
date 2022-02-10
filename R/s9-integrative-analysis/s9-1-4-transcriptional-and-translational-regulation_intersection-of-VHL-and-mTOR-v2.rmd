@@ -657,25 +657,38 @@ th2.all.de.dte.res.dt %$%
 
 ```{r sequence_features_glycolytic_angiogenesis_genes}
 
-tx.meta.info.dt <- file.path(s8.3.dir, "processed-tx-meta-info.csv") %>% fread
+tss.prop.dt <- copy(tss.de.res.dt[
+    comparison_name == "RCC4_xx_HIF1B_N__noVHL_vs_VHL"
+])[
+  , meanNormCount_treated_gene := sum(meanNormCount_treated), by = gene_id
+]
+tss.prop.dt[
+  , proportion_treated := meanNormCount_treated / meanNormCount_treated_gene
+]
 
-tx.meta.info.dt <- merge(
-    tss.ratio.res.dt[
-        comparison_name == "RCC4_xx_HIF1B_N__noVHL_vs_VHL",
-        .(tss_name, proportion_treated)
-    ],
-    tx.meta.info.dt,
-    by = "tss_name"
+tx.meta.info.dt <- file.path(s8.3.dir, "processed-tx-meta-info.csv") %>%
+    fread %>% merge(
+                  y = th.all.de.dte.res.dt[
+                      VHL_target_RCC4 == "VHL_loss_induced" &
+                      mRNA_trsl_intersection_by_functions != "Others"
+                  ][
+                    , .(
+                          gene_id, gene_name,
+                          VHL_target_RCC4,
+                          mRNA_trsl_intersection_by_functions
+                      )],
+                  by = "gene_id"
 ) %>%
     merge(
-        y = th2.all.de.dte.res.dt[
-            mRNA_trsl_intersection_by_functions != "Others"
-        ][, .(gene_id, gene_name, mRNA_trsl_intersection_by_functions)],
-        by = "gene_id"
+        y = tss.prop.dt[
+            , .(tss_name, proportion_treated)
+        ],
+        by = "tss_name"
     )
 
 tx.meta.info.by.class.dt <- tx.meta.info.dt[, .(
     gene_name,
+    VHL_target_RCC4,
     mRNA_trsl_intersection_by_functions,
     cds_len = sum(cds_len * proportion_treated),
     uORF_all = sum(uORF_all * proportion_treated),
@@ -683,80 +696,170 @@ tx.meta.info.by.class.dt <- tx.meta.info.dt[, .(
     total_proportion = sum(proportion_treated)
 ), by = gene_id][!duplicated(gene_id)]
 
-print("Before filtration by feature assignment")
-tx.meta.info.by.class.dt[, table(mRNA_trsl_intersection_by_functions)]
 
-print("After filtration by feature assignment")
+print("Before filtration by feature assigned isoform ratio")
+tx.meta.info.by.class.dt[
+    , table(mRNA_trsl_intersection_by_functions)
+]
+
+print("After filtration by feature assigned isoform ratio")
 tx.meta.info.by.class.dt[
     total_proportion > 0.5
 ][, table(mRNA_trsl_intersection_by_functions)]
 
-## uORF number
-tx.meta.info.by.class.dt[total_proportion > 0.5] %$%
-    pairwise.wilcox.test(x = uORF_all, g = mRNA_trsl_intersection_by_functions)
+tx.meta.info.by.class.dt <- tx.meta.info.by.class.dt[total_proportion > 0.5]
+
+## TOP motif length
+tx.meta.info.by.class.dt[
+  , TOP_motif_length_capped := round(TOP_motif_length) %>%
+        {case_when(
+             . >= 8 ~ "8+",
+             TRUE ~ as.character(.)
+         )} %>% factor(levels = c(as.character(0:7), "8+"))
+]
+
+top.count.dt <- tx.meta.info.by.class.dt[
+  , .N, by = list(mRNA_trsl_intersection_by_functions, TOP_motif_length_capped)
+]
+
+top.count.dt[, class_sum := sum(N), by = mRNA_trsl_intersection_by_functions]
+top.count.dt[, proportion := N/class_sum]
+print(top.count.dt[order(mRNA_trsl_intersection_by_functions, TOP_motif_length_capped)])
+
+library("ggrepel")
 
 ggplot(
-    data = tx.meta.info.by.class.dt[total_proportion > 0.5],
+    data = top.count.dt,
     aes(
-        x = gsub("or", "or\n", mRNA_trsl_intersection_by_functions),
-        y = uORF_all
+        x = TOP_motif_length_capped,
+        y = gsub("or ", "or\n", mRNA_trsl_intersection_by_functions)
     )
 ) +
-    geom_boxplot(outlier.shape = NA) +
-    theme(
-        aspect.ratio = 4
+    geom_point(
+        aes(
+            size = proportion,
+            color = mRNA_trsl_intersection_by_functions
+        )
     ) +
-    scale_x_discrete(guide = guide_axis(angle = 90), limits = rev) +
-    coord_cartesian(ylim = c(0, 5)) +
-    xlab("Functional class") +
-    ylab("uORF number")
+    geom_text_repel(
+        aes(label = paste0(round(proportion * 100), "%")),
+        nudge_x = 0,
+        nudge_y = -0.5,
+        min.segment.length = Inf
+    ) +
+    scale_color_manual(values = go.annot.colors, guide = "none") +
+    scale_size_area(limits = c(0, 1), max_size = 15) +
+    scale_x_discrete(drop = FALSE) +
+    theme(
+        aspect.ratio = 1/2,
+        legend.position = "none"
+    ) +
+    xlab("TOP motif length") +
+    ylab("Functional class") +
+    expand_limits(y = c(0, 1.25))
 
+
+## uORF number
+tx.meta.info.by.class.dt[
+  , uORF_all_capped := round(uORF_all) %>%
+        {case_when(
+             . >= 3 ~ "3+",
+             TRUE ~ as.character(.)
+         )} %>% factor
+]
+
+uORF.count.dt <- tx.meta.info.by.class.dt[
+  , .N, by = list(mRNA_trsl_intersection_by_functions, uORF_all_capped)
+]
+
+uORF.count.dt[, class_sum := sum(N), by = mRNA_trsl_intersection_by_functions]
+uORF.count.dt[, proportion := N/class_sum]
+print(uORF.count.dt[order(mRNA_trsl_intersection_by_functions, uORF_all_capped)])
+
+
+ggplot(
+    data = uORF.count.dt,
+    aes(
+        x = uORF_all_capped,
+        y = gsub("or ", "or\n", mRNA_trsl_intersection_by_functions)
+    )
+) +
+    geom_point(
+        aes(
+            size = proportion,
+            color = mRNA_trsl_intersection_by_functions
+        )
+    ) +
+    geom_text_repel(
+        aes(label = paste0(round(proportion * 100), "%")),
+        nudge_x = 0,
+        nudge_y = -0.5,
+        min.segment.length = Inf
+    ) +
+    scale_color_manual(values = go.annot.colors, guide = "none") +
+    scale_size_area(limits = c(0, 1), max_size = 15) +
+    theme(
+        aspect.ratio = 1/2,
+        legend.position = "none"
+    ) +
+    xlab("uORF number") +
+    ylab("Functional class") +
+    expand_limits(y = c(0, 1.25))
 
 
 ## CDS length
-tx.meta.info.by.class.dt[total_proportion > 0.5] %$%
-    pairwise.wilcox.test(x = cds_len, g = mRNA_trsl_intersection_by_functions)
-
 tx.meta.info.by.class.dt[, `:=`(
     cds_len_bin = cut(
         log10(cds_len),
-        breaks = seq(2, 5, by = 0.25),
+        breaks = seq(2, 4, by = 0.25),
         labels = paste0(
             "(",
-            seq(2, 5, by = 0.25) %>% {.[1:(length(.) - 1)]} %>% {round(10^.)},
+            seq(2, 4, by = 0.25) %>% {.[1:(length(.) - 1)]} %>% {round(10^.)},
             ", ",
-            seq(2, 5, by = 0.25) %>% {.[2:length(.)]} %>% {round(10^.)},
+            seq(2, 4, by = 0.25) %>% {.[2:length(.)]} %>% {round(10^.)},
             "]"
         )
     )
 )]
 
-count.prop.dt <- tx.meta.info.by.class.dt[
-    total_proportion > 0.5
-][, .N, by = list(mRNA_trsl_intersection_by_functions, cds_len_bin)]
-count.prop.dt[, gene_sum := sum(N), by = mRNA_trsl_intersection_by_functions]
-count.prop.dt[, ratio := N/gene_sum]
+CDS.count.dt <- tx.meta.info.by.class.dt[
+  , .N, by = list(mRNA_trsl_intersection_by_functions, cds_len_bin)
+]
+CDS.count.dt[, class_sum := sum(N), by = mRNA_trsl_intersection_by_functions]
+CDS.count.dt[, proportion := N/class_sum]
 
+print(CDS.count.dt[order(mRNA_trsl_intersection_by_functions, cds_len_bin)])
 
 ggplot(
-    count.prop.dt,
+    data = CDS.count.dt,
     aes(
         x = cds_len_bin,
-        y = gsub("or ", "or\n", mRNA_trsl_intersection_by_functions),
-        size = ratio,
-        color = mRNA_trsl_intersection_by_functions
+        y = gsub("or ", "or\n", mRNA_trsl_intersection_by_functions)
     )
 ) +
-    geom_point() +
-    theme(
-        legend.position = "bottom",
-        aspect.ratio = 1/4,
-        axis.title.y = element_blank()
+    geom_point(
+        aes(
+            size = proportion,
+            color = mRNA_trsl_intersection_by_functions
+        )
     ) +
-    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    geom_text_repel(
+        aes(label = paste0(round(proportion * 100), "%")),
+        nudge_x = 0,
+        nudge_y = -0.5,
+        min.segment.length = Inf
+    ) +
     scale_color_manual(values = go.annot.colors, guide = "none") +
+    scale_size_area(limits = c(0, 1), max_size = 15) +
+    theme(
+        aspect.ratio = 1/2,
+        legend.position = "none"
+    ) +
     xlab("CDS length [nts]") +
-    scale_size_continuous(labels = scales::percent_format(accuracy = 1))
+    ylab("Functional class") +
+    scale_x_discrete(guide = guide_axis(angle = 90), drop = FALSE) +
+    expand_limits(y = c(0, 1.25))
+
 
 
 ```

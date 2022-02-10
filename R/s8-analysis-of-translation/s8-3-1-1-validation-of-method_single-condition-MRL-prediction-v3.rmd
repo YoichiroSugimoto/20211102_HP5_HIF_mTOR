@@ -116,7 +116,7 @@ processMetaInfoDt <- function(dt){
                  TRUE ~ as.character(.)
              )} %>% factor
         ,
-        TOP_motif_length = tss_p1_pTOP + tss_p2_pTOP + tss_p3_pTOP,
+        TOP_motif_length = tss_p1_pTOP,
         log10_cds_len = log10(cds_len),
         log10_utr5_len = log10(mean_utr5_len)
     )]

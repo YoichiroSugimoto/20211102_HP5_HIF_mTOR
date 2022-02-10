@@ -1,0 +1,489 @@
+---
+title: "s9-3-2 mTOR and TSS isoforms"
+author: "Yoichiro Sugimoto"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+   html_document:
+     highlight: haddock
+     toc: yes
+     toc_depth: 2
+     keep_md: yes
+     fig_width: 5
+     fig_height: 5
+---
+
+
+# Environment setup and data preprocessing
+
+```{r load libraries, message = FALSE, warning = FALSE}
+
+## Specify the number of CPUs to be used
+processors <- 8
+
+## library("BiocParallel")
+## register(MulticoreParam(processors))
+
+temp <- sapply(list.files("../functions", full.names = TRUE), source)
+temp <- sapply(list.files("./functions", full.names = TRUE), source)  
+source(file.path("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R"), chdir = TRUE)
+source(file.path("../s8-analysis-of-translation/functions/test_differential_translation-v2.R"))
+
+s4.tss.dir <- file.path(results.dir, "s4-tss-definition-and-tx-assignment")
+s4.2.tx.assignment.dir <- file.path(s4.tss.dir, "s4-2-transcript-assignment")
+s4.2.1.tss.tx.map.RCC4.dir <- file.path(s4.2.tx.assignment.dir, "s4-2-1-tss-transcript-mapping-RCC4")
+
+s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
+s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
+s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
+s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
+s8.2.dte.iso.dir <- file.path(s8.dir, "s8-2-differentially-translated-isoforms")
+s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+set.seed(0)
+
+```
+
+# Data import
+
+
+```{r data_import}
+
+mtor.tss.sig.dt <- file.path(s8.2.dte.iso.dir, "RCC4_noVHL_EIF4E2_(NA|Torin1).csv") %>% fread
+
+all.filtered.tss.dt <- file.path(
+    s8.3.dir,
+    "filtered_tss_for_polysome_analysis.csv"
+) %>%
+    fread
+
+mtor.tss.sig.dt <- mtor.tss.sig.dt[
+]
+
+print("The number of all significant genes (at least two isoforms with FDR < 0.1)")
+nrow(
+    mtor.tss.sig.dt[
+        gene_FDR < 0.1 & tx_FDR < 0.1
+    ][, .N, by = gene_id][N > 1]
+)
+
+rcc4.vhl.mrl.dt <- file.path(
+    s8.1.2.dir,
+    "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA-mean_ribosome_loading.csv"
+) %>%
+    fread
+
+tx.meta.info.dt <- file.path(s8.3.dir, "processed-tx-meta-info.csv") %>%
+    fread
+
+sig.rcc4.vhl.mrl.dt <- merge(
+    rcc4.vhl.mrl.dt[
+       biotype == "protein_coding",
+        .(tss_name, gene_id, gene_name, MRL_treated, MRL_base, MRL_log2fc)],
+    mtor.tss.sig.dt[, .(tss_name, gene_FDR, tx_FDR)],
+    all.x = TRUE,
+    by = "tss_name"
+) %>%
+    merge(
+        y = tx.meta.info.dt[
+          , .(tss_name, TOP_motif_length, uORF_all, uORF_all_capped, cds_len)
+        ],
+        by = "tss_name"
+    )
+
+sig.rcc4.vhl.mrl.dt[
+        tss_name %in% all.filtered.tss.dt[
+                      RCC4_VHL_NA == TRUE & RCC4_VHL_Torin1 == TRUE, tss_name
+                  ]
+]
+
+sig.rcc4.vhl.mrl.dt <- sig.rcc4.vhl.mrl.dt[
+    ## gene_FDR < 0.1 & tx_FDR < 0.1
+]
+
+```
+
+
+# Analysis of TSS isoforms with differential sensitivity to mTOR in relation to the sequence features
+
+
+```{r TSS_dependent_sensitivity_to_mTOR}
+
+sig.rcc4.vhl.mrl.dt[, `:=`(
+    max_MRL_log2fc = max(MRL_log2fc),
+    min_MRL_log2fc = min(MRL_log2fc)
+), by = gene_id]
+
+sig.rcc4.vhl.mrl.dt[, `:=`(
+    TSS_mTOR_group = case_when(
+        MRL_log2fc == max_MRL_log2fc ~ "Resistant",
+        MRL_log2fc == min_MRL_log2fc ~ "Hypersensitive"
+    ),
+    dMRL_log2fc = max_MRL_log2fc - min_MRL_log2fc
+)]
+
+sl.sig.rcc4.vhl.mrl.dt <- sig.rcc4.vhl.mrl.dt[
+    !is.na(TSS_mTOR_group) & abs(dMRL_log2fc) > 0
+][order(gene_name, TSS_mTOR_group)]
+
+te.diff.classes <- c(
+    "Small (1 ~ 1.2)", "Medium (1.2 ~ 1.5)", "Large (> 1.5)"
+)
+
+sl.sig.rcc4.vhl.mrl.dt[, `:=`(
+    te_diff_by_tss = case_when(
+        abs(dMRL_log2fc) > log2(1.5) ~ "Large (> 1.5)",
+        abs(dMRL_log2fc) > log2(1.2) ~ "Medium (1.2 ~ 1.5)",
+        abs(dMRL_log2fc) > 0 ~ "Small (1 ~ 1.2)"
+    ) %>% factor(levels = te.diff.classes)
+)]
+
+d.sl.sig.rcc4.vhl.mrl.dt <- dcast(
+    sl.sig.rcc4.vhl.mrl.dt,
+    gene_id + gene_name + te_diff_by_tss ~ TSS_mTOR_group,
+    value.var = c(
+        "tss_name", "MRL_log2fc", "TOP_motif_length", "uORF_all", "cds_len"
+    )
+)
+
+print("All significant genes with annotation of multiple TSS available")
+d.sl.sig.rcc4.vhl.mrl.dt[, table(te_diff_by_tss) %>% addmargins]
+
+## Test function
+runWilcox <- function(te.diff.class, d.sl.sig.rcc4.vhl.mrl.dt, sl.genes, test.col){
+    all.dt <- d.sl.sig.rcc4.vhl.mrl.dt[gene_id %in% sl.genes] 
+    
+    test.dt <- all.dt[te_diff_by_tss == te.diff.class] 
+    
+    wil.p <-  test.dt %>%
+    {wilcox.test(
+         .[, get(paste0(test.col, "_Hypersensitive"))],
+         .[, get(paste0(test.col, "_Resistant"))],
+         alternative = "two.sided",
+         paired = TRUE
+     )$p.value}
+
+    wil.res.dt <- data.table(
+        tested_data = test.col,
+        te_diff_by_tss = te.diff.class,
+        N = nrow(test.dt),
+        all_N = nrow(all.dt),
+        wilcox_p = wil.p
+    )
+    return(wil.res.dt)
+}
+
+sig.th <- 0.05
+
+## TOP mptof length
+print("TOP motif length")
+diff.top.genes <- d.sl.sig.rcc4.vhl.mrl.dt[
+  TOP_motif_length_Hypersensitive != TOP_motif_length_Resistant, gene_id
+]
+
+top.test.res.dt <- lapply(
+    te.diff.classes,
+    runWilcox,
+    d.sl.sig.rcc4.vhl.mrl.dt = d.sl.sig.rcc4.vhl.mrl.dt,
+    sl.genes = diff.top.genes,
+    test.col = "TOP_motif_length"
+) %>%
+    rbindlist
+
+top.test.res.dt[, padj := p.adjust(wilcox_p, method = "holm")]
+top.test.res.dt[, sig_mark := case_when(
+                      padj < sig.th * 0.1 ~ "**",
+                      padj < sig.th ~ "*",
+                      TRUE ~ NA_character_
+                  )
+                ]
+print(top.test.res.dt)
+
+ggplot(
+    data = sl.sig.rcc4.vhl.mrl.dt[gene_id %in% diff.top.genes],
+    aes(
+        x = te_diff_by_tss,
+        y = TOP_motif_length
+    )
+) +
+    geom_boxplot(aes(fill = TSS_mTOR_group), outlier.shape = NA) +
+    theme(aspect.ratio = 1.5) +
+    scale_fill_bright(name = "Sensitivity of isoform to mTOR inhibition") +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    coord_cartesian(ylim = c(0, 4.5)) +
+    xlab("MRL log2 fold change difference between TSS isoforms") +
+    ylab("TOP motif length")
+
+## uORF length
+print("uORF length")
+
+diff.uorf.genes <- d.sl.sig.rcc4.vhl.mrl.dt[
+  uORF_all_Hypersensitive != uORF_all_Resistant, gene_id
+]
+
+uorf.test.res.dt <- lapply(
+    te.diff.classes,
+    runWilcox,
+    d.sl.sig.rcc4.vhl.mrl.dt = d.sl.sig.rcc4.vhl.mrl.dt,
+    sl.genes = diff.uorf.genes,
+    test.col = "uORF_all"
+) %>%
+    rbindlist
+
+uorf.test.res.dt[, padj := p.adjust(wilcox_p, method = "holm")]
+uorf.test.res.dt[, sig_mark := case_when(
+                      padj < sig.th * 0.1 ~ "**",
+                      padj < sig.th ~ "*",
+                      TRUE ~ NA_character_
+                  )
+                ]
+print(uorf.test.res.dt)
+
+ggplot(
+    data = sl.sig.rcc4.vhl.mrl.dt[gene_id %in% diff.uorf.genes],
+    aes(
+        x = te_diff_by_tss,
+        y = uORF_all,
+        fill = TSS_mTOR_group
+    )
+) +
+    geom_boxplot(outlier.shape = NA) +
+    theme(aspect.ratio = 1.5) +
+    scale_fill_bright(name = "Sensitivity of isoform to mTOR inhibition") +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    coord_cartesian(ylim = c(0, 7)) +
+    xlab("MRL log2 fold change difference between TSS isoforms") +
+    ylab("uORF number")
+
+d.sl.sig.rcc4.vhl.mrl.dt[
+    gene_id %in% mtor.tss.sig.dt[gene_FDR < 0.1, gene_id] &
+    tss_name_Hypersensitive %in% mtor.tss.sig.dt[tx_FDR < 0.1, tss_name] &
+    tss_name_Resistant %in% mtor.tss.sig.dt[tx_FDR < 0.1, tss_name] &
+    te_diff_by_tss == "Large (> 1.5)", .(gene_name, gene_id, TOP_motif_length_Hypersensitive, TOP_motif_length_Resistant)
+]
+
+```
+
+# Examples
+
+## Data import
+
+```{r examples}
+
+r4vhl.count.per.fraction.dt <- fread(file.path(
+    s8.1.2.dir,
+    "RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA-normalized_count.csv"
+))
+
+r4vhl.prop.dt <- proportionPerFraction(
+    r4vhl.count.per.fraction.dt, ref.col = "tss_name", data.col.grep = "^RCC4"
+)
+r4vhl.prop.dt[, `:=`(
+    tss_index = str_split_fixed(tss_name, "_", 2)[, 2],
+    fraction2 = gsub("ribo", "", fraction) %>% {gsub("8", "8+", .)}
+)]
+
+r4novhl.count.per.fraction.dt <- fread(file.path(
+    s8.1.2.dir,
+    "RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA-normalized_count.csv"
+))
+
+r4novhl.prop.dt <- proportionPerFraction(
+    r4novhl.count.per.fraction.dt, ref.col = "tss_name", data.col.grep = "^RCC4"
+)
+r4novhl.prop.dt[, `:=`(
+    tss_index = str_split_fixed(tss_name, "_", 2)[, 2],
+    fraction2 = gsub("ribo", "", fraction) %>% {gsub("8", "8+", .)}
+)]
+
+
+```
+
+## DERA
+
+DERA (ENSG00000023697)
+
+```{r DERA}
+
+treatment.colors <- c(
+    "NA" = "gray40",
+    "Torin1" = "darkslateblue"
+)
+
+## mTOR sensitivity of each isoform
+ggplot(
+    data = r4novhl.prop.dt[gene_id == "ENSG00000023697"],
+    aes(
+        x = fraction2,
+        y = mean_ratio,
+        color = treatment,
+        group = treatment
+    )
+) +
+    geom_ribbon(
+        aes(
+            ymin = lower_ratio_range, ymax = upper_ratio_range, fill = treatment
+        ),
+        color = NA, alpha = 0.2
+    ) +
+    geom_line(
+        size = 1.25
+    ) +
+    ylab("% of mRNA in each polysome fraction in RCC-4") +
+    xlab("Fraction") +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    geom_hline(yintercept = 0) +
+    scale_color_manual(values = treatment.colors) +
+    scale_fill_manual(values = treatment.colors) +
+    coord_cartesian(ylim = c(0, 0.4)) +
+    theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        aspect.ratio = 2,
+        legend.position = "bottom"
+    ) +
+    facet_grid(~ tss_index)
+
+
+## mTOR sensitivity by isoform and fraction
+ggplot(
+    data = rbind(
+        r4novhl.prop.dt[gene_id == "ENSG00000023697"],
+        r4vhl.prop.dt[gene_id == "ENSG00000023697" & treatment == "NA"]
+    ),
+    aes(
+        x = fraction2,
+        y = mean_ratio_by_fraction,
+        color = tss_index,
+        group = tss_index
+    )
+) +
+    geom_ribbon(
+        aes(
+            ymin = lower_ratio_range_by_fraction,
+            ymax = upper_ratio_range_by_fraction,
+            fill = tss_index
+        ),
+        color = NA, alpha = 0.2
+    ) +
+    geom_line(
+        size = 1.25
+    ) +
+    ylab("% of mRNA isoform by each polysome fraction") +
+    xlab("Fraction") +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    geom_hline(yintercept = 0) +
+    coord_cartesian(ylim = c(0, 0.9)) +
+    theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        aspect.ratio = 2,
+        legend.position = "bottom"
+    ) +
+    facet_grid(~ factor(
+                   paste(VHL, treatment),
+                   levels = c("VHL NA", "noVHL NA", "noVHL Torin1")
+               ))
+
+
+```
+
+## Other examples
+
+Other examples
+
+SERP1 (ENSG00000120742); stress associated endoplasmic reticulum protein
+SCARB2 (ENSG00000138760); Scavenger receptor class B member 2
+GTF2F1 (ENSG00000125651); General transcription factor IIF subunit 1
+
+```{r other_examples}
+
+## To select top3 abundanct isoforms
+total.rcc4.vhl.loss.comp.name <- "RCC4_xx_HIF1B_N__noVHL_vs_VHL"
+rcc4.tss.de.res.dt <- tss.de.res.dt[
+    comparison_name == total.rcc4.vhl.loss.comp.name,
+    .(tss_name, gene_id, meanNormCount_base)
+][tss_name %in% r4vhl.prop.dt[, tss_name]]
+
+top3.tss.dt <- rcc4.tss.de.res.dt[
+    order(gene_id, meanNormCount_base, decreasing = TRUE)
+][, head(.SD, 3), by = list(gene_id)]
+
+r4vhl.prop.dt <- r4vhl.prop.dt[tss_name %in% top3.tss.dt[, tss_name]]
+
+sl.genes <- c(
+    "SERP1" = "ENSG00000120742",
+    "SCARB2" = "ENSG00000138760",
+    "GTF2F1" = "ENSG00000125651"
+)
+
+plotTssExamples <- function(sl.gene.id, sl.gene.name, r4vhl.prop.dt, tx.meta.info.dt){
+
+    tx.meta.info.dt[
+        tss_name %in% r4vhl.prop.dt[gene_id == sl.gene.id, tss_name],
+        .(
+            tss_name,
+            TOP_motif_length = round(TOP_motif_length, digits = 1),
+            uORF_all = round(uORF_all, digits = 1)
+        )
+    ] %>% print
+
+    g1 <- ggplot(
+        data = r4vhl.prop.dt[gene_id == sl.gene.id],
+        aes(
+            x = fraction2,
+            y = mean_ratio,
+            color = treatment,
+            group = treatment
+        )
+    ) +
+        geom_ribbon(
+            aes(
+                ymin = lower_ratio_range, ymax = upper_ratio_range, fill = treatment
+            ),
+            color = NA, alpha = 0.2
+        ) +
+        geom_line(
+            size = 1.25
+        ) +
+        ylab("% of mRNA in each polysome fraction in RCC-4") +
+        xlab("Fraction") +
+        scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+        geom_hline(yintercept = 0) +
+        scale_color_manual(values = treatment.colors) +
+        scale_fill_manual(values = treatment.colors) +
+        coord_cartesian(ylim = c(0, 0.4)) +
+        theme(
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+            aspect.ratio = 2,
+            legend.position = "bottom"
+        ) +
+        facet_grid(~ tss_index) +
+        ggtitle(sl.gene.name)
+
+    print(g1)
+    return()
+}
+
+temp <- mapply(
+    plotTssExamples,
+    sl.gene.id = sl.genes,
+    sl.gene.name = names(sl.genes),
+    list(r4vhl.prop.dt),
+    list(tx.meta.info.dt)
+)
+
+```
+
+
+
+
+# Session information
+
+```{r sessionInfo}
+
+sessionInfo()
+
+```
