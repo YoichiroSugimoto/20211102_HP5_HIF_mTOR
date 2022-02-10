@@ -358,53 +358,6 @@ temp <- analyzeDtIsoforms(
 
 ```
 
-# Identification of differentially translated mRNA isoforms within a gene upon Torin 1
-
-## RCC4 VHL
-
-
-```{r analysis_of_differentially_translated_isoforms_in_RCC4_VHL_upon_Torin1}
-
-sample.base.name <- "RCC4_VHL_EIF4E2_NA_[[:digit:]]_(NA|Torin1)"
-
-temp <- analyzeDtIsoforms(
-    sample.base.name = sample.base.name,
-    count.dt = poly.count.per.tss.dt,
-    annot.dt = annot.dt,
-    input.sample.data.df = poly.coldata.df %>%
-        .[grepl(sample.base.name, rownames(poly.coldata.df)), ],
-    dexseq.exp.design =
-        ~ sample + exon + fraction:exon + treatment:exon + fraction:treatment:exon,
-    s8.2.dte.iso.dir = s8.2.dte.iso.dir,
-    ref.column.name = "tss_name",
-    BPPARAM = BPPARAM
-)
-
-```
-
-## RCC4 noVHL
-
-
-```{r analysis_of_differentially_translated_isoforms_in_RCC4_noVHL_upon_Torin1}
-
-sample.base.name <- "RCC4_noVHL_EIF4E2_NA_[[:digit:]]_(NA|Torin1)"
-
-temp <- analyzeDtIsoforms(
-    sample.base.name = sample.base.name,
-    count.dt = poly.count.per.tss.dt,
-    annot.dt = annot.dt,
-    input.sample.data.df = poly.coldata.df %>%
-        .[grepl(sample.base.name, rownames(poly.coldata.df)), ],
-    dexseq.exp.design =
-        ~ sample + exon + fraction:exon + treatment:exon + fraction:treatment:exon,
-    s8.2.dte.iso.dir = s8.2.dte.iso.dir,
-    ref.column.name = "tss_name",
-    BPPARAM = BPPARAM
-)
-
-```
-
-
 
 # Session information
 
