@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -36,7 +34,7 @@ However, if the sequence depth exceeds UMI diversity, the proportion should be s
 
 # Set-up
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 library("GenomicAlignments")
 library("rtracklayer")
@@ -49,7 +47,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -86,7 +84,7 @@ create.dirs(c(
 ```
 
 
-```{r read sample data}
+```{r read_sample_data}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -97,7 +95,7 @@ sample.names <- sample.dt[, sample_name]
 
 
 
-```{r generate mixed sample bam}
+```{r generate_mixed_sample_bam}
 
 r4.sample.names <- sample.names[grepl("total_RCC4_noVHL_HIF1B_(N|H)", sample.names)]
 
@@ -173,7 +171,7 @@ temp <- generateMixedSampleBam(
 Deduplication of mixed sample bam files will be performed here.
 The PCR duplication rate should be lower than the bam files from a single sample.
 
-```{r dedup mixed sample bam}
+```{r dedup_mixed_sample_bam}
 
 input.bams <- list.files(s3.2.1.mixed.sample.bam.dir, pattern = "bam$", full.names = TRUE)
 
@@ -211,7 +209,7 @@ dedup.outs <- mclapply(
 # Comparison of the proportion of unique reads in the actual data and the simulated high complexity data
 
 
-```{r comparison of actual and simulated data}
+```{r comparison_of_actual_and_simulated_data}
 
 ## Reference data
 input.dedup.rnum <- countReadsFromTssBam(ref.r4.sample.name, s2.2.2.dedup.tss.bam.dir)

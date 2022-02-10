@@ -1,26 +1,36 @@
----
-title: "s9-1-2 Intersection of transcriptional and translational regulation by the HIF pathway"
-author: "Yoichiro Sugimoto"
-date: "06 January, 2022"
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-output:
-   html_document:
-     highlight: haddock
-     toc: yes
-     toc_depth: 2
-     keep_md: yes
-     fig_width: 5
-     fig_height: 5
----
+s9-1-2 Intersection of transcriptional and translational regulation by
+the HIF pathway
+================
+Yoichiro Sugimoto
+10 February, 2022
 
+  - [Overview](#overview)
+  - [Pre-processed data import](#pre-processed-data-import)
+  - [Analysis of VHL dependent transcriptional and translational
+    regulation](#analysis-of-vhl-dependent-transcriptional-and-translational-regulation)
+      - [Analysis for RCC-4](#analysis-for-rcc-4)
+      - [Analysis of 786-O](#analysis-of-786-o)
+  - [Comparison of the effect size of translational regulation by the
+    HIF and mTOR
+    pathway](#comparison-of-the-effect-size-of-translational-regulation-by-the-hif-and-mtor-pathway)
+  - [Analysis of the effect of HIF activation on the mTOR pathway
+    activity](#analysis-of-the-effect-of-hif-activation-on-the-mtor-pathway-activity)
+      - [Expression level changes of mTOR regulators / target upon VHL
+        loss](#expression-level-changes-of-mtor-regulators-target-upon-vhl-loss)
+      - [Analysis of the changes in translation upon VHL loss vs those
+        upon mTOR
+        inhibition](#analysis-of-the-changes-in-translation-upon-vhl-loss-vs-those-upon-mtor-inhibition)
+  - [Analysis of the association of TOP motif length and changes in
+    translation upon VHL
+    loss](#analysis-of-the-association-of-top-motif-length-and-changes-in-translation-upon-vhl-loss)
+      - [QC for the TOP motif length
+        assignment](#qc-for-the-top-motif-length-assignment)
+      - [Analysis](#analysis)
+  - [Session information](#session-information)
 
 # Overview
 
-
-
-```r
+``` r
 ## Specify the number of CPUs to be used
 processors <- 8
 
@@ -28,35 +38,29 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 temp <- sapply(list.files("../s8-analysis-of-translation/functions", full.names = TRUE), source, chdir = TRUE)
 ```
 
-```
-## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
-## [1] "The following objects are exported: poly.coldata.df, poly.sample.dt, translation.comparison.dt"
-## [1] "In translation.comparison.dt, xx specifies the factor compared where the comparison is specified after __, while yy is a wildcard. From left, each factor specifies cell, VHL, EIF4E2, clone, and treatment"
-## [1] "The following functions were exported: analyzeDtg(), subsetColdata()"
-```
+    ## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
+    ## [1] "The following objects are exported: poly.coldata.df, poly.sample.dt, translation.comparison.dt"
+    ## [1] "In translation.comparison.dt, xx specifies the factor compared where the comparison is specified after __, while yy is a wildcard. From left, each factor specifies cell, VHL, EIF4E2, clone, and treatment"
+    ## [1] "The following functions were exported: analyzeDtg(), subsetColdata()"
 
-```r
+``` r
 temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
 source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
 ```
 
-```
-## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
-## [1] "The following R objects were exported: total.sample.dt, total.coldata.df, total.comparison.dt"
-## [1] "Comparison information was loaded"
-## [1] "/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/results"
-## [1] "The following objects were loaded: tss.de.res.dt, tss.ratio.res.dt, diff.tss.res.dt"
-```
+    ## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
+    ## [1] "The following R objects were exported: total.sample.dt, total.coldata.df, total.comparison.dt"
+    ## [1] "Comparison information was loaded"
+    ## [1] "/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/results"
+    ## [1] "The following objects were loaded: tss.de.res.dt, tss.ratio.res.dt, diff.tss.res.dt"
 
-```r
+``` r
 set.seed(0)
 
 sig.th <- 0.05
 ```
 
-
-
-```r
+``` r
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
 annot.R.file <- list.files(
@@ -92,9 +96,7 @@ sample.names <- sample.dt[, sample_name]
 
 # Pre-processed data import
 
-
-
-```r
+``` r
 all.de.dte.res.dt <- fread(
     file.path(
         s9.dir,
@@ -121,14 +123,18 @@ all.filtered.gene.dt <- fread(
         "filtered_gene_for_polysome_analysis.csv"
     )
 )
-```
 
+## Reported EIF4E2/HIF2A targets
+reported.eif4e2.target.dt <- fread(
+    "../../data/others/20220210_previously_reported_HIF2A-EIF4E2_target_genes.csv"
+)
+```
 
 # Analysis of VHL dependent transcriptional and translational regulation
 
+``` r
+library("gghighlight")
 
-
-```r
 plotMRL_mRNA_analysis <- function(
                                   input.de.dte.res.dt,
                                   mrl.log2fc.colname,
@@ -137,7 +143,8 @@ plotMRL_mRNA_analysis <- function(
                                   filtered.gene.ids,
                                   mrnafc.xlim = c(-4, 5),
                                   mrlfc.ylim = c(-1, 0.5),
-                                  absmrl.ylim = c(1.5, 7.5)
+                                  absmrl.ylim = c(1.5, 7.5),
+                                  EIF4E2.targets
                                   ){
 
     trsl.input.dt <- input.de.dte.res.dt[
@@ -191,6 +198,16 @@ plotMRL_mRNA_analysis <- function(
 
     print(trsl.scatter.g)
 
+    trsl.scatter.g2 <- trsl.scatter.g +
+        gghighlight(
+            gene_id %in% EIF4E2.targets,
+            ## unhighlighted_params = list(size = 0.25),
+            label_key = gene_name,
+            label_params = list(size = 6, box.padding = 2)
+        )
+
+    print(trsl.scatter.g2)
+
     ## Absolute MRL
     print("mRNA FC vs absolute MRL")
     print(
@@ -235,8 +252,7 @@ plotMRL_mRNA_analysis <- function(
 
 ## Analysis for RCC-4
 
-
-```r
+``` r
 t1.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in% all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id]
 ]
@@ -246,58 +262,55 @@ temp <- plotMRL_mRNA_analysis(
     mrl.log2fc.colname = "MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     abs.mrl.colname = "MRL_treated_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     mrna.log2fc.colname = "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL",
-    filtered.gene.ids = all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id]
+    filtered.gene.ids = all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id],
+    EIF4E2.targets = reported.eif4e2.target.dt[, gene_id]
 )
 ```
 
-```
-## [1] "------------------------------------"
-## [1] "mRNA FC vs translation FC"
-## 
-## 	Spearman's rank correlation rho
-## 
-## data:  trsl.input.dt[, get(mrna.log2fc.colname)] and trsl.input.dt[, get(mrl.log2fc.colname)]
-## S = 1.3266e+11, p-value = 0.1193
-## alternative hypothesis: true rho is not equal to 0
-## sample estimates:
-##        rho 
-## 0.01613937 
-## 
-## [1] "The number of samples is: 9318"
-```
+    ## [1] "------------------------------------"
+    ## [1] "mRNA FC vs translation FC"
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  trsl.input.dt[, get(mrna.log2fc.colname)] and trsl.input.dt[, get(mrl.log2fc.colname)]
+    ## S = 1.3266e+11, p-value = 0.1193
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##        rho 
+    ## 0.01613937 
+    ## 
+    ## [1] "The number of samples is: 9318"
 
-```
-## Warning: Removed 4 rows containing missing values (geom_point).
-```
+    ## Warning: Removed 4 rows containing missing values (geom_point).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/plot for r4-1.png)<!-- -->
+    ## Warning: Could not calculate the predicate for layer 1, layer 2; ignored
 
-```
-## [1] "mRNA FC vs absolute MRL"
-## 
-## 	Spearman's rank correlation rho
-## 
-## data:  input.de.dte.res.dt[, get(abs.mrl.colname)] and input.de.dte.res.dt[, get(mrna.log2fc.colname)]
-## S = 1.4881e+11, p-value = 2.083e-05
-## alternative hypothesis: true rho is not equal to 0
-## sample estimates:
-##         rho 
-## -0.04366511 
-## 
-## [1] "The number of samples is: 9493"
-```
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/plot_for_r4-1.png)<!-- -->
 
-```
-## Warning: Removed 4 rows containing missing values (geom_point).
-```
+    ## Warning: Removed 4 rows containing missing values (geom_point).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/plot for r4-2.png)<!-- -->
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/plot_for_r4-2.png)<!-- -->
+
+    ## [1] "mRNA FC vs absolute MRL"
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  input.de.dte.res.dt[, get(abs.mrl.colname)] and input.de.dte.res.dt[, get(mrna.log2fc.colname)]
+    ## S = 1.4881e+11, p-value = 2.083e-05
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##         rho 
+    ## -0.04366511 
+    ## 
+    ## [1] "The number of samples is: 9493"
+
+    ## Warning: Removed 4 rows containing missing values (geom_point).
+
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/plot_for_r4-3.png)<!-- -->
 
 ## Analysis of 786-O
 
-
-
-```r
+``` r
 h2a.all.de.dte.res.dt <- copy(all.de.dte.res.dt)
 
 h2a.all.de.dte.res.dt <- h2a.all.de.dte.res.dt[
@@ -309,59 +322,55 @@ temp <- plotMRL_mRNA_analysis(
     mrl.log2fc.colname = "MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     abs.mrl.colname = "MRL_treated_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     mrna.log2fc.colname = "log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL",
-    filtered.gene.ids = all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id]
+    filtered.gene.ids = all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id],
+    EIF4E2.targets = reported.eif4e2.target.dt[, gene_id]
 )
 ```
 
-```
-## [1] "------------------------------------"
-## [1] "mRNA FC vs translation FC"
-## 
-## 	Spearman's rank correlation rho
-## 
-## data:  trsl.input.dt[, get(mrna.log2fc.colname)] and trsl.input.dt[, get(mrl.log2fc.colname)]
-## S = 8.0708e+10, p-value = 0.7659
-## alternative hypothesis: true rho is not equal to 0
-## sample estimates:
-##          rho 
-## -0.003361797 
-## 
-## [1] "The number of samples is: 7844"
-```
+    ## [1] "------------------------------------"
+    ## [1] "mRNA FC vs translation FC"
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  trsl.input.dt[, get(mrna.log2fc.colname)] and trsl.input.dt[, get(mrl.log2fc.colname)]
+    ## S = 8.0708e+10, p-value = 0.7659
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##          rho 
+    ## -0.003361797 
+    ## 
+    ## [1] "The number of samples is: 7844"
 
-```
-## Warning: Removed 4 rows containing missing values (geom_point).
-```
+    ## Warning: Removed 4 rows containing missing values (geom_point).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/similar analysis with 786-O-1.png)<!-- -->
+    ## Warning: Could not calculate the predicate for layer 1, layer 2; ignored
 
-```
-## [1] "mRNA FC vs absolute MRL"
-## 
-## 	Spearman's rank correlation rho
-## 
-## data:  input.de.dte.res.dt[, get(abs.mrl.colname)] and input.de.dte.res.dt[, get(mrna.log2fc.colname)]
-## S = 9.3194e+10, p-value = 3.117e-09
-## alternative hypothesis: true rho is not equal to 0
-## sample estimates:
-##         rho 
-## -0.06591821 
-## 
-## [1] "The number of samples is: 8065"
-```
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/similar_analysis_with_786O-1.png)<!-- -->
 
-```
-## Warning: Removed 5 rows containing missing values (geom_point).
-```
+    ## Warning: Removed 4 rows containing missing values (geom_point).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/similar analysis with 786-O-2.png)<!-- -->
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/similar_analysis_with_786O-2.png)<!-- -->
 
+    ## [1] "mRNA FC vs absolute MRL"
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  input.de.dte.res.dt[, get(abs.mrl.colname)] and input.de.dte.res.dt[, get(mrna.log2fc.colname)]
+    ## S = 9.3194e+10, p-value = 3.117e-09
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##         rho 
+    ## -0.06591821 
+    ## 
+    ## [1] "The number of samples is: 8065"
+
+    ## Warning: Removed 5 rows containing missing values (geom_point).
+
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/similar_analysis_with_786O-3.png)<!-- -->
 
 # Comparison of the effect size of translational regulation by the HIF and mTOR pathway
 
-
-
-```r
+``` r
 sl.comp.names <- c(
     "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     "786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
@@ -406,45 +415,35 @@ m.all.de.dte.res.dt <- m.all.de.dte.res.dt[filter_flag == TRUE]
 table(m.all.de.dte.res.dt[, .(Intervention)])
 ```
 
-```
-## 
-##    RCC-4:\nVHL loss    786-O:\nVHL loss RCC-4 VHL:\nTorin 1 
-##                9322                7848                8952
-```
+    ## 
+    ##    RCC-4:\nVHL loss    786-O:\nVHL loss RCC-4 VHL:\nTorin 1 
+    ##                9322                7848                8952
 
-```r
+``` r
 ## Sanity check
 if(nrow(m.all.de.dte.res.dt[duplicated(paste(gene_id, Intervention))]) == 0){
     "OK"
 } else {stop("point 1")}
 ```
 
-```
-## [1] "OK"
-```
+    ## [1] "OK"
 
-```r
+``` r
 temp <- plotTrslDistByIntervention(
     m.all.de.dte.res.dt = m.all.de.dte.res.dt,
     show.quantile = TRUE
 )
 ```
 
-```
-## Warning: Removed 8 rows containing non-finite values (stat_bin).
-```
+    ## Warning: Removed 8 rows containing non-finite values (stat_bin).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/compare the effect size-1.png)<!-- -->
-
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/compare_the_effect_size-1.png)<!-- -->
 
 # Analysis of the effect of HIF activation on the mTOR pathway activity
 
-
 ## Expression level changes of mTOR regulators / target upon VHL loss
 
-
-
-```r
+``` r
 sl.comparison.names <- c("RCC4_xx_HIF1B_N__noVHL_vs_VHL", "786O_xx_HIF1B_N__noVHL_vs_VHL")
 
 gene.de.res.dt <- lapply(
@@ -502,38 +501,34 @@ ggplot(
     scale_y_continuous(expand = c(0, 0, 0.2, 0))
 ```
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/expression level changes of mTOR regulators-1.png)<!-- -->
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/expression_level_changes_of_mTOR_regulators-1.png)<!-- -->
 
-```r
+``` r
 gene.de.res.dt[
   , .(gene_name, padj, shrlog2fc, treated_basename, base_basename, cell_line)
 ]
 ```
 
-```
-##    gene_name         padj   shrlog2fc   treated_basename    base_basename
-## 1:     DDIT4 1.296347e-06  1.89377358 RCC4_noVHL_HIF1B_N RCC4_VHL_HIF1B_N
-## 2:     BNIP3 8.261304e-78  2.43326250 RCC4_noVHL_HIF1B_N RCC4_VHL_HIF1B_N
-## 3:  EIF4EBP1 1.653125e-03  0.48149581 RCC4_noVHL_HIF1B_N RCC4_VHL_HIF1B_N
-## 4:     DDIT4 4.871546e-03  1.82794854 786O_noVHL_HIF1B_N 786O_VHL_HIF1B_N
-## 5:     BNIP3 9.387046e-01 -0.03396988 786O_noVHL_HIF1B_N 786O_VHL_HIF1B_N
-## 6:  EIF4EBP1 3.805218e-01  0.14070850 786O_noVHL_HIF1B_N 786O_VHL_HIF1B_N
-##    cell_line
-## 1:      RCC4
-## 2:      RCC4
-## 3:      RCC4
-## 4:      786O
-## 5:      786O
-## 6:      786O
-```
-
+    ##    gene_name         padj   shrlog2fc   treated_basename    base_basename
+    ## 1:     DDIT4 1.296347e-06  1.89377358 RCC4_noVHL_HIF1B_N RCC4_VHL_HIF1B_N
+    ## 2:     BNIP3 8.261304e-78  2.43326250 RCC4_noVHL_HIF1B_N RCC4_VHL_HIF1B_N
+    ## 3:  EIF4EBP1 1.653125e-03  0.48149581 RCC4_noVHL_HIF1B_N RCC4_VHL_HIF1B_N
+    ## 4:     DDIT4 4.871546e-03  1.82794854 786O_noVHL_HIF1B_N 786O_VHL_HIF1B_N
+    ## 5:     BNIP3 9.387046e-01 -0.03396988 786O_noVHL_HIF1B_N 786O_VHL_HIF1B_N
+    ## 6:  EIF4EBP1 3.805218e-01  0.14070850 786O_noVHL_HIF1B_N 786O_VHL_HIF1B_N
+    ##    cell_line
+    ## 1:      RCC4
+    ## 2:      RCC4
+    ## 3:      RCC4
+    ## 4:      786O
+    ## 5:      786O
+    ## 6:      786O
 
 ## Analysis of the changes in translation upon VHL loss vs those upon mTOR inhibition
 
 ### RCC-4
 
-
-```r
+``` r
 t2.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in% Reduce(
                      intersect,
@@ -563,17 +558,13 @@ ggplot(
     coord_cartesian(xlim = c(-1.5, 0.5), ylim = c(-0.6, 0.6))
 ```
 
-```
-## Warning: Removed 2 rows containing non-finite values (stat_smooth).
-```
+    ## Warning: Removed 2 rows containing non-finite values (stat_smooth).
 
-```
-## Warning: Removed 2 rows containing missing values (geom_point).
-```
+    ## Warning: Removed 2 rows containing missing values (geom_point).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/corrleation of the effect of translation by VHL loss and mTOR inhibition-1.png)<!-- -->
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/corrleation_of_the_effect_of_translation_by_VHL_loss_and_mTOR_inhibition-1.png)<!-- -->
 
-```r
+``` r
 t2.all.de.dte.res.dt %$%
     cor.test(
         x = MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
@@ -583,21 +574,19 @@ t2.all.de.dte.res.dt %$%
     )
 ```
 
-```
-## 
-## 	Pearson's product-moment correlation
-## 
-## data:  MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL and MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
-## t = 33.052, df = 8827, p-value < 2.2e-16
-## alternative hypothesis: true correlation is not equal to 0
-## 95 percent confidence interval:
-##  0.3131687 0.3502949
-## sample estimates:
-##       cor 
-## 0.3318603
-```
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL and MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
+    ## t = 33.052, df = 8827, p-value < 2.2e-16
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.3131687 0.3502949
+    ## sample estimates:
+    ##       cor 
+    ## 0.3318603
 
-```r
+``` r
 t2.all.de.dte.res.dt[
   , .(
         MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
@@ -607,14 +596,11 @@ t2.all.de.dte.res.dt[
     {print(paste0("The number of samples was: ", .))}
 ```
 
-```
-## [1] "The number of samples was: 8829"
-```
+    ## [1] "The number of samples was: 8829"
 
 ### 786-O
 
-
-```r
+``` r
 t4.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in%
     Reduce(
@@ -646,17 +632,13 @@ ggplot(
     coord_cartesian(xlim = c(-1.5, 0.5), ylim = c(-0.6, 0.6))
 ```
 
-```
-## Warning: Removed 3 rows containing non-finite values (stat_smooth).
-```
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
 
-```
-## Warning: Removed 3 rows containing missing values (geom_point).
-```
+    ## Warning: Removed 3 rows containing missing values (geom_point).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/corrleation of the effect of translation by VHL loss and mTOR inhibition in 786-O-1.png)<!-- -->
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/corrleation_of_the_effect_of_translation_by_VHL_loss_and_mTOR_inhibition_in_786O-1.png)<!-- -->
 
-```r
+``` r
 t4.all.de.dte.res.dt %$%
     cor.test(
         x = MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
@@ -666,21 +648,19 @@ t4.all.de.dte.res.dt %$%
     )
 ```
 
-```
-## 
-## 	Pearson's product-moment correlation
-## 
-## data:  MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL and MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
-## t = 16.779, df = 7510, p-value < 2.2e-16
-## alternative hypothesis: true correlation is not equal to 0
-## 95 percent confidence interval:
-##  0.1681993 0.2117944
-## sample estimates:
-##       cor 
-## 0.1900905
-```
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL and MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA
+    ## t = 16.779, df = 7510, p-value < 2.2e-16
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.1681993 0.2117944
+    ## sample estimates:
+    ##       cor 
+    ## 0.1900905
 
-```r
+``` r
 t4.all.de.dte.res.dt[
   , .(
         MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL,
@@ -690,18 +670,13 @@ t4.all.de.dte.res.dt[
     {print(paste0("The number of samples was: ", .))}
 ```
 
-```
-## [1] "The number of samples was: 7512"
-```
+    ## [1] "The number of samples was: 7512"
 
 # Analysis of the association of TOP motif length and changes in translation upon VHL loss
 
-
 ## QC for the TOP motif length assignment
 
-
-
-```r
+``` r
 tx.meta.data.rcc4.dt <- file.path(
     s4.3.1.tx.info.rcc4.dir,
     "transcript-meta-information-RCC4-VHL.csv"
@@ -736,13 +711,11 @@ ggplot(
     geom_point()
 ```
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/qc for top motif length-1.png)<!-- -->
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/qc_for_top_motif_length-1.png)<!-- -->
 
 ## Analysis
 
-
-
-```r
+``` r
 all.filtered.tss.dt <- file.path(
     s8.3.dir,
     "filtered_tss_for_polysome_analysis.csv"
@@ -825,36 +798,46 @@ top.vhl.loss.sig.dt <- lapply(
          TRUE ~ NA_character_
      ),
      rd_TOP_motif_length = ind
- )]} %T>% print
+ )]} %>%
+merge(
+    y = top.vhl.loss.dt[, .N, by = list(cell_name, rd_TOP_motif_length)],
+    by = c("cell_name", "rd_TOP_motif_length"),
+    all.y = TRUE
+) %>%
+{.[
+   , cell_name := factor(cell_name, levels = c("RCC4", "786-O"))
+ ][order(cell_name)]} %T>%
+    print
 ```
 
-```
-##     cell_name       values ind         padj sig_mark rd_TOP_motif_length
-##  1:      RCC4 4.094319e-16   1 4.913183e-15       **                   1
-##  2:      RCC4 7.812630e-24   2 1.250021e-22       **                   2
-##  3:      RCC4 7.155881e-22   3 1.073382e-20       **                   3
-##  4:      RCC4 5.807648e-18   4 8.130707e-17       **                   4
-##  5:      RCC4 3.030494e-16   5 3.939642e-15       **                   5
-##  6:      RCC4 2.392472e-15   6 2.631719e-14       **                   6
-##  7:      RCC4 2.211537e-07   7 1.990383e-06       **                   7
-##  8:      RCC4 4.715210e-12  8+ 4.715210e-11       **                  8+
-##  9:     786-O 9.645340e-01   1 1.000000e+00     <NA>                   1
-## 10:     786-O 2.949822e-01   2 1.000000e+00     <NA>                   2
-## 11:     786-O 4.466501e-01   3 1.000000e+00     <NA>                   3
-## 12:     786-O 7.958384e-01   4 1.000000e+00     <NA>                   4
-## 13:     786-O 2.584423e-01   5 1.000000e+00     <NA>                   5
-## 14:     786-O 3.664289e-01   6 1.000000e+00     <NA>                   6
-## 15:     786-O 4.401296e-01   7 1.000000e+00     <NA>                   7
-## 16:     786-O 2.807646e-01  8+ 1.000000e+00     <NA>                  8+
-```
+    ##     cell_name rd_TOP_motif_length       values  ind         padj sig_mark    N
+    ##  1:      RCC4                   0           NA <NA>           NA     <NA> 8206
+    ##  2:      RCC4                   1 4.094319e-16    1 4.913183e-15       ** 2211
+    ##  3:      RCC4                   2 7.812630e-24    2 1.250021e-22       **  532
+    ##  4:      RCC4                   3 7.155881e-22    3 1.073382e-20       **  213
+    ##  5:      RCC4                   4 5.807648e-18    4 8.130707e-17       **  120
+    ##  6:      RCC4                   5 3.030494e-16    5 3.939642e-15       **   63
+    ##  7:      RCC4                   6 2.392472e-15    6 2.631719e-14       **   38
+    ##  8:      RCC4                   7 2.211537e-07    7 1.990383e-06       **   29
+    ##  9:      RCC4                  8+ 4.715210e-12   8+ 4.715210e-11       **   35
+    ## 10:     786-O                   0           NA <NA>           NA     <NA> 5902
+    ## 11:     786-O                   1 9.645340e-01    1 1.000000e+00     <NA> 1723
+    ## 12:     786-O                   2 2.949822e-01    2 1.000000e+00     <NA>  374
+    ## 13:     786-O                   3 4.466501e-01    3 1.000000e+00     <NA>  135
+    ## 14:     786-O                   4 7.958384e-01    4 1.000000e+00     <NA>  105
+    ## 15:     786-O                   5 2.584423e-01    5 1.000000e+00     <NA>   46
+    ## 16:     786-O                   6 3.664289e-01    6 1.000000e+00     <NA>   30
+    ## 17:     786-O                   7 4.401296e-01    7 1.000000e+00     <NA>   21
+    ## 18:     786-O                  8+ 2.807646e-01   8+ 1.000000e+00     <NA>   27
 
-```r
+``` r
 merge(
     top.vhl.loss.dt,
     top.vhl.loss.sig.dt,
     by = c("cell_name", "rd_TOP_motif_length"),
     all.x = TRUE
-) %>% {.[, cell_name := factor(cell_name, levels = c("RCC4", "786-O"))]} %>%
+) %>%
+    {.[, cell_name := factor(cell_name, levels = c("RCC4", "786-O"))]} %>%
     ggplot(
         aes(
             x = rd_TOP_motif_length,
@@ -879,52 +862,48 @@ merge(
     ylab("MRL log2 fold change upon VHL loss")
 ```
 
-```
-## Warning: Removed 10 rows containing missing values (geom_text).
-```
+    ## Warning: Removed 10 rows containing missing values (geom_text).
 
-![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-html/top motif length vs VHL loss trsl-1.png)<!-- -->
-
+![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/top_motif_length_vs_VHL_loss_trsl-1.png)<!-- -->
 
 # Session information
 
-
-```r
+``` r
 sessionInfo()
 ```
 
-```
-## R version 4.0.0 (2020-04-24)
-## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
-## Running under: CentOS Linux 7 (Core)
-## 
-## Matrix products: default
-## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
-## 
-## locale:
-##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
-##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
-##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
-## [8] base     
-## 
-## other attached packages:
-## [1] knitr_1.28        stringr_1.4.0     magrittr_1.5      data.table_1.12.8
-## [5] dplyr_1.0.0       khroma_1.3.0      ggplot2_3.3.1     rmarkdown_2.2    
-## 
-## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.4.6     pillar_1.4.4     compiler_4.0.0   tools_4.0.0     
-##  [5] digest_0.6.25    lattice_0.20-41  nlme_3.1-148     evaluate_0.14   
-##  [9] lifecycle_0.2.0  tibble_3.0.1     gtable_0.3.0     mgcv_1.8-31     
-## [13] pkgconfig_2.0.3  rlang_0.4.10     Matrix_1.2-18    yaml_2.2.1      
-## [17] xfun_0.14        withr_2.4.1      generics_0.0.2   vctrs_0.3.1     
-## [21] grid_4.0.0       tidyselect_1.1.0 glue_1.4.1       R6_2.4.1        
-## [25] purrr_0.3.4      farver_2.0.3     splines_4.0.0    scales_1.1.1    
-## [29] ellipsis_0.3.1   htmltools_0.4.0  colorspace_1.4-1 labeling_0.3    
-## [33] stringi_1.4.6    munsell_0.5.0    crayon_1.3.4
-```
+    ## R version 4.0.0 (2020-04-24)
+    ## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+    ## Running under: CentOS Linux 7 (Core)
+    ## 
+    ## Matrix products: default
+    ## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
+    ## 
+    ## locale:
+    ##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+    ##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+    ##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+    ##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+    ##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+    ## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+    ## 
+    ## attached base packages:
+    ## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
+    ## [8] base     
+    ## 
+    ## other attached packages:
+    ## [1] gghighlight_0.3.0 knitr_1.28        stringr_1.4.0     magrittr_1.5     
+    ## [5] data.table_1.12.8 dplyr_1.0.0       khroma_1.3.0      ggplot2_3.3.1    
+    ## [9] rmarkdown_2.2    
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##  [1] Rcpp_1.0.4.6     pillar_1.4.4     compiler_4.0.0   tools_4.0.0     
+    ##  [5] digest_0.6.25    lattice_0.20-41  nlme_3.1-148     evaluate_0.14   
+    ##  [9] lifecycle_0.2.0  tibble_3.0.1     gtable_0.3.0     mgcv_1.8-31     
+    ## [13] pkgconfig_2.0.3  rlang_0.4.10     Matrix_1.2-18    cli_2.0.2       
+    ## [17] ggrepel_0.8.2    yaml_2.2.1       xfun_0.14        withr_2.4.1     
+    ## [21] generics_0.0.2   vctrs_0.3.1      grid_4.0.0       tidyselect_1.1.0
+    ## [25] glue_1.4.1       R6_2.4.1         fansi_0.4.1      farver_2.0.3    
+    ## [29] purrr_0.3.4      splines_4.0.0    scales_1.1.1     ellipsis_0.3.1  
+    ## [33] htmltools_0.4.0  assertthat_0.2.1 colorspace_1.4-1 labeling_0.3    
+    ## [37] stringi_1.4.6    munsell_0.5.0    crayon_1.3.4

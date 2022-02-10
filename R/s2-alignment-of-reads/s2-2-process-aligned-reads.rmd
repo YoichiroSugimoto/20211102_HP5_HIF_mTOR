@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -33,7 +31,7 @@ The count data generated here will be mainly used for the QC purpose only.
  
 # Set up
 
-```{r set up functions, , message = FALSE, warning = FALSE}
+```{r set_up_functions, message = FALSE, warning = FALSE}
 
 processors <- 24
 
@@ -47,7 +45,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directories}
+```{r define_directories}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 results.dir <- file.path("../../results")
@@ -97,7 +95,7 @@ create.dirs(c(
 
 # Generate TSS bam file
 
-```{r generate tss bam file}
+```{r generate_tss_bam_file}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -172,7 +170,7 @@ dedup.outs <- mclapply(
 # Generate deduplicated bam file
 
 
-```{r dedup bam}
+```{r dedup_bam}
 
 runDedupBam <- function(sample.name, star.aligned.bam.dir, s2.2.2.dedup.tss.bam.dir, s2.2.3.dedup.bam.dir){
 
@@ -207,7 +205,7 @@ temp <- mclapply(
 # Create read count table by genes
 
 
-```{r gene count}
+```{r gene_count}
 
 primary.tx.essential.dt <- primary.tx.dt[, c("gene_id", "gene_name", "biotype"), with = FALSE]
 
@@ -291,7 +289,7 @@ fwrite(dedup.count.dt, dedup.count.file)
 # Session Information
 
 
-```{R Session}
+```{R SessionInfo}
 
 sessionInfo()
 

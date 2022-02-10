@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -24,7 +22,7 @@ The intersections of ENCODE ChIP-Seq pipeline identified peaks and MACS identifi
 # Environment setup and data preprocessing
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 library("GenomicRanges")
 
@@ -40,7 +38,7 @@ set.seed(0)
 ```
 
 
-```{r set paths}
+```{r set_paths}
 
 results.dir <- file.path("../../results")
 
@@ -78,7 +76,7 @@ create.dirs(c(
 # Covert IDR conservative  narrowPeak file to bed file
 
 
-```{r idr narrowpeak to bed}
+```{r idr_narrowpeak_to_bed}
 
 chip.encodepl.dir <- file.path("../../../20200519_reprocessing_HIF_ChIP-Seq")
 
@@ -130,7 +128,7 @@ temp <- lapply(
 Some of IDR identified peaks are overlapping each other. Here I filter out such peaks.
 
 
-```{r filter idr selected peaks}
+```{r filter_idr_selected_peaks}
 
 
 filterIDRselectedPeaks <- function(chip.seq.exp, chip.encodepl.dir){
@@ -228,7 +226,7 @@ temp <- lapply(
 # Rename fold change bigwig file
 
 
-```{r fold change bigwig file renaming}
+```{r fold_change_bigwig_file_renaming}
 
 renameBw <- function(chip.seq.exp, chip.encodepl.dir){
     pooled.fc.bw.file <- file.path(
@@ -260,7 +258,7 @@ IDR peak sometimes contain multiple peaks in a peak. Thus peak will be called fo
 
 ## Run MACS2 for pooled data
 
-```{r run macs2}
+```{r run_macs2}
 
 runMACS2 <- function(chip.seq.exp, chip.encodepl.dir, s7.1.macs.dir){
 
@@ -314,7 +312,7 @@ temp <- mclapply(
 ## Filter MACS output with IDR
 
 
-```{r filter macs output with FDR}
+```{r filter_macs_output_with_FDR}
 
 
 filterMACS2out <- function(chip.seq.exp, chip.encodepl.dir, s7.1.macs.dir){
@@ -425,7 +423,7 @@ temp <- mclapply(
 # Identify closest HRE to the cluster centre
 
 
-```{r identify closest HRE}
+```{r identify_closest_HRE}
 
 
 library("BSgenome.Hsapiens.UCSC.hg38") 

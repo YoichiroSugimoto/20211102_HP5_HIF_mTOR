@@ -7,11 +7,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -73,7 +71,7 @@ the region between the AUG sequence and the original stop codon will be defined 
 The corrected transcripts will be used as the assigned transcripts to the TSS. 
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor packages
 library("rtracklayer")
@@ -133,7 +131,7 @@ sample.names <- sample.dt[, sample_name]
 # Define variables
 
 
-```{r define input variables}
+```{r define_input_variables}
 
 filtered.tss.with.quantile.file <- file.path(
   s4.1.6.filtered.tss.dir,
@@ -164,7 +162,7 @@ function.dir <- "./functions"
 # Select the data to define transcript and TSS assignment
 
 
-```{r which data to be used}
+```{r which_data_to_be_used}
 
 ## Below is for 786O data
 sl.sample.names <- grep("total", sample.names, value = TRUE) %>%
@@ -180,7 +178,7 @@ print(sl.sample.names)
 # Assign transcript to TSS
 
 
-```{r assign tx to tss}
+```{r assign_tx_to_tss}
 
 temp <- assignTxToTss(
     tx.map.out.dir = tx.map.out.dir,

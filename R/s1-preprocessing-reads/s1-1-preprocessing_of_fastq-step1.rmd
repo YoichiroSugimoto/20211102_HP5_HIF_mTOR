@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -36,7 +34,7 @@ s1-1 will perform from Step 1 to Step 3-1, and the pre-processed files will be s
 # Set up
 
 
-```{r set up functions, message = FALSE, warning = FALSE}
+```{r set_up_functions, message = FALSE, warning = FALSE}
 
 processors <- 24
 
@@ -49,7 +47,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directories}
+```{r define_directories}
 
 sample.file <- file.path("../../data/sample_data/20210306_sample-data.csv")
 lib2fqfilename.file <- file.path("../../data/sample_data/20210306_libname_to_fq_filename.csv")
@@ -89,7 +87,7 @@ create.dirs(
 Processed sample data file will be used throughout.
 
 
-```{r step 0}
+```{r step_0}
 
 sample.dt <- fread(sample.file)
 sample.dt.cols <- colnames(sample.dt)
@@ -148,7 +146,7 @@ fwrite(processed.sample.dt, processed.sample.file)
 ```
 
 
-```{r sample file processing for this analysis only}
+```{r sample_file_processing_for_this_analysis_only}
 
 read.process.sample.dt <- copy(sample.dt)
 
@@ -213,7 +211,7 @@ fwrite(
 ```
 
 
-```{r also subset filename files}
+```{r also_subset_filename_files}
 
 fq.dir.dt <- fread(fq.dir.file)
 
@@ -233,7 +231,7 @@ print(lib2fqfilename.dt)
 
 # Step 0. Copy raw fastq files from the data storage 
 
-```{r merge fq files from the same cDNA libraries}
+```{r merge_fq_files_from_the_same_cDNA_libraries}
 
 
 copyFastqs <- function(fq.file, processed.fq.step0.dir){
@@ -268,7 +266,7 @@ temp <- mclapply(
 # Step 1. Extract UMI from reads
 
 
-```{r step 1}
+```{r step_1}
 
 step1.in.files <- file.path(
     processed.fq.step0.dir,
@@ -320,7 +318,7 @@ temp <- mclapply(
 # Step 2. Demultiplex reads
 
 
-```{r Step 2}
+```{r Step_2}
 
 temp.index.dt <- copy(read.process.sample.dt)
 
@@ -390,7 +388,7 @@ temp <- mclapply(
 # Step 3-1. Trim adapter
 
 
-```{r step 3}
+```{r step_3}
 
 trimAdapters <- function(analyzed.sample.name, processed.fq.step2.dir, processed.fq.step3.1.dir, processors){
     ## Start processing reads
@@ -436,7 +434,7 @@ temp <- mclapply(
 # Delete unnecessary fq files
 
 
-```{r delete unecessary fq files}
+```{r delete_unecessary_fq_files}
 
 unnecessary.samples <- pre.processed.sample.dt[, sample_name] %>%
     {.[!(. %in% processed.sample.dt[, sample_name])]}
@@ -460,7 +458,7 @@ temp <- do.call(file.remove, list(files.to.delete))
 # Session Info
 
 
-```{r session info}
+```{r session_info}
 
 sessionInfo()
 

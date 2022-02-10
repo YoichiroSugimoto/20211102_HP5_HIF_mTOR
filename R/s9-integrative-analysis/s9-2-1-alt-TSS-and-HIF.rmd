@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -23,7 +21,7 @@ will be compared against the changes in other comparisons to examine the mode of
 
 # Environment setup and data preprocessing
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Specify the number of CPUs to be used
 processors <- 8
@@ -49,7 +47,7 @@ set.seed(0)
 
 
 
-```{r load data}
+```{r load_data}
 
 rcc4.vhl.loss.comparison.name <- "RCC4_xx_HIF1B_N__noVHL_vs_VHL"
 
@@ -116,7 +114,7 @@ sl.tss.all.res.dt[!duplicated(gene_id), table(discordant_flag)]
 
 
 
-```{r alt base long comparison table export}
+```{r alt_base_long_comparison_table_export}
 
 sl.tss.all.res.dt[, `:=`(
     dProportion = proportion_treated - proportion_base,
@@ -143,7 +141,7 @@ fwrite(
 # Comparisons of alternate TSS usage across conditions
 
 
-```{r cross sample comparison, fig.width = 9, fig.height = 7}
+```{r cross_sample_comparison, fig.width = 9, fig.height = 7}
 
 tss.ratio.res.dt[, dProportion := proportion_treated - proportion_base]
 

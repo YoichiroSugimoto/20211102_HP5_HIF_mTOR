@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -20,7 +18,7 @@ output:
 
 Principle component analysis will be performed to evaluate the reproducibility of HP5.
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor packages
 library("DESeq2")
@@ -33,7 +31,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -61,7 +59,7 @@ s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
 ```
 
 
-```{r read start count data}
+```{r read_start_count_data}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -75,7 +73,7 @@ total.count.dt <- fread(total.count.file)
 # PCA for HP5 of RCC-4 VHL
 
 
-```{r non-deduplicated data}
+```{r non_deduplicated_data}
 
 sl.sample.names <- grep(
     "polysome_RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA_ribo[[:digit:]]$",
@@ -112,7 +110,7 @@ print(paste0("The number of tx analysed: ", round(nrow(assay(vsd))/4)))
 # Sanity check
 
 
-```{r sanity check}
+```{r sanity_check}
 
 
 dds2 <- dds[matrixStats::rowMins(counts(dds)) > 0, ]

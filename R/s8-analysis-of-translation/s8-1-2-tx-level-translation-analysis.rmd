@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -21,7 +19,7 @@ output:
 mRNA isoform level changes in translation upon VHL loss or Torin 1 treatment will be examined.
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Data analysis
 library("tidymodels")
@@ -41,7 +39,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 ## sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 annot.dir <- normalizePath(file.path("../../annotation/"))
@@ -76,7 +74,7 @@ create.dirs(c(
 
 # Read raw and normalize count table
 
-```{r read start count data}
+```{r read_start_count_data}
 
 sample.names <- poly.sample.dt[, sample_name]
 
@@ -120,7 +118,7 @@ poly.sizefactor.with.ribo0.dt <- fread(
 # Data pre-processing
 
 
-```{r data preprocessing}
+```{r data_preprocessing}
 
 ref.column.name <- "tss_name"
 annot.cols <- c("gene_id", "gene_name", "biotype")
@@ -142,7 +140,7 @@ poly.tss.count.dt <- cbind(
 # Preparation of data necessary for running DESEeq2
 
 
-```{r deseq2 prep for dte analysis}
+```{r deseq2_prep_for_dte_analysis}
 
 countDt2Df <- function(count.dt, coldata.df, ref.column.name = "tss_name", annot.cols){
     count.df <- as.data.frame(count.dt)
@@ -171,7 +169,7 @@ setkeyv(annot.dt, ref.column.name)
 
 ## RCC-4 noVHL vs RCC-4 VHL
 
-```{r rcc4 diff translation}
+```{r rcc4_diff_translation}
 
 ## Select necessary data frame
 sl.translation.comparison.dt <- translation.comparison.dt[1, ]
@@ -198,7 +196,7 @@ temp <- analyzeDtg(
 
 ## RCC-4 noVHL Torin-1 vs no treatment
 
-```{r rcc4 noVHL Torin1 diff translation}
+```{r rcc4_noVHL_Torin1_diff_translation}
 
 ## Select necessary data frame
 sl.translation.comparison.dt <- translation.comparison.dt[2, ]
@@ -232,7 +230,7 @@ temp <- analyzeDtg(
 
 ## RCC-4 VHL treated with Torin-1 vs no treatment
 
-```{r rcc4 VHL Torin1 diff translation}
+```{r rcc4_VHL_Torin1_diff_translation}
 
 ## Select necessary data frame
 sl.translation.comparison.dt <- translation.comparison.dt[3, ]
@@ -267,7 +265,7 @@ temp <- analyzeDtg(
 
 ## 786-O noVHL vs 786-O VHL
 
-```{r 786o diff translation}
+```{r 786o_diff_translation}
 
 ## Select necessary data frame
 sl.translation.comparison.dt <- translation.comparison.dt[4, ]
@@ -299,7 +297,7 @@ temp <- analyzeDtg(
 
 ## 786-O vs 786-O EIF4E2 KO
 
-```{r 786O eif4e2 ko diff translation}
+```{r 786O_eif4e2_ko_diff_translation}
 
 sl.translation.comparison.dt <- translation.comparison.dt[5, ]
 print("The following data will be analyzed:")
@@ -326,7 +324,7 @@ temp <- analyzeDtg(
 ## 786-O VHL vs 786-O VHL EIF4E2 KO
 
 
-```{r 786O VHL eif4e2 ko diff translation}
+```{r 786O_VHL_eif4e2_ko_diff_translation}
 
 sl.translation.comparison.dt <- translation.comparison.dt[6, ]
 print("The following data will be analyzed:")

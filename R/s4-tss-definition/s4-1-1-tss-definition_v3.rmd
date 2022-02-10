@@ -7,11 +7,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -32,7 +30,7 @@ TSS will be defined in the following ways:
 	- Filtering TSS with very low usage (< 10% to the most used TSS)
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor
 library("rtracklayer")
@@ -143,7 +141,7 @@ create.dirs(c(
 # Selecting samples used to define TSS
 
 
-```{r define base samples}
+```{r define_base_samples}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -176,7 +174,7 @@ sample.groups <- unique(paste(
 Also, split TSS bam file as a function of untemplated G
 
 
-```{r pool tss per sample}
+```{r pool_tss_per_sample}
 
 runPoolTssPerSampleGorup <- function(sample.group, tss.bam.dir, s4.1.5.1.tss.bam.with.untemplated.G.dir, s4.1.5.2.tss.bam.without.untemplated.G.dir, s4.1.5.3.tss.table.dir, processors){
 
@@ -212,7 +210,7 @@ temp <- lapply(
 # 2. Pooling of all the total 5' end-Seq of total mRNA data
 
 
-```{r pool all sample group tss data}
+```{r pool_all_sample_group_tss_data}
 
 all.tss.dt <- lapply(
     list.files(s4.1.5.3.tss.table.dir, full.names = TRUE),
@@ -242,7 +240,7 @@ setnames(all.tss.count.dt, old = colnames(all.tss.count.dt), new = c("Chr", "str
 [paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/) software will be used
 
 
-```{r clustering pooled tss data}
+```{r clustering_pooled_tss_data}
 
 tss.cluster.file <- file.path(
     s4.1.3.paraclu.tss.dir,
@@ -338,7 +336,7 @@ First, TSS data (from both 5' end-Seq and FANTOM CAGE) overlapping with paraclu 
 
 Processing FANTOM CAGE data
 
-```{r preparation of FANTOM cage data}
+```{r preparation_of_FANTOM_cage_data}
 
 ## First process FANTOM CAGE data
 paraclu.tss.bed.file <- file.path(
@@ -458,7 +456,7 @@ file.path(
 Processing 5' end-Seq data
 
 
-```{r prepration of 5end-seq data}
+```{r prepration_of_5end_seq_data}
 
 bed2ctss <- function(sample.name, tss.bam.dir, s4.1.4.0.dpi.temp.in.bed.dir){
 
@@ -529,7 +527,7 @@ temp <- mclapply(
 
 The original script was modified to be able to run on slurm.
 
-```{r run dpi}
+```{r run_dpi}
 
 dpi.cmd <- paste(
     file.path(dpi.dir, "identify_tss_peaks_for_slurm_v2.sh"),
@@ -546,7 +544,7 @@ temp <- system.cat(dpi.cmd)
 ## Define cluster boundaries
 
 
-```{r split paraclu by dpi}
+```{r split_paraclu_by_dpi}
 
 ## Development
 ## paraclu.tss.bed.file <- file.path(
@@ -763,7 +761,7 @@ temp <- splitRefTssByDpiTss(
 Note that genes in chrM won't be filtered by G ratio as mitchodrial mRNAs does not have a conventional cap.
 
 
-```{r count per cluster}
+```{r count_per_cluster}
 
 all.tss.dt <- file.path(
     s4.1.4.3.split.tss.dir, "all.tss.without.filter.csv.gz"
@@ -822,7 +820,7 @@ count.per.tss.without.G.dt <- countPerRangeFromBams(
 ```
 
 
-```{r filter with untemplated G ratio, fig.width = 7, fig.height = 5}
+```{r filter_with_untemplated_G_ratio, fig.width = 7, fig.height = 5}
 
 count.per.tss.with.G.dt <- fread(count.per.tss.with.G.file)
 count.per.tss.without.G.dt <- fread(count.per.tss.without.G.file)
@@ -882,7 +880,7 @@ G.filtered.tss.dt <- merge(
 ### Annotation preprocessing
 
 
-```{r filtering by expression level}
+```{r filtering_by_expression_level}
 
 all.primary.tx.dt <- file.path(
     annot.ps.dir,
@@ -1083,7 +1081,7 @@ annotation.gr <- sort(annotation.gr)
 ### TSS annotation
 
 
-```{r annotate TSS}
+```{r annotate_TSS}
 
 annotateTSS <- function(tss.dt, annotation.gr, all.primary.tx.dt, plot.title, range.name = "dpi_TSS_index", score.name = "total_count", yaxis.title = "Proportion"){
 
@@ -1196,7 +1194,7 @@ exp.filtering.tss.dt <- exp.filtering.tss.dt[
 Since mitchodrial mRNA does not have a typical 5' cap, the TSS were filtered by the annotation
 
 
-```{r mito fileting}
+```{r mito_fileting}
 
 exp.filtering.tss.dt <- exp.filtering.tss.dt[chr != "chrM" | annot == "promoter"]
 
@@ -1206,7 +1204,7 @@ exp.filtering.tss.dt <- exp.filtering.tss.dt[chr != "chrM" | annot == "promoter"
 ### Filtering TSS of the nuclear genome
 
 
-```{r filtering by expression level threshold}
+```{r filtering_by_expression_level_threshold}
 
 isoform.filter.ratio <- 0.1
 min.cluster.sum.count <- 5 ## If the sum of the counts in a cluster has less than this value, discrard is 
@@ -1287,7 +1285,7 @@ fwrite(
 ## Final assignment of TSS boundries and annotation
 
 
-```{r resplit filtered tss}
+```{r resplit_filtered_tss}
 
 exp.filtered.tss.dt <- fread(
     file.path(s4.1.5.tss.filtering.dir, "pre-resplit-filtered-tss.csv")
@@ -1356,7 +1354,7 @@ The following ranges will be also extracted.
    - 0. 0.1, 0.5, 0.9, 1
       
 	  
-```{r cluster width calculation}
+```{r cluster_width_calculation}
 
 filtered.tss.gr <- makeGRangesFromDataFrame(post.resplit.tss.dt, keep.extra.columns = TRUE)
 all.tss.count.gr <- makeGRangesFromDataFrame(all.tss.count.dt[, end := start], keep.extra.columns = TRUE)
@@ -1533,7 +1531,7 @@ temp <- system.cat(bed2gtf.cmd)
 # Export useful data and functions
 
 
-```{r export useful data and functions}
+```{r export_useful_data_and_functions}
 
 save( 
     annotation.gr, annotateTSS,

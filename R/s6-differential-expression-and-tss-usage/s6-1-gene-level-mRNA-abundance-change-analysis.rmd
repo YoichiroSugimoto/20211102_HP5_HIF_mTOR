@@ -7,11 +7,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -21,7 +19,7 @@ output:
 
 Gene level mRNA differential expression analysis will be performed here.
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Biocoductor packages
 library("DESeq2")
@@ -44,7 +42,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
@@ -75,7 +73,7 @@ create.dirs(c(
 
 # Data preparation
 
-```{r read start count data}
+```{r read_start_count_data}
 
 filtered.tss.with.quantile.dt <- file.path(
   s4.1.6.filtered.tss.dir,
@@ -112,7 +110,7 @@ total.count.dt <- merge(
 
 ## Data preparation for DESeq2 analysis
 
-```{r deseq2 set up}
+```{r deseq2_set_up}
 
 countDt2Df <- function(count.dt){
     ## temp.count.dt <- copy(count.dt[biotype == "protein_coding"])
@@ -134,7 +132,7 @@ if(!all(colnames(deseq2.in.list$count.df) == rownames(total.coldata.df))){
 
 ## List of comparison
 
-```{r prepare list of comparisons}
+```{r prepare_list_of_comparisons}
 
 ## This is now performed at the R file in functions/ directory
 print("List of comparisons")
@@ -145,7 +143,7 @@ total.comparison.dt
 
 ## Analysis of differential gene expression by VHL or oxygen
 
-```{r Analsyis of VHL dependent mRNA abundance changes}
+```{r Analsyis_of_VHL_dependent_mRNA_abundance_changes}
 
 de.res.dts <- mapply(
     analyzeDE,

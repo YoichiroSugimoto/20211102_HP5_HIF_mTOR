@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -19,7 +17,7 @@ output:
 # Overview
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor database package
 library("org.Hs.eg.db")
@@ -39,7 +37,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
@@ -89,7 +87,7 @@ The information from [KEGG summary page](https://www.genome.jp/kegg-bin/show_bri
 ## Metabolism related genes
 
 
-```{r metabolism related genes}
+```{r metabolism_related_genes}
 
 kegg.dir <- file.path(annot.dir, "hg38_annotation/KEGG")
 
@@ -200,7 +198,7 @@ kegg.metabolic.gene.dt[, term_name := GO_name]
 ## Gene expression regulation
 
 
-```{r gene expression regulation}
+```{r gene_expression_regulation}
 
 kegg.brite.link.dt <- file.path(
     kegg.dir,
@@ -230,7 +228,7 @@ kegg.brite.link.dt[, `:=`(
 ## Merge KEGG data
 
 
-```{r merge kegg, fig.width = 7, fig.height = 7}
+```{r merge_kegg, fig.width = 7, fig.height = 7}
 
 kegg.all.dt <- rbind(
     kegg.metabolic.gene.dt[, .(gene_id, term_name)],
@@ -280,7 +278,7 @@ fwrite(
 ## Plot intersection of KEGG terms
 
 
-```{r plot intersection of KEGG terms}
+```{r plot_intersection_of_KEGG_terms}
 
 library("UpSetR")
 
@@ -301,7 +299,7 @@ upset(
 
 # GO information extraction
 
-```{r go information}
+```{r go_information}
 
 extractGO <- function(go.id, go.name){
     GO.dt <- mget(go.id, org.Hs.egGO2ALLEGS) %>%
@@ -370,7 +368,7 @@ In order to reliably calculate log2 fold change of MRL, genes / transcripts with
 ## Data preprocessing
 
 
-```{r filter data}
+```{r filter_data}
 
 ## For filtering of the results
 count.dt <- fread(file.path(
@@ -434,7 +432,7 @@ wrapFilterPolysomeByCount <- function(match.pattern, count.dt, ref.colname = "ts
 ## Gene level data filtration
 
 
-```{r gene level filteration}
+```{r gene_level_filteration}
 
 all.filtered.gene.dt <- mapply(
     wrapFilterPolysomeByCount,
@@ -464,7 +462,7 @@ fwrite(
 ## TSS level filtration
 
 
-```{r tss level filtration}
+```{r tss_level_filtration}
 
 all.filtered.tss.dt <- mapply(
     wrapFilterPolysomeByCount,

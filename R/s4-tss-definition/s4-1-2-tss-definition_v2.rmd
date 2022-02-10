@@ -7,11 +7,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -22,13 +20,13 @@ output:
 The count per TSS will be calculated.
 
 
-```{r knitr setup}
+```{r knitr_setup}
 
 knitr::opts_chunk$set(collapse = TRUE)
 
 ```
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Data analysis
 library("data.table")
@@ -87,7 +85,7 @@ create.dirs(c(
 # Calculate count per TSS of all sequencing data
 
 
-```{r define base samples}
+```{r define_base_samples}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -119,7 +117,7 @@ count.per.tss.dt <- countPerRangeFromBams(
 # Calculate count per TSS of FANTOM5 CAGE data
 
 
-```{r calculate count per TSS for FANTOM}
+```{r calculate_count_per_TSS_for_FANTOM}
 
 
 countPerRangeFromBeds <- function(input.bed.files, gr, out.file.name, processors, range.name = "tss_name", bed.file.sample.indicator = "CNhs[[:digit:]]*", sample.names = NULL){

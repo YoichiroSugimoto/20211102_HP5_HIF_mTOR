@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -19,7 +17,7 @@ output:
 # Overview
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Specify the number of CPUs to be used
 processors <- 8
@@ -36,7 +34,7 @@ sig.th <- 0.05
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
@@ -75,7 +73,7 @@ sample.names <- sample.dt[, sample_name]
 # Pre-processed data import
 
 
-```{r load preprocessed data}
+```{r load_preprocessed_data}
 
 all.de.dte.res.dt <- fread(
     file.path(
@@ -104,6 +102,11 @@ all.filtered.gene.dt <- fread(
     )
 )
 
+## Reported EIF4E2/HIF2A targets
+reported.eif4e2.target.dt <- fread(
+    "../../data/others/20220210_previously_reported_HIF2A-EIF4E2_target_genes.csv"
+)
+
 
 ```
 
@@ -111,8 +114,9 @@ all.filtered.gene.dt <- fread(
 # Analysis of VHL dependent transcriptional and translational regulation
 
 
-```{r analysis of VHL dependent mRNA regulation and translation regulation}
+```{r analysis_of_VHL_dependent_mRNA_regulation_and_translational_regulation}
 
+library("gghighlight")
 
 plotMRL_mRNA_analysis <- function(
                                   input.de.dte.res.dt,
@@ -122,7 +126,8 @@ plotMRL_mRNA_analysis <- function(
                                   filtered.gene.ids,
                                   mrnafc.xlim = c(-4, 5),
                                   mrlfc.ylim = c(-1, 0.5),
-                                  absmrl.ylim = c(1.5, 7.5)
+                                  absmrl.ylim = c(1.5, 7.5),
+                                  EIF4E2.targets
                                   ){
 
     trsl.input.dt <- input.de.dte.res.dt[
@@ -176,6 +181,16 @@ plotMRL_mRNA_analysis <- function(
 
     print(trsl.scatter.g)
 
+    trsl.scatter.g2 <- trsl.scatter.g +
+        gghighlight(
+            gene_id %in% EIF4E2.targets,
+            ## unhighlighted_params = list(size = 0.25),
+            label_key = gene_name,
+            label_params = list(size = 6, box.padding = 2)
+        )
+
+    print(trsl.scatter.g2)
+
     ## Absolute MRL
     print("mRNA FC vs absolute MRL")
     print(
@@ -222,7 +237,7 @@ plotMRL_mRNA_analysis <- function(
 
 ## Analysis for RCC-4
 
-```{r plot for r4, fig.height = 5, fig.width = 7}
+```{r plot_for_r4, fig.height = 5, fig.width = 7}
 
 t1.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in% all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id]
@@ -233,7 +248,8 @@ temp <- plotMRL_mRNA_analysis(
     mrl.log2fc.colname = "MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     abs.mrl.colname = "MRL_treated_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     mrna.log2fc.colname = "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL",
-    filtered.gene.ids = all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id]
+    filtered.gene.ids = all.filtered.gene.dt[RCC4_VHL_NA == TRUE, gene_id],
+    EIF4E2.targets = reported.eif4e2.target.dt[, gene_id]
 )
 
 
@@ -242,7 +258,7 @@ temp <- plotMRL_mRNA_analysis(
 ## Analysis of 786-O
 
 
-```{r similar analysis with 786-O, fig.height = 5, fig.width = 7}
+```{r similar_analysis_with_786O, fig.height = 5, fig.width = 7}
 
 h2a.all.de.dte.res.dt <- copy(all.de.dte.res.dt)
 
@@ -255,7 +271,8 @@ temp <- plotMRL_mRNA_analysis(
     mrl.log2fc.colname = "MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     abs.mrl.colname = "MRL_treated_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     mrna.log2fc.colname = "log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL",
-    filtered.gene.ids = all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id]
+    filtered.gene.ids = all.filtered.gene.dt[c786O_VHL_EIF4E2_yy_NA == TRUE, gene_id],
+    EIF4E2.targets = reported.eif4e2.target.dt[, gene_id]
 )
 
 ```
@@ -264,7 +281,7 @@ temp <- plotMRL_mRNA_analysis(
 # Comparison of the effect size of translational regulation by the HIF and mTOR pathway
 
 
-```{r compare the effect size, fig.height = 7, fig.width = 7}
+```{r compare_the_effect_size, fig.height = 7, fig.width = 7}
 
 sl.comp.names <- c(
     "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
@@ -329,7 +346,7 @@ temp <- plotTrslDistByIntervention(
 ## Expression level changes of mTOR regulators / target upon VHL loss
 
 
-```{r expression level changes of mTOR regulators}
+```{r expression_level_changes_of_mTOR_regulators}
 
 sl.comparison.names <- c("RCC4_xx_HIF1B_N__noVHL_vs_VHL", "786O_xx_HIF1B_N__noVHL_vs_VHL")
 
@@ -398,7 +415,7 @@ gene.de.res.dt[
 
 ### RCC-4
 
-```{r corrleation of the effect of translation by VHL loss and mTOR inhibition}
+```{r corrleation_of_the_effect_of_translation_by_VHL_loss_and_mTOR_inhibition}
 
 t2.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in% Reduce(
@@ -448,7 +465,7 @@ t2.all.de.dte.res.dt[
 
 ### 786-O
 
-```{r corrleation of the effect of translation by VHL loss and mTOR inhibition in 786-O}
+```{r corrleation_of_the_effect_of_translation_by_VHL_loss_and_mTOR_inhibition_in_786O}
 
 t4.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in%
@@ -506,7 +523,7 @@ t4.all.de.dte.res.dt[
 ## QC for the TOP motif length assignment
 
 
-```{r qc for top motif length}
+```{r qc_for_top_motif_length}
 
 tx.meta.data.rcc4.dt <- file.path(
     s4.3.1.tx.info.rcc4.dir,
@@ -547,7 +564,7 @@ ggplot(
 ## Analysis
 
 
-```{r top motif length vs VHL loss trsl}
+```{r top_motif_length_vs_VHL_loss_trsl}
 
 all.filtered.tss.dt <- file.path(
     s8.3.dir,
@@ -631,14 +648,24 @@ top.vhl.loss.sig.dt <- lapply(
          TRUE ~ NA_character_
      ),
      rd_TOP_motif_length = ind
- )]} %T>% print
+ )]} %>%
+merge(
+    y = top.vhl.loss.dt[, .N, by = list(cell_name, rd_TOP_motif_length)],
+    by = c("cell_name", "rd_TOP_motif_length"),
+    all.y = TRUE
+) %>%
+{.[
+   , cell_name := factor(cell_name, levels = c("RCC4", "786-O"))
+ ][order(cell_name)]} %T>%
+    print
 
 merge(
     top.vhl.loss.dt,
     top.vhl.loss.sig.dt,
     by = c("cell_name", "rd_TOP_motif_length"),
     all.x = TRUE
-) %>% {.[, cell_name := factor(cell_name, levels = c("RCC4", "786-O"))]} %>%
+) %>%
+    {.[, cell_name := factor(cell_name, levels = c("RCC4", "786-O"))]} %>%
     ggplot(
         aes(
             x = rd_TOP_motif_length,

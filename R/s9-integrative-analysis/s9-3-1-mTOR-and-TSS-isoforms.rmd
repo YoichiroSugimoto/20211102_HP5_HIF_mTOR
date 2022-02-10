@@ -1,16 +1,14 @@
 ---
-title: "s9-3-2 mTOR and TSS isoforms"
+title: "s9-3-1 mTOR and TSS isoforms"
 author: "Yoichiro Sugimoto"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -18,7 +16,7 @@ output:
 
 # Environment setup and data preprocessing
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Specify the number of CPUs to be used
 processors <- 8

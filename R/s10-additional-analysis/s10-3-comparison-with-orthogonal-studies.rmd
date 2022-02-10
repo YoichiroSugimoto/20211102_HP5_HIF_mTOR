@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -23,7 +21,7 @@ The ability of HP5 to assess translation will be evaluated compared to orthogona
 # Environment setup
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 library("readxl")
 
@@ -37,7 +35,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -70,7 +68,7 @@ create.dirs(c(
 # Import the results of previous studies
 
 
-```{r import past studies}
+```{r import_past_studies}
 
 ref.dt <- file.path("../../data/others/20201127_previously_reported_mTOR_target_genes.csv") %>%
     fread
@@ -159,7 +157,7 @@ Thoreen.all.dt <- file.path(s8.3.dir, "Thoreen_et_al_with_human_gene_id.csv") %>
 ```
 
 
-```{r polysome profiling}
+```{r polysome_profiling}
 
 ref.dt[, translational_regulation := "Down"]
 

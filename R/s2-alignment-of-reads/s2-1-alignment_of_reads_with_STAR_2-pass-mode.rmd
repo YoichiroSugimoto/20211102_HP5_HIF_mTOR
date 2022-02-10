@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -21,7 +19,7 @@ Sequence reads will be aligned to the human genome using STAR
  
 # Set up
 
-```{r set up functions, message = FALSE, warning = FALSE}
+```{r set_up_functions, message = FALSE, warning = FALSE}
 
 processors <- 24
 
@@ -30,7 +28,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directories}
+```{r define_directories}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -63,7 +61,7 @@ create.dirs(c(
 
 # Align reads with STAR
 
-```{r align reads with STAR}
+```{r align_reads_with_STAR}
 
 starCommand <- function(fastq.files, start.index.dir, out.dir, sample.name, processors, additional.args = ""){
 
@@ -282,7 +280,7 @@ unlink(temp.dir, recursive = TRUE)
 # Session Information
 
 
-```{r session info}
+```{r session_info}
 
 sessionInfo()
 

@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -21,7 +19,7 @@ output:
 Significantly differentially translated mRNA isoforms compared to other isoforms of same gene will be identified.
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor
 library("DRIMSeq")
@@ -40,7 +38,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/20190812_PM18011_1_sample-data.csv")
 annot.dir <- normalizePath(file.path("../../annotation/"))
@@ -73,7 +71,7 @@ create.dirs(c(
 
 # Read raw and normalized count table
 
-```{r read start count data}
+```{r read_start_count_data}
 
 count.per.tss.file <- file.path(s4.1.7.count.per.tss.dir, "count-per-confident-tss.csv")
 count.per.tss.dt <- fread(count.per.tss.file)
@@ -107,7 +105,7 @@ poly.sizefactor.dt <- fread(
 # Data pre-processing
 
 
-```{r data preprocessing}
+```{r data_preprocessing}
 
 annot.cols <- c("gene_id", "gene_name", "biotype")
 
@@ -129,7 +127,7 @@ poly.count.per.tss.with.meta.dt <- poly.count.per.tss.with.meta.dt[
 
 ## data setup for DEXSeq analysis
 
-```{r dexseq set up}
+```{r dexseq_set_up}
 
 countDt2Df <- function(count.dt, annot.cols){
     count.df <- as.data.frame(count.dt)
@@ -156,7 +154,7 @@ setkey(annot.dt, tss_name)
 ## Define DTE analysis function
 
 
-```{r dte function}
+```{r dte_function}
 
 analyzeDtIsoforms <- function(sample.base.name,
                               count.dt,
@@ -321,7 +319,7 @@ analyzeDtIsoforms <- function(sample.base.name,
 
 ## RCC4 VHL
 
-```{r analysis of differentially translated isoforms in RCC4 VHL}
+```{r analysis_of_differentially_translated_isoforms_in_RCC4_VHL}
 
 sample.base.name <- "RCC4_VHL_EIF4E2_NA_[[:digit:]]_NA"
 
@@ -341,7 +339,7 @@ temp <- analyzeDtIsoforms(
 
 ## RCC4 noVHL
 
-```{r analysis of differentially translated isoforms in RCC4 noVHL}
+```{r analysis_of_differentially_translated_isoforms_in_RCC4_noVHL}
 
 
 sample.base.name <- "RCC4_noVHL_EIF4E2_NA_[[:digit:]]_NA"
@@ -365,7 +363,7 @@ temp <- analyzeDtIsoforms(
 ## RCC4 VHL
 
 
-```{r analysis of differentially translated isoforms in RCC4 VHL upon Torin 1}
+```{r analysis_of_differentially_translated_isoforms_in_RCC4_VHL_upon_Torin1}
 
 sample.base.name <- "RCC4_VHL_EIF4E2_NA_[[:digit:]]_(NA|Torin1)"
 
@@ -387,7 +385,7 @@ temp <- analyzeDtIsoforms(
 ## RCC4 noVHL
 
 
-```{r analysis of differentially translated isoforms in RCC4 noVHL upon Torin 1}
+```{r analysis_of_differentially_translated_isoforms_in_RCC4_noVHL_upon_Torin1}
 
 sample.base.name <- "RCC4_noVHL_EIF4E2_NA_[[:digit:]]_(NA|Torin1)"
 

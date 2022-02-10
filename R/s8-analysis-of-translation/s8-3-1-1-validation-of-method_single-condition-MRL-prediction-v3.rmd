@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -20,7 +18,7 @@ output:
 
 Validation of HP5 by analysing the relationship of mRNA features and MRL will be performed.
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Additional packages for parallelization
 ## Specify the number of CPUs to be used
@@ -43,7 +41,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
@@ -80,7 +78,7 @@ sample.names <- sample.dt[, sample_name]
 ## Data import
 
 
-```{r import essential data}
+```{r import_essential_data}
 
 all.primary.tx.dt <- file.path(
     annot.ps.dir,
@@ -102,7 +100,7 @@ r4.vhl.mrl.file <- "RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL-mean_ribosome_loading.csv
 ## Functions
 
 
-```{r functions for data preprocessing}
+```{r functions_for_data_preprocessing}
 
 processMetaInfoDt <- function(dt){
     dt[, `:=`(
@@ -176,7 +174,7 @@ minMrlData <- function(dt, ref.colname, target.var, test.features){
 ## Data preparation for TSS isoform level analysis
 
 
-```{r import master table}
+```{r import_master_table}
 
 ## Load mRNA meta information
 tss.tx.assignment.dt <- file.path(
@@ -276,7 +274,7 @@ fwrite(
 # Evaluation of the contribution of an individual mRNA feature on translation
 
 
-```{r eval mRNA feature contribution}
+```{r eval_mRNA_feature_contribution}
 
 library("mgcv")
 
@@ -558,7 +556,7 @@ all.uni.dev.cv.summary.dt %T>%
 ## Preliminary analysis of variable correlations
 
 
-```{r preliminary analysis}
+```{r preliminary_analysis}
 
 library("corrplot")
 
@@ -577,7 +575,7 @@ corrplot(
 ## Prediction with the four most significantly predictive mRNA features
 
 
-```{r MRL prediction with GAM}
+```{r MRL_prediction_with_GAM}
 
 ## Extract necessary data
 sl.test.features <- c(
@@ -687,7 +685,7 @@ summary(tx.r.sqs)
 
 ## uAUG
 
-```{r uAUG vs MRL}
+```{r uAUG_vs_MRL}
 
 ## Plot individual fit
 tss.level.mrl.master.dt[, uORF_capped := factor(
@@ -756,7 +754,7 @@ tss.level.mrl.master.dt[
 
 ## CDS length
 
-```{r CDS length}
+```{r CDS_length}
 
 tss.level.mrl.master.dt[, `:=`(
     cds_len_bin = cut(
@@ -849,7 +847,7 @@ tss.level.mrl.master.dt[!is.na(MRL_base), table(cds_len_bin)]
 ## RNA structure near cap
 
 
-```{r RNA structure near cap}
+```{r RNA_structure_near_cap}
 
 tss.level.mrl.master.dt[, `:=`(
     rna_structure_bin = cut_number(
@@ -915,7 +913,7 @@ tss.level.mrl.master.dt[
 ## Kozak sequence score
 
 
-```{r kozak score}
+```{r kozak_score}
 
 tss.level.mrl.master.dt[, `:=`(
     kozak_bin = cut_number(

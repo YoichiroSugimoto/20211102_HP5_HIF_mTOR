@@ -7,11 +7,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -23,7 +21,7 @@ output:
 Ability of HP5 to identify TSS will be validated by analysing position of 5' termini of the reads to the annotated TSS.
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor
 library("rtracklayer")
@@ -67,7 +65,7 @@ s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
 # Analysis of HP5 identified TSS position to the annotated TSS
 
 
-```{r HP5 tss positions}
+```{r HP5_tss_positions}
 
 all.primary.tx.dt <- file.path(
     annot.ps.dir,

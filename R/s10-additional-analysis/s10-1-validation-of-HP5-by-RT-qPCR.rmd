@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -25,7 +23,7 @@ For this purpose, the polysome distribution of selected mRNA isoforms estimated 
 # Environment setup
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 temp <- sapply(list.files("../functions", full.names = TRUE), source)
 temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
@@ -39,7 +37,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 ## sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 annot.dir <- normalizePath(file.path("../../annotation/"))
@@ -69,7 +67,7 @@ source(file.path("../s6-differential-expression-and-tss-usage/functions/load_tot
 
 ## RNA standard normalised data
 
-```{r read start count data}
+```{r read_start_count_data}
 
 norm.count.dt <- fread(
     file.path(
@@ -82,7 +80,7 @@ norm.count.dt <- fread(
 
 ## RNA expression data
 
-```{r load expression data}
+```{r load_expression_data}
 
 rcc4.tss.de.res.dt <- tss.de.res.dt[
     comparison_name == "RCC4_xx_HIF1B_N__noVHL_vs_VHL"
@@ -147,7 +145,7 @@ tss.per.gene.dts <- list(
 ```
 
 
-```{r normalised count data for plotting}
+```{r normalised_count_data_for_plotting}
 
 sl.norm.count.dt <- merge(
     rbindlist(tss.per.gene.dts)[, .(tss_name, tss_class)],
@@ -215,7 +213,7 @@ norm.count.summary.dt[, `:=`(
 # Analysis of polysome distribution of the selected mRNA isoforms using RT-qPCR data
 
 
-```{r RT-qPCR}
+```{r RT_qPCR}
 
 qpcr.res.file <- file.path("../../data/others/RT-qPCR_all-results.xlsx")
 

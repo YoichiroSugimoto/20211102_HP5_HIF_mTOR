@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -22,7 +20,7 @@ output:
 The translational effect of mTOR inhibition in RCC-4 VHL will be examined here.
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Specify the number of CPUs to be used
 processors <- 8
@@ -37,7 +35,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -75,7 +73,7 @@ sample.names <- sample.dt[, sample_name]
 ## VHL status for the analysis
 
 
-```{r vhl status}
+```{r vhl_status}
 
 vhl.status <- "VHL"
 
@@ -84,7 +82,7 @@ vhl.status <- "VHL"
 
 ## Data import
 
-```{r evaluation of translation changes by mTOR inhibition}
+```{r evaluation_of_translation_changes_by_mTOR_inhibition}
 
 all.filtered.gene.dt <- file.path(
     s8.3.dir,
@@ -102,7 +100,7 @@ all.filtered.gene.dt[RCC4_VHL_NA == TRUE & RCC4_VHL_Torin1 == TRUE][
 
 
 
-```{r read translation analysis data by gene level}
+```{r read_translation_analysis_data_by_gene_level}
 
 torin.gene.trsl.dt <- file.path(
     s8.1.1.dir,
@@ -127,7 +125,7 @@ torin.gene.trsl.dt[
 ## Analysis of the absolute changes in translation upon mTOR inhibition
 
 
-```{r plot differential translation data}
+```{r plot_differential_translation_data}
 
 torin.gene.trsl.dt <- torin.gene.trsl.dt[
     gene_id %in% all.filtered.gene.dt[RCC4_VHL_NA == TRUE & RCC4_VHL_Torin1 == TRUE, gene_id] &
@@ -158,7 +156,7 @@ ggplot(
 # Analysis of changes in translational efficiency as a function of the functional classes of mRNAs
 
 
-```{r torin by class, fig.height = 6, fig.width = 7}
+```{r torin_by_class, fig.height = 6, fig.width = 7}
 
 ## Plot translation changes by mRNA classes
 plotTrslChangeByClass <- function(trsl.dt, s8.3.dir, plot.ylab, sig.th = 0.05){
@@ -336,7 +334,7 @@ Known mTOR hypersensitive classes were defined based on previous genome-wide stu
 ## Map mouse genes in the data by Thoreen et al. to human genes
 
 
-```{r map mouse genes to human genes}
+```{r map_mouse_genes_to_human_genes}
 
 library("readxl")
 library("gprofiler2")
@@ -411,7 +409,7 @@ fwrite(Thoreen.all.dt, file.path(s8.3.dir, "Thoreen_et_al_with_human_gene_id.csv
 ## Other data
 
 
-```{r class of mTOR targets}
+```{r class_of_mTOR_targets}
 
 known.mtor.target.dt <- file.path(
     "../../data/others/20201127_previously_reported_mTOR_target_genes.csv"

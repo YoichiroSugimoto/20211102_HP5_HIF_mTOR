@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -21,7 +19,7 @@ output:
 Binary comparisons of the two most differentially translated mRNA isoforms from same gene will be performed.
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Additional packages for parallelization
 ## Specify the number of CPUs to be used
@@ -42,7 +40,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -69,7 +67,7 @@ sample.names <- sample.dt[, sample_name]
 # Data import
 
 
-```{r import essential data}
+```{r import_essential_data}
 
 tss.level.mrl.master.dt <- fread(
     file = file.path(s8.3.dir, "tss_level_MRL_summary.csv")
@@ -92,7 +90,7 @@ tss.level.mrl.master.dt <- merge(
 # Data preparation for binary comparisons
 
 
-```{r convert table}
+```{r convert_table}
 
 ## Select isoform with statistically significant TE differences
 mrna.quantile <- tss.level.mrl.master.dt[, quantile(meanNormCount_base, probs = 0.25)]
@@ -138,7 +136,7 @@ bin.mrl.iso.master.dt <- bin.mrl.iso.master.dt[
 # Analysis of the enrichment of mRNA features in more or less efficiently translated isoforms
 
 
-```{r enrichment analaysis}
+```{r enrichment_analaysis}
 
 wilcoxTestForIsoformComparison <- function(sl.feature, bin.mrl.iso.master.dt){
     print(sl.feature)

@@ -37,3 +37,6 @@ jid08=$(sbatch --dependency=afterok:$jid7 /camp/home/sugimoy/home/CAMP_HPC/proje
 jid8=$(echo ${jid08##* })
 
 jid09=$(sbatch --dependency=afterok:$jid8 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/9_run_individual_rmds_sbatch.sh)
+jid9=$(echo ${jid09##* })
+
+jid10=$(sbatch --dependency=afterok:$jid9 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/10_run_individual_rmds_sbatch.sh)

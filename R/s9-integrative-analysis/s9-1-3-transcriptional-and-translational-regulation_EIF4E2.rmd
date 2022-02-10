@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -19,11 +17,12 @@ output:
 # Overview
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Data visualization packages
 library("ggrepel")
 library("cowplot")
+library("gghighlight")
 ## Parallelization oackages
 ## Specify the number of CPUs to be used
 processors <- 8
@@ -38,7 +37,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
@@ -79,7 +78,7 @@ sample.names <- sample.dt[, sample_name]
 # Pre-processed data import
 
 
-```{r load preprocessed data}
+```{r load_preprocessed_data}
 
 all.de.dte.res.dt <- fread(
     file.path(
@@ -108,13 +107,17 @@ all.filtered.gene.dt <- fread(
     )
 )
 
+## Reported EIF4E2/HIF2A targets
+reported.eif4e2.target.dt <- fread(
+    "../../data/others/20220210_previously_reported_HIF2A-EIF4E2_target_genes.csv"
+)
 
 ```
 
 # Analysis of the effect of EIF4E2 KO on global translational efficiency
 
 
-```{r analyse global effect}
+```{r analyse_global_effect}
 
 sl.comp.names <- c(
     "786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2",
@@ -157,6 +160,66 @@ temp <- plotTrslDistByIntervention(
 
 print("The numbers of genes analysed:")
 m.all.de.dte.res.dt[, table(Intervention)] %>% print
+
+```
+
+# Comparison of the effect of EIF4E2 KO with or without VHL
+
+
+```{r comparisons of the effect of EIF4E2 KO}
+
+eif4e2.dte.res.dt <- all.de.dte.res.dt[
+    gene_id %in% all.filtered.gene.dt[
+                     c786O_noVHL_EIF4E2_yy_NA == TRUE &
+                     c786O_VHL_EIF4E2_yy_NA == TRUE &
+                     c786O_noVHL_noEIF4E2_yy_NA == TRUE &
+                     c786O_VHL_noEIF4E2_yy_NA == TRUE,
+                     gene_id
+                 ]
+]
+
+print(
+    paste0(
+        "The number of genes analysed: ",
+        nrow(eif4e2.dte.res.dt[
+            !is.na(MRL_log2fc_786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2) &
+            !is.na(MRL_log2fc_786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2)
+        ])
+    )
+)
+
+eif4e2.dte.res.dt %$%
+    cor.test(
+        x = MRL_log2fc_786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2,
+        y = MRL_log2fc_786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2,
+        method = "pearson"
+    )
+
+ggplot(
+    eif4e2.dte.res.dt,
+    aes(
+        x = MRL_log2fc_786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2,
+        y = MRL_log2fc_786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2
+    )
+) +
+    geom_hline(yintercept = 0, color = "gray60") +
+    geom_vline(xintercept = 0, color = "gray60") +
+    geom_abline(slope = 1, intercept = 0, color = "gray60") +
+    geom_point() +
+    coord_cartesian(
+        xlim = c(-1, 0.5), ylim = c(-1, 0.5)
+    ) +
+    gghighlight(
+        gene_id %in% reported.eif4e2.target.dt[, gene_id],
+        label_key = gene_name,
+        label_params = list(size = 6, box.padding = 2)
+    ) +
+    theme(
+        aspect.ratio = 1
+    ) +
+    xlab("MRL log2 fold change\nupon EIF4E2 inactivation in 786-O VHL") +
+    ylab("MRL log2 fold change\nupon EIF4E2 inactivation in 786-O")
+
 
 ```
 

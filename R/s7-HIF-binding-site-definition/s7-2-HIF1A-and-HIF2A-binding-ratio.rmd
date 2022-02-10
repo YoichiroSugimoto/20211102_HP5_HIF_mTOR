@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -23,7 +21,7 @@ Based on ChIP-Seq data, HIF binding sites and the ratio of HIF2A binding relativ
 
 # Environment setup and data preprocessing
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor
 library("GenomicFeatures")
@@ -67,7 +65,7 @@ set.seed(0)
 # Define HIF binding sites and the ratio of HIF2A/HIF1A binding
 
 
-```{r positional relationship of novel tss and hif binding sites}
+```{r positional_relationship_of_novel_tss_and_hif_binding_sites}
 
 reprocessed.chip.seq.data.dir <- file.path(
     "../../../20200519_reprocessing_HIF_ChIP-Seq"
@@ -177,7 +175,7 @@ fwrite(
 ## Export HIF binding sites in bed format
 
 
-```{r export HIF binding sites information}
+```{r export_HIF_binding_sites_information}
 
 hif.bed.dt <- all.chip.peak.comp.mcols.dt[, list(
     chrom = seqnames,
@@ -211,7 +209,7 @@ fwrite(
 # Assign closest HIF binding sites to all TSS
 
 
-```{r assign closest hif binding sites to TSS}
+```{r assign_closest_hif_binding_sites_to_TSS}
 
 filtered.tss.with.quantile.dt <- file.path(
   s4.1.6.filtered.tss.dir,

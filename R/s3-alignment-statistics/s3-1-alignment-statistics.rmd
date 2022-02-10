@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 7
      fig_height: 7
 ---
@@ -20,7 +18,7 @@ output:
 
 The number of reads by the RNA source is analysed.
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor packages
 library("GenomicAlignments")
@@ -37,7 +35,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -83,7 +81,7 @@ create.dirs(
 
 
 
-```{r read start count data}
+```{r read_start_count_data}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -97,7 +95,7 @@ total.count.dt <- fread(total.count.file)
 # Functions to extract read numbers
 
 
-```{r read number extraction function}
+```{r read_number_extraction_function}
 
 countReadsFromFq <- function(sample.name, fq.dir, use.fq.filename = FALSE){
  
@@ -142,7 +140,7 @@ countReadsFromTssBam <- function(sample.name, bam.dir){
 
 ## rRNA and ERCC spike-in RNA aligned read counts
 
-```{r count ercc aligned reads}
+```{r count_ercc_aligned_reads}
 
 ercc.fa.file <- file.path("../../data/ERCC_sequence/SRM2374_putative_T7_products_NoPolyA_v1.fasta.txt")
 
@@ -253,7 +251,7 @@ sum.rrna.ercc.count.dt <- rrna.ercc.count.dt[
 
 ## RNA source analysis
 
-```{r alignment statistics by the read origins total}
+```{r alignment_statistics_by_the_read_origins_total}
 
 ## Step 3: All adapter trimmed reads
 all.rnums <- mclapply(
@@ -565,7 +563,7 @@ total.for.export.annotated.rnums.dt <- createReadNumberDt(
 ```
 
 
-```{r print tables, results = "asis"}
+```{r print_tables, results = "asis"}
 
 total.for.export.annotated.rnums.dt %>%
     kable(., format.args = list(big.mark = ',')) %>%

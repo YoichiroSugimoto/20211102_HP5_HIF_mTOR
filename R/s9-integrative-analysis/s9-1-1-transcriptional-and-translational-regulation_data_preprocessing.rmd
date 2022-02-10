@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -19,7 +17,7 @@ output:
 # Overview
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Specify the number of CPUs to be used
 processors <- 8
@@ -33,7 +31,7 @@ set.seed(0)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
@@ -70,7 +68,7 @@ sample.names <- sample.dt[, sample_name]
 ## Differential expression data (gene level) import
 
 
-```{r load diff reg data}
+```{r load_diff_reg_data}
 
 ## Differential gene expression regulation
 readDeResults <- function(comparison.name, result.file.dir, analysis.level = "gene", log2fc_threshold = log2(1.5)){
@@ -121,7 +119,7 @@ de.gene.res.dt <- Reduce(
 
 ## Differential translation data import
 
-```{r load translation data}
+```{r load_translation_data}
 
 readTranslationAnalysisRes <- function(dte.comparison.name, result.file.dir, analysis.level = "gene"){
     dte.comparison.filename <- dte.comparison.name %>%
@@ -179,7 +177,7 @@ all.de.dte.res.dt <- all.de.dte.res.dt[biotype == "protein_coding"]
 # Classifications of genes by the VHL and mTOR dependent regulation
 
 
-```{r classification of genes}
+```{r classification_of_genes}
 
 all.de.dte.res.dt[, `:=`(
     VHL_target_RCC4 = case_when(
@@ -217,7 +215,7 @@ all.de.dte.res.dt[, table(RCC4_mRNA_mTOR_trsl_group)]
 # Annotation of the functions of genes
 
 
-```{r go information}
+```{r go_information}
 
 key.go.gene.dt <- file.path(
     s8.3.dir,

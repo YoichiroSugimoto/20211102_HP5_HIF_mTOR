@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -36,7 +34,7 @@ This script will perform Step 3-2 and 4.
 # Set up
 
 
-```{r set up functions, message = FALSE, warning = FALSE}
+```{r set_up_functions, message = FALSE, warning = FALSE}
 
 processors <- 24
 
@@ -49,7 +47,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directories}
+```{r define_directories}
 
 annot.dir <- file.path("../../annotation/")
 rRNA.ercc.annot.dir <- file.path(annot.dir, "rRNA_ERCC_annotation")
@@ -96,7 +94,7 @@ read.process.sample.dt <- read.process.sample.dt[
 This function has a very high memory consumption.
 
 
-```{r step 3-2}
+```{r step_3_2}
 
 runAddFirstBaseToFqEntryName.rscript.cmd <- function(analyzed.sample.name, processed.fq.step3.1.dir, processed.fq.step3.2.dir){
 
@@ -129,7 +127,7 @@ temp <- mclapply(
 # Step4-0. Collapse technical replicates
 
 
-```{r collapse technical replicates}
+```{r collapse_technical_replicates}
 
 collapseTechnicalReplicates <- function(no.techr.sample.name, read.process.sample.dt, processed.fq.step3.2.dir, processed.fq.step4.0.dir){
     input.files <- file.path(
@@ -180,7 +178,7 @@ temp <- mclapply(
 # Step 4. Map reads to rRNAs and ERCC RNAs
 
 
-```{r step 4}
+```{r step_4}
 
 removeRibosomalRNA <- function(analyzed.sample.name, rRNA.ercc.index.dir, processed.fq.step4.0.dir, processed.fq.step4.dir, processed.fq.step4.2.dir, processors){
 
@@ -229,7 +227,7 @@ temp <- lapply(
 # Session Info
 
 
-```{r session info}
+```{r session_info}
 
 sessionInfo()
 

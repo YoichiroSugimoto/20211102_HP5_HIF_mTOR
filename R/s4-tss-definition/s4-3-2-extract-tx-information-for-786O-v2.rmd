@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -20,7 +18,7 @@ output:
 
 
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 library("rtracklayer")
 library("GenomicFeatures")
@@ -73,7 +71,7 @@ sample.names <- sample.dt[, sample_name]
 
 # Define variables
 
-```{r define base variables}
+```{r define_base_variables}
 
 tx.gtf.file <- file.path(
     s4.2.2.tss.tx.map.786O.dir,
@@ -95,7 +93,7 @@ tx.meta.data.file <- file.path(
 
 # Calculate read count for each position of TSS
 
-```{r calc read count per pos per tss}
+```{r calc_read_count_per_pos_per_tss}
 
 filtered.tss.with.quantile.dt <- file.path(
   s4.1.6.filtered.tss.dir,
@@ -133,7 +131,7 @@ tss.count.per.pos.dt <- tssWeightByPosition(
 
 # Extract transcript meta information
 
-```{r export tx meta infor}
+```{r export_tx_meta_infor}
 
 temp <- extractTxMetaInfo(
     tx.gtf.file = tx.gtf.file,

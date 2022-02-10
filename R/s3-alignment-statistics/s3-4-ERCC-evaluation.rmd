@@ -6,11 +6,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
-   html_document:
-     highlight: haddock
+   github_document:
      toc: yes
      toc_depth: 2
-     keep_md: yes
      fig_width: 5
      fig_height: 5
 ---
@@ -21,7 +19,7 @@ output:
 ERCC spike-in RNA was added to polysome fractionated samples.
 Library normalization factors will be calculated based on the reads counts of ERCC RNAs.
 
-```{r load libraries, message = FALSE, warning = FALSE}
+```{r load_libraries, message = FALSE, warning = FALSE}
 
 ## Bioconductor
 library("DESeq2")
@@ -34,7 +32,7 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source)
 ```
 
 
-```{r define directory}
+```{r define_directory}
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 
@@ -59,7 +57,7 @@ create.dirs(c(s3.4.poly.size.factor.dir))
 ```
 
 
-```{r read start count data}
+```{r read_start_count_data}
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -76,7 +74,7 @@ ercc.count.dt <- file.path(
 # Calculate sum of reads from ERCC RNAs
 
 
-```{r ercc count and each fraction}
+```{r ercc_count_and_each_fraction}
 
 ## Sample with ERCC data are selected here
 sl.sample.names <- sample.dt[
@@ -115,7 +113,7 @@ This is a default procedure.
 ## Calculate library size factor based on read counts of ERCC RNAs
 
 
-```{r calculate normalization factor based on ERCC}
+```{r calculate_normalization_factor_based_on_ERCC}
 
 non0.sl.sample.names <- sl.sample.names[!grepl("(ribo0A|ribo0B)", sl.sample.names)]
 
@@ -164,7 +162,7 @@ The analysis below indicates that the choice between using DESeq2 calculated siz
 Thus, I decided to use the DESeq2 calculated size factors.
 
 
-```{r ERCC total vs DESeq2 size factors}
+```{r ERCC_total_vs_DESeq2_size_factors}
 
 ercc.total.size.factor.lm <- lm(
     ERCCs ~ size_factor,
@@ -220,7 +218,7 @@ ggplot(
 ## Export size factors
 
 
-```{r export predicted size factors}
+```{r export_predicted_size_factors}
 
 poly.sample.count.with.sizefactor.dt[
    , .(sample_name, size_factor, size_factor_by_count_sum)
@@ -242,7 +240,7 @@ poly.sample.count.with.sizefactor.dt[
 ## Calculate library size factor based on read counts of ERCC RNAs
 
 
-```{r calculate normalization factor based on ERCC with ribo 0}
+```{r calculate_normalization_factor_based_on_ERCC_with_ribo_0}
 
 dds <- DESeqDataSetFromMatrix(
     countData = ercc.count.dt[
@@ -289,7 +287,7 @@ The analysis below indicates that the choice between using DESeq2 calculated siz
 Thus, I decided to use the DESeq2 calculated size factors.
 
 
-```{r ERCC total vs DESeq2 size factors with ribo 0}
+```{r ERCC_total_vs_DESeq2_size_factors_with_ribo_0}
 
 ercc.total.size.factor.lm <- lm(
     ERCCs ~ size_factor,
@@ -342,10 +340,10 @@ ggplot(
 
 
 
-## Export size factors
+## Export size factors with ribo0
 
 
-```{r export predicted size factors with ribo 0}
+```{r export_predicted_size_factors_with_ribo_0}
 
 poly.sample.count.with.sizefactor.dt[
    , .(sample_name, size_factor, size_factor_by_count_sum)

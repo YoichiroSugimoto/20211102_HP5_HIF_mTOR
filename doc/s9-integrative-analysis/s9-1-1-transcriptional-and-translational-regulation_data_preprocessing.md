@@ -1,26 +1,25 @@
----
-title: "s9-1-1 Intersection of transcriptional and translational regulation (data preprocessing)"
-author: "Yoichiro Sugimoto"
-date: "06 January, 2022"
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-output:
-   html_document:
-     highlight: haddock
-     toc: yes
-     toc_depth: 2
-     keep_md: yes
-     fig_width: 5
-     fig_height: 5
----
+s9-1-1 Intersection of transcriptional and translational regulation
+(data preprocessing)
+================
+Yoichiro Sugimoto
+10 February, 2022
 
+  - [Overview](#overview)
+  - [Summarization of differential gene expression regulation analysis
+    results](#summarization-of-differential-gene-expression-regulation-analysis-results)
+      - [Differential expression data (gene level)
+        import](#differential-expression-data-gene-level-import)
+      - [Differential translation data
+        import](#differential-translation-data-import)
+  - [Classifications of genes by the VHL and mTOR dependent
+    regulation](#classifications-of-genes-by-the-vhl-and-mtor-dependent-regulation)
+  - [Annotation of the functions of
+    genes](#annotation-of-the-functions-of-genes)
+  - [Session information](#session-information)
 
 # Overview
 
-
-
-```r
+``` r
 ## Specify the number of CPUs to be used
 processors <- 8
 
@@ -28,32 +27,26 @@ temp <- sapply(list.files("../functions", full.names = TRUE), source, chdir = TR
 temp <- sapply(list.files("../s8-analysis-of-translation/functions", full.names = TRUE), source, chdir = TRUE)
 ```
 
-```
-## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
-## [1] "The following objects are exported: poly.coldata.df, poly.sample.dt, translation.comparison.dt"
-## [1] "In translation.comparison.dt, xx specifies the factor compared where the comparison is specified after __, while yy is a wildcard. From left, each factor specifies cell, VHL, EIF4E2, clone, and treatment"
-## [1] "The following functions were exported: analyzeDtg(), subsetColdata()"
-```
+    ## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
+    ## [1] "The following objects are exported: poly.coldata.df, poly.sample.dt, translation.comparison.dt"
+    ## [1] "In translation.comparison.dt, xx specifies the factor compared where the comparison is specified after __, while yy is a wildcard. From left, each factor specifies cell, VHL, EIF4E2, clone, and treatment"
+    ## [1] "The following functions were exported: analyzeDtg(), subsetColdata()"
 
-```r
+``` r
 source("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R", chdir = TRUE)
 ```
 
-```
-## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
-## [1] "The following R objects were exported: total.sample.dt, total.coldata.df, total.comparison.dt"
-## [1] "Comparison information was loaded"
-## [1] "/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/results"
-## [1] "The following objects were loaded: tss.de.res.dt, tss.ratio.res.dt, diff.tss.res.dt"
-```
+    ## [1] "Sample file used: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/data/sample_data/processed_sample_file.csv"
+    ## [1] "The following R objects were exported: total.sample.dt, total.coldata.df, total.comparison.dt"
+    ## [1] "Comparison information was loaded"
+    ## [1] "/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/results"
+    ## [1] "The following objects were loaded: tss.de.res.dt, tss.ratio.res.dt, diff.tss.res.dt"
 
-```r
+``` r
 set.seed(0)
 ```
 
-
-
-```r
+``` r
 annot.dir <- normalizePath(file.path("../../annotation/"))
 annot.ps.dir <- file.path(annot.dir, "hg38_annotation/processed_data/")
 all.primary.tx.dt <- file.path(
@@ -87,9 +80,7 @@ sample.names <- sample.dt[, sample_name]
 
 ## Differential expression data (gene level) import
 
-
-
-```r
+``` r
 ## Differential gene expression regulation
 readDeResults <- function(comparison.name, result.file.dir, analysis.level = "gene", log2fc_threshold = log2(1.5)){
     
@@ -138,8 +129,7 @@ de.gene.res.dt <- Reduce(
 
 ## Differential translation data import
 
-
-```r
+``` r
 readTranslationAnalysisRes <- function(dte.comparison.name, result.file.dir, analysis.level = "gene"){
     dte.comparison.filename <- dte.comparison.name %>%
         gsub("\\(", "", .) %>%
@@ -191,12 +181,9 @@ all.de.dte.res.dt <- merge(
 all.de.dte.res.dt <- all.de.dte.res.dt[biotype == "protein_coding"]
 ```
 
-
 # Classifications of genes by the VHL and mTOR dependent regulation
 
-
-
-```r
+``` r
 all.de.dte.res.dt[, `:=`(
     VHL_target_RCC4 = case_when(
         mRNA_regulation_RCC4_xx_HIF1B_N__noVHL_vs_VHL == "Up" ~ "VHL_loss_induced",
@@ -227,32 +214,25 @@ all.de.dte.res.dt[, `:=`(
 all.de.dte.res.dt[, table(VHL_target_RCC4)]
 ```
 
-```
-## VHL_target_RCC4
-## VHL_loss_repressed     non_VHL_target   VHL_loss_induced 
-##                508              10577                433
-```
+    ## VHL_target_RCC4
+    ## VHL_loss_repressed     non_VHL_target   VHL_loss_induced 
+    ##                508              10577                433
 
-```r
+``` r
 all.de.dte.res.dt[, table(RCC4_mRNA_mTOR_trsl_group)]
 ```
 
-```
-## RCC4_mRNA_mTOR_trsl_group
-## mRNA_down_and_translation_down   mRNA_down_and_translation_up 
-##                            103                             77 
-##   mRNA_up_and_translation_down     mRNA_up_and_translation_up 
-##                            124                            131 
-##                         Others 
-##                          11083
-```
-
+    ## RCC4_mRNA_mTOR_trsl_group
+    ## mRNA_down_and_translation_down   mRNA_down_and_translation_up 
+    ##                            103                             77 
+    ##   mRNA_up_and_translation_down     mRNA_up_and_translation_up 
+    ##                            124                            131 
+    ##                         Others 
+    ##                          11083
 
 # Annotation of the functions of genes
 
-
-
-```r
+``` r
 key.go.gene.dt <- file.path(
     s8.3.dir,
     "key_GO_genes.csv"
@@ -275,15 +255,13 @@ all.de.dte.res.dt[, `:=`(
 all.de.dte.res.dt[, table(mRNA_trsl_intersection_by_functions)]
 ```
 
-```
-## mRNA_trsl_intersection_by_functions
-##                       Glycolysis Angiogenesis or vascular process 
-##                               42                              371 
-##                           Others 
-##                            11105
-```
+    ## mRNA_trsl_intersection_by_functions
+    ##                       Glycolysis Angiogenesis or vascular process 
+    ##                               42                              371 
+    ##                           Others 
+    ##                            11105
 
-```r
+``` r
 fwrite(
     all.de.dte.res.dt,
     file.path(
@@ -293,45 +271,40 @@ fwrite(
 )
 ```
 
-
 # Session information
 
-
-
-```r
+``` r
 sessionInfo()
 ```
 
-```
-## R version 4.0.0 (2020-04-24)
-## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
-## Running under: CentOS Linux 7 (Core)
-## 
-## Matrix products: default
-## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
-## 
-## locale:
-##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
-##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
-##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
-## [8] base     
-## 
-## other attached packages:
-## [1] knitr_1.28        stringr_1.4.0     magrittr_1.5      data.table_1.12.8
-## [5] dplyr_1.0.0       khroma_1.3.0      ggplot2_3.3.1     rmarkdown_2.2    
-## 
-## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.4.6     tidyselect_1.1.0 munsell_0.5.0    colorspace_1.4-1
-##  [5] R6_2.4.1         rlang_0.4.10     tools_4.0.0      grid_4.0.0      
-##  [9] gtable_0.3.0     xfun_0.14        withr_2.4.1      htmltools_0.4.0 
-## [13] ellipsis_0.3.1   yaml_2.2.1       digest_0.6.25    tibble_3.0.1    
-## [17] lifecycle_0.2.0  crayon_1.3.4     purrr_0.3.4      vctrs_0.3.1     
-## [21] glue_1.4.1       evaluate_0.14    stringi_1.4.6    compiler_4.0.0  
-## [25] pillar_1.4.4     generics_0.0.2   scales_1.1.1     pkgconfig_2.0.3
-```
+    ## R version 4.0.0 (2020-04-24)
+    ## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+    ## Running under: CentOS Linux 7 (Core)
+    ## 
+    ## Matrix products: default
+    ## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
+    ## 
+    ## locale:
+    ##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+    ##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+    ##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+    ##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+    ##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+    ## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+    ## 
+    ## attached base packages:
+    ## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
+    ## [8] base     
+    ## 
+    ## other attached packages:
+    ## [1] knitr_1.28        stringr_1.4.0     magrittr_1.5      data.table_1.12.8
+    ## [5] dplyr_1.0.0       khroma_1.3.0      ggplot2_3.3.1     rmarkdown_2.2    
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##  [1] Rcpp_1.0.4.6     tidyselect_1.1.0 munsell_0.5.0    colorspace_1.4-1
+    ##  [5] R6_2.4.1         rlang_0.4.10     tools_4.0.0      grid_4.0.0      
+    ##  [9] gtable_0.3.0     xfun_0.14        withr_2.4.1      htmltools_0.4.0 
+    ## [13] ellipsis_0.3.1   yaml_2.2.1       digest_0.6.25    tibble_3.0.1    
+    ## [17] lifecycle_0.2.0  crayon_1.3.4     purrr_0.3.4      vctrs_0.3.1     
+    ## [21] glue_1.4.1       evaluate_0.14    stringi_1.4.6    compiler_4.0.0  
+    ## [25] pillar_1.4.4     generics_0.0.2   scales_1.1.1     pkgconfig_2.0.3
