@@ -14,7 +14,7 @@ conda activate five_prime_seq_for_VHL_loss_v0.2.1
 
 cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/sq-for-publication
 
-Rscript ../run_rmd.R sq-0-sequence-data-submission_v.rmd 
+Rscript ../run_rmd.R sq-0-sequence-data-submission.rmd 
 
 ## Template for nohup command
 ## nohup Rscript ../run_rmd.R x.rmd &> ../nohup_out/x.nohup.out

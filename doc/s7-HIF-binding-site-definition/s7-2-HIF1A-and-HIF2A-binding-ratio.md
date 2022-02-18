@@ -1,30 +1,27 @@
----
-title: "s7-2 Define HIF1A and HIF2A binding ratio"
-author: "Yoichiro Sugimoto"
-date: "13 November, 2021"
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-output:
-   html_document:
-     highlight: haddock
-     toc: yes
-     toc_depth: 2
-     keep_md: yes
-     fig_width: 5
-     fig_height: 5
----
+s7-2 Define HIF1A and HIF2A binding ratio
+================
+Yoichiro Sugimoto
+10 February, 2022
 
+  - [Overview](#overview)
+  - [Environment setup and data
+    preprocessing](#environment-setup-and-data-preprocessing)
+  - [Define HIF binding sites and the ratio of HIF2A/HIF1A
+    binding](#define-hif-binding-sites-and-the-ratio-of-hif2ahif1a-binding)
+      - [Export HIF binding sites in bed
+        format](#export-hif-binding-sites-in-bed-format)
+  - [Assign closest HIF binding sites to all
+    TSS](#assign-closest-hif-binding-sites-to-all-tss)
+  - [session information](#session-information)
 
 # Overview
 
-Based on ChIP-Seq data, HIF binding sites and the ratio of HIF2A binding relative to that of HIF1A will be defined.
-
+Based on ChIP-Seq data, HIF binding sites and the ratio of HIF2A binding
+relative to that of HIF1A will be defined.
 
 # Environment setup and data preprocessing
 
-
-```r
+``` r
 ## Bioconductor
 library("GenomicFeatures")
 library("DiffBind")
@@ -62,12 +59,9 @@ create.dirs(c(
 set.seed(0)
 ```
 
-
 # Define HIF binding sites and the ratio of HIF2A/HIF1A binding
 
-
-
-```r
+``` r
 reprocessed.chip.seq.data.dir <- file.path(
     "../../../20200519_reprocessing_HIF_ChIP-Seq"
 )
@@ -92,39 +86,23 @@ all.chip.peak.gr <- dba(sampleSheet = chip.seq.sample.dt) %>%
     dba.report(th = 1)
 ```
 
-```
-## HIF1A_1  HIF1A   1 narrow
-```
+    ## HIF1A_1  HIF1A   1 narrow
 
-```
-## HIF1A_2  HIF1A   2 narrow
-```
+    ## HIF1A_2  HIF1A   2 narrow
 
-```
-## HIF2A_1  HIF2A   1 narrow
-```
+    ## HIF2A_1  HIF2A   1 narrow
 
-```
-## HIF2A_2  HIF2A   2 narrow
-```
+    ## HIF2A_2  HIF2A   2 narrow
 
-```
-## converting counts to integer mode
-```
+    ## converting counts to integer mode
 
-```
-## gene-wise dispersion estimates
-```
+    ## gene-wise dispersion estimates
 
-```
-## mean-dispersion relationship
-```
+    ## mean-dispersion relationship
 
-```
-## final dispersion estimates
-```
+    ## final dispersion estimates
 
-```r
+``` r
 readChIPSeqData <- function(chip.seq.core.name){
     idr.narrowpeak.file <- file.path(
         s7.1.hre.narrowPeaks.dir,
@@ -208,9 +186,7 @@ fwrite(
 
 ## Export HIF binding sites in bed format
 
-
-
-```r
+``` r
 hif.bed.dt <- all.chip.peak.comp.mcols.dt[, list(
     chrom = seqnames,
     start = start - 1,
@@ -236,13 +212,9 @@ fwrite(
 )
 ```
 
-
-
 # Assign closest HIF binding sites to all TSS
 
-
-
-```r
+``` r
 filtered.tss.with.quantile.dt <- file.path(
   s4.1.6.filtered.tss.dir,
   "filtered-tss-with-quantile.csv"
@@ -304,83 +276,79 @@ fwrite(
 )
 ```
 
-
 # session information
 
-
-```r
+``` r
 sessionInfo()
 ```
 
-```
-## R version 4.0.0 (2020-04-24)
-## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
-## Running under: CentOS Linux 7 (Core)
-## 
-## Matrix products: default
-## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
-## 
-## locale:
-##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
-##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
-##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] stats4    parallel  stats     graphics  grDevices utils     datasets 
-## [8] methods   base     
-## 
-## other attached packages:
-##  [1] stringr_1.4.0               magrittr_1.5               
-##  [3] data.table_1.12.8           dplyr_1.0.0                
-##  [5] khroma_1.3.0                ggplot2_3.3.1              
-##  [7] kableExtra_1.1.0            knitr_1.28                 
-##  [9] DiffBind_2.16.0             SummarizedExperiment_1.18.1
-## [11] DelayedArray_0.14.0         matrixStats_0.56.0         
-## [13] GenomicFeatures_1.40.0      AnnotationDbi_1.50.0       
-## [15] Biobase_2.48.0              GenomicRanges_1.40.0       
-## [17] GenomeInfoDb_1.24.0         IRanges_2.22.1             
-## [19] S4Vectors_0.26.0            BiocGenerics_0.34.0        
-## [21] rmarkdown_2.2              
-## 
-## loaded via a namespace (and not attached):
-##   [1] amap_0.8-18              colorspace_1.4-1         rjson_0.2.20            
-##   [4] hwriter_1.3.2            ellipsis_0.3.1           XVector_0.28.0          
-##   [7] rstudioapi_0.11          ggrepel_0.8.2            bit64_0.9-7             
-##  [10] xml2_1.3.2               splines_4.0.0            geneplotter_1.66.0      
-##  [13] jsonlite_1.7.2           Rsamtools_2.4.0          annotate_1.66.0         
-##  [16] GO.db_3.11.4             dbplyr_1.4.4             png_0.1-7               
-##  [19] pheatmap_1.0.12          graph_1.66.0             readr_1.3.1             
-##  [22] compiler_4.0.0           httr_1.4.2               GOstats_2.54.0          
-##  [25] backports_1.1.7          assertthat_0.2.1         Matrix_1.2-18           
-##  [28] limma_3.44.1             htmltools_0.4.0          prettyunits_1.1.1       
-##  [31] tools_4.0.0              gtable_0.3.0             glue_1.4.1              
-##  [34] GenomeInfoDbData_1.2.3   Category_2.54.0          systemPipeR_1.22.0      
-##  [37] rsvg_2.1                 batchtools_0.9.14        rappdirs_0.3.1          
-##  [40] V8_3.2.0                 ShortRead_1.46.0         Rcpp_1.0.4.6            
-##  [43] vctrs_0.3.1              Biostrings_2.56.0        rtracklayer_1.48.0      
-##  [46] xfun_0.14                rvest_0.3.5              lifecycle_0.2.0         
-##  [49] gtools_3.8.2             XML_3.99-0.3             edgeR_3.30.0            
-##  [52] zlibbioc_1.34.0          scales_1.1.1             BSgenome_1.56.0         
-##  [55] VariantAnnotation_1.34.0 hms_0.5.3                RBGL_1.64.0             
-##  [58] RColorBrewer_1.1-2       yaml_2.2.1               curl_4.3                
-##  [61] memoise_1.1.0            biomaRt_2.44.0           latticeExtra_0.6-29     
-##  [64] stringi_1.4.6            RSQLite_2.2.0            genefilter_1.70.0       
-##  [67] checkmate_2.0.0          caTools_1.18.0           BiocParallel_1.22.0     
-##  [70] DOT_0.1                  rlang_0.4.10             pkgconfig_2.0.3         
-##  [73] bitops_1.0-6             evaluate_0.14            lattice_0.20-41         
-##  [76] purrr_0.3.4              GenomicAlignments_1.24.0 bit_1.1-15.2            
-##  [79] tidyselect_1.1.0         GSEABase_1.50.0          AnnotationForge_1.30.1  
-##  [82] DESeq2_1.28.0            R6_2.4.1                 gplots_3.1.1            
-##  [85] generics_0.0.2           base64url_1.4            DBI_1.1.0               
-##  [88] pillar_1.4.4             withr_2.4.1              survival_3.1-12         
-##  [91] RCurl_1.98-1.2           tibble_3.0.1             crayon_1.3.4            
-##  [94] KernSmooth_2.23-17       BiocFileCache_1.12.0     jpeg_0.1-8.1            
-##  [97] progress_1.2.2           locfit_1.5-9.4           grid_4.0.0              
-## [100] blob_1.2.1               Rgraphviz_2.32.0         webshot_0.5.2           
-## [103] digest_0.6.25            xtable_1.8-4             brew_1.0-6              
-## [106] openssl_1.4.1            munsell_0.5.0            viridisLite_0.3.0       
-## [109] askpass_1.1
-```
+    ## R version 4.0.0 (2020-04-24)
+    ## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+    ## Running under: CentOS Linux 7 (Core)
+    ## 
+    ## Matrix products: default
+    ## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
+    ## 
+    ## locale:
+    ##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+    ##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+    ##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+    ##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+    ##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+    ## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+    ## 
+    ## attached base packages:
+    ## [1] stats4    parallel  stats     graphics  grDevices utils     datasets 
+    ## [8] methods   base     
+    ## 
+    ## other attached packages:
+    ##  [1] stringr_1.4.0               magrittr_1.5               
+    ##  [3] data.table_1.12.8           dplyr_1.0.0                
+    ##  [5] khroma_1.3.0                ggplot2_3.3.1              
+    ##  [7] kableExtra_1.1.0            knitr_1.28                 
+    ##  [9] DiffBind_2.16.0             SummarizedExperiment_1.18.1
+    ## [11] DelayedArray_0.14.0         matrixStats_0.56.0         
+    ## [13] GenomicFeatures_1.40.0      AnnotationDbi_1.50.0       
+    ## [15] Biobase_2.48.0              GenomicRanges_1.40.0       
+    ## [17] GenomeInfoDb_1.24.0         IRanges_2.22.1             
+    ## [19] S4Vectors_0.26.0            BiocGenerics_0.34.0        
+    ## [21] rmarkdown_2.2              
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##   [1] amap_0.8-18              colorspace_1.4-1         rjson_0.2.20            
+    ##   [4] hwriter_1.3.2            ellipsis_0.3.1           XVector_0.28.0          
+    ##   [7] rstudioapi_0.11          ggrepel_0.8.2            bit64_0.9-7             
+    ##  [10] xml2_1.3.2               splines_4.0.0            geneplotter_1.66.0      
+    ##  [13] jsonlite_1.7.2           Rsamtools_2.4.0          annotate_1.66.0         
+    ##  [16] GO.db_3.11.4             dbplyr_1.4.4             png_0.1-7               
+    ##  [19] pheatmap_1.0.12          graph_1.66.0             readr_1.3.1             
+    ##  [22] compiler_4.0.0           httr_1.4.2               GOstats_2.54.0          
+    ##  [25] backports_1.1.7          assertthat_0.2.1         Matrix_1.2-18           
+    ##  [28] limma_3.44.1             htmltools_0.4.0          prettyunits_1.1.1       
+    ##  [31] tools_4.0.0              gtable_0.3.0             glue_1.4.1              
+    ##  [34] GenomeInfoDbData_1.2.3   Category_2.54.0          systemPipeR_1.22.0      
+    ##  [37] rsvg_2.1                 batchtools_0.9.14        rappdirs_0.3.1          
+    ##  [40] V8_3.2.0                 ShortRead_1.46.0         Rcpp_1.0.4.6            
+    ##  [43] vctrs_0.3.1              Biostrings_2.56.0        rtracklayer_1.48.0      
+    ##  [46] xfun_0.14                rvest_0.3.5              lifecycle_0.2.0         
+    ##  [49] gtools_3.8.2             XML_3.99-0.3             edgeR_3.30.0            
+    ##  [52] zlibbioc_1.34.0          scales_1.1.1             BSgenome_1.56.0         
+    ##  [55] VariantAnnotation_1.34.0 hms_0.5.3                RBGL_1.64.0             
+    ##  [58] RColorBrewer_1.1-2       yaml_2.2.1               curl_4.3                
+    ##  [61] memoise_1.1.0            biomaRt_2.44.0           latticeExtra_0.6-29     
+    ##  [64] stringi_1.4.6            RSQLite_2.2.0            genefilter_1.70.0       
+    ##  [67] checkmate_2.0.0          caTools_1.18.0           BiocParallel_1.22.0     
+    ##  [70] DOT_0.1                  rlang_0.4.10             pkgconfig_2.0.3         
+    ##  [73] bitops_1.0-6             evaluate_0.14            lattice_0.20-41         
+    ##  [76] purrr_0.3.4              GenomicAlignments_1.24.0 bit_1.1-15.2            
+    ##  [79] tidyselect_1.1.0         GSEABase_1.50.0          AnnotationForge_1.30.1  
+    ##  [82] DESeq2_1.28.0            R6_2.4.1                 gplots_3.1.1            
+    ##  [85] generics_0.0.2           base64url_1.4            DBI_1.1.0               
+    ##  [88] pillar_1.4.4             withr_2.4.1              survival_3.1-12         
+    ##  [91] RCurl_1.98-1.2           tibble_3.0.1             crayon_1.3.4            
+    ##  [94] KernSmooth_2.23-17       BiocFileCache_1.12.0     jpeg_0.1-8.1            
+    ##  [97] progress_1.2.2           locfit_1.5-9.4           grid_4.0.0              
+    ## [100] blob_1.2.1               Rgraphviz_2.32.0         webshot_0.5.2           
+    ## [103] digest_0.6.25            xtable_1.8-4             brew_1.0-6              
+    ## [106] openssl_1.4.1            munsell_0.5.0            viridisLite_0.3.0       
+    ## [109] askpass_1.1

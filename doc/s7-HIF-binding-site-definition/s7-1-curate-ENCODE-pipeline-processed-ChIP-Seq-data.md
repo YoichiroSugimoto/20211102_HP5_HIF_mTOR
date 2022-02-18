@@ -1,31 +1,31 @@
----
-title: "s7-1 Curate ENCODE pipeline processed ChIP-Seq data"
-author: "Yoichiro Sugimoto"
-date: "13 November, 2021"
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-output:
-   html_document:
-     highlight: haddock
-     toc: yes
-     toc_depth: 2
-     keep_md: yes
-     fig_width: 5
-     fig_height: 5
----
+s7-1 Curate ENCODE pipeline processed ChIP-Seq data
+================
+Yoichiro Sugimoto
+10 February, 2022
 
+  - [Overview](#overview)
+  - [Environment setup and data
+    preprocessing](#environment-setup-and-data-preprocessing)
+  - [Covert IDR conservative narrowPeak file to bed
+    file](#covert-idr-conservative-narrowpeak-file-to-bed-file)
+      - [Generate IDR non duplicated
+        peaks](#generate-idr-non-duplicated-peaks)
+  - [Rename fold change bigwig file](#rename-fold-change-bigwig-file)
+  - [Peak calling with MACS2](#peak-calling-with-macs2)
+      - [Run MACS2 for pooled data](#run-macs2-for-pooled-data)
+      - [Filter MACS output with IDR](#filter-macs-output-with-idr)
+  - [Identify closest HRE to the cluster
+    centre](#identify-closest-hre-to-the-cluster-centre)
+  - [Session information](#session-information)
 
 # Overview
 
-The intersections of ENCODE ChIP-Seq pipeline identified peaks and MACS identified peaks will be used for the following analyses.
-
+The intersections of ENCODE ChIP-Seq pipeline identified peaks and MACS
+identified peaks will be used for the following analyses.
 
 # Environment setup and data preprocessing
 
-
-
-```r
+``` r
 library("GenomicRanges")
 
 ## Specify the number of CPUs to be used
@@ -37,9 +37,7 @@ temp <- sapply(list.files("./functions", full.names = TRUE), source)
 set.seed(0)
 ```
 
-
-
-```r
+``` r
 results.dir <- file.path("../../results")
 
 s7.dir <- file.path(results.dir, "s7-HIF-binding-site")
@@ -71,12 +69,9 @@ create.dirs(c(
 ))
 ```
 
+# Covert IDR conservative narrowPeak file to bed file
 
-# Covert IDR conservative  narrowPeak file to bed file
-
-
-
-```r
+``` r
 chip.encodepl.dir <- file.path("../../../20200519_reprocessing_HIF_ChIP-Seq")
 
 covertNp2Bed <- function(chip.seq.exp, chip.encodepl.dir){
@@ -123,11 +118,10 @@ temp <- lapply(
 
 ## Generate IDR non duplicated peaks
 
-Some of IDR identified peaks are overlapping each other. Here I filter out such peaks.
+Some of IDR identified peaks are overlapping each other. Here I filter
+out such peaks.
 
-
-
-```r
+``` r
 filterIDRselectedPeaks <- function(chip.seq.exp, chip.encodepl.dir){
 
     idr.narrowpeak.file <- file.path(
@@ -216,13 +210,9 @@ temp <- lapply(
 )
 ```
 
-
-
 # Rename fold change bigwig file
 
-
-
-```r
+``` r
 renameBw <- function(chip.seq.exp, chip.encodepl.dir){
     pooled.fc.bw.file <- file.path(
         list.dirs(file.path(chip.encodepl.dir, chip.seq.exp, "chip"), recursive = FALSE),
@@ -247,12 +237,12 @@ temp <- mclapply(
 
 # Peak calling with MACS2
 
-IDR peak sometimes contain multiple peaks in a peak. Thus peak will be called for pooled sample to be compared.
+IDR peak sometimes contain multiple peaks in a peak. Thus peak will be
+called for pooled sample to be compared.
 
 ## Run MACS2 for pooled data
 
-
-```r
+``` r
 runMACS2 <- function(chip.seq.exp, chip.encodepl.dir, s7.1.macs.dir){
 
     temp.bam.files <- list.files(
@@ -300,12 +290,9 @@ temp <- mclapply(
 )
 ```
 
-
 ## Filter MACS output with IDR
 
-
-
-```r
+``` r
 filterMACS2out <- function(chip.seq.exp, chip.encodepl.dir, s7.1.macs.dir){
 
     macs2.out <- file.path(
@@ -408,43 +395,28 @@ temp <- mclapply(
 )
 ```
 
-
 # Identify closest HRE to the cluster centre
 
-
-
-```r
+``` r
 library("BSgenome.Hsapiens.UCSC.hg38") 
 ```
 
-```
-## Loading required package: BSgenome
-```
+    ## Loading required package: BSgenome
 
-```
-## Loading required package: Biostrings
-```
+    ## Loading required package: Biostrings
 
-```
-## Loading required package: XVector
-```
+    ## Loading required package: XVector
 
-```
-## 
-## Attaching package: 'Biostrings'
-```
+    ## 
+    ## Attaching package: 'Biostrings'
 
-```
-## The following object is masked from 'package:base':
-## 
-##     strsplit
-```
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     strsplit
 
-```
-## Loading required package: rtracklayer
-```
+    ## Loading required package: rtracklayer
 
-```r
+``` r
 generatePeakHreBed <- function(chip.seq.exp, s7.1.macs.narrowPeaks.dir, s7.1.hre.narrowPeaks.dir, s7.1.hre.bed.dir){
 
     chip.peak.dt <- fread(
@@ -578,66 +550,61 @@ temp <- mclapply(
 )
 ```
 
-
-
 # Session information
 
-
-```r
+``` r
 sessionInfo()
 ```
 
-```
-## R version 4.0.0 (2020-04-24)
-## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
-## Running under: CentOS Linux 7 (Core)
-## 
-## Matrix products: default
-## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
-## 
-## locale:
-##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
-##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
-##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
-## [8] methods   base     
-## 
-## other attached packages:
-##  [1] BSgenome.Hsapiens.UCSC.hg38_1.4.3 BSgenome_1.56.0                  
-##  [3] rtracklayer_1.48.0                Biostrings_2.56.0                
-##  [5] XVector_0.28.0                    knitr_1.28                       
-##  [7] stringr_1.4.0                     magrittr_1.5                     
-##  [9] data.table_1.12.8                 dplyr_1.0.0                      
-## [11] khroma_1.3.0                      ggplot2_3.3.1                    
-## [13] GenomicRanges_1.40.0              GenomeInfoDb_1.24.0              
-## [15] IRanges_2.22.1                    S4Vectors_0.26.0                 
-## [17] BiocGenerics_0.34.0               rmarkdown_2.2                    
-## 
-## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.4.6                compiler_4.0.0             
-##  [3] pillar_1.4.4                bitops_1.0-6               
-##  [5] tools_4.0.0                 zlibbioc_1.34.0            
-##  [7] digest_0.6.25               lattice_0.20-41            
-##  [9] evaluate_0.14               lifecycle_0.2.0            
-## [11] tibble_3.0.1                gtable_0.3.0               
-## [13] pkgconfig_2.0.3             rlang_0.4.10               
-## [15] Matrix_1.2-18               DelayedArray_0.14.0        
-## [17] yaml_2.2.1                  xfun_0.14                  
-## [19] GenomeInfoDbData_1.2.3      withr_2.4.1                
-## [21] generics_0.0.2              vctrs_0.3.1                
-## [23] tidyselect_1.1.0            grid_4.0.0                 
-## [25] Biobase_2.48.0              glue_1.4.1                 
-## [27] R6_2.4.1                    BiocParallel_1.22.0        
-## [29] XML_3.99-0.3                purrr_0.3.4                
-## [31] matrixStats_0.56.0          GenomicAlignments_1.24.0   
-## [33] Rsamtools_2.4.0             scales_1.1.1               
-## [35] htmltools_0.4.0             ellipsis_0.3.1             
-## [37] SummarizedExperiment_1.18.1 colorspace_1.4-1           
-## [39] stringi_1.4.6               RCurl_1.98-1.2             
-## [41] munsell_0.5.0               crayon_1.3.4
-```
+    ## R version 4.0.0 (2020-04-24)
+    ## Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+    ## Running under: CentOS Linux 7 (Core)
+    ## 
+    ## Matrix products: default
+    ## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
+    ## 
+    ## locale:
+    ##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+    ##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+    ##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+    ##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+    ##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+    ## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+    ## 
+    ## attached base packages:
+    ## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+    ## [8] methods   base     
+    ## 
+    ## other attached packages:
+    ##  [1] BSgenome.Hsapiens.UCSC.hg38_1.4.3 BSgenome_1.56.0                  
+    ##  [3] rtracklayer_1.48.0                Biostrings_2.56.0                
+    ##  [5] XVector_0.28.0                    knitr_1.28                       
+    ##  [7] stringr_1.4.0                     magrittr_1.5                     
+    ##  [9] data.table_1.12.8                 dplyr_1.0.0                      
+    ## [11] khroma_1.3.0                      ggplot2_3.3.1                    
+    ## [13] GenomicRanges_1.40.0              GenomeInfoDb_1.24.0              
+    ## [15] IRanges_2.22.1                    S4Vectors_0.26.0                 
+    ## [17] BiocGenerics_0.34.0               rmarkdown_2.2                    
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##  [1] Rcpp_1.0.4.6                compiler_4.0.0             
+    ##  [3] pillar_1.4.4                bitops_1.0-6               
+    ##  [5] tools_4.0.0                 zlibbioc_1.34.0            
+    ##  [7] digest_0.6.25               lattice_0.20-41            
+    ##  [9] evaluate_0.14               lifecycle_0.2.0            
+    ## [11] tibble_3.0.1                gtable_0.3.0               
+    ## [13] pkgconfig_2.0.3             rlang_0.4.10               
+    ## [15] Matrix_1.2-18               DelayedArray_0.14.0        
+    ## [17] yaml_2.2.1                  xfun_0.14                  
+    ## [19] GenomeInfoDbData_1.2.3      withr_2.4.1                
+    ## [21] generics_0.0.2              vctrs_0.3.1                
+    ## [23] tidyselect_1.1.0            grid_4.0.0                 
+    ## [25] Biobase_2.48.0              glue_1.4.1                 
+    ## [27] R6_2.4.1                    BiocParallel_1.22.0        
+    ## [29] XML_3.99-0.3                purrr_0.3.4                
+    ## [31] matrixStats_0.56.0          GenomicAlignments_1.24.0   
+    ## [33] Rsamtools_2.4.0             scales_1.1.1               
+    ## [35] htmltools_0.4.0             ellipsis_0.3.1             
+    ## [37] SummarizedExperiment_1.18.1 colorspace_1.4-1           
+    ## [39] stringi_1.4.6               RCurl_1.98-1.2             
+    ## [41] munsell_0.5.0               crayon_1.3.4

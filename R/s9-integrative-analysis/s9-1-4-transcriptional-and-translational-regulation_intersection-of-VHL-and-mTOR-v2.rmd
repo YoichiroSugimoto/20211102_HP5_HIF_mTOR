@@ -256,10 +256,11 @@ ggplot(
                            "non_VHL_target" = "black",
                            "VHL_loss_repressed" = "black"
                        )) +
-    geom_point(shape = 16) +
+    geom_point() +
     gghighlight::gghighlight(
                      gene_name %in% hif.related.genes,
-                     label_key = gene_name
+                     label_key = gene_name,
+                     label_params = list(size = 4.5)
                  ) +
     theme(
         legend.position = "bottom",
@@ -724,7 +725,6 @@ top.count.dt[, class_sum := sum(N), by = mRNA_trsl_intersection_by_functions]
 top.count.dt[, proportion := N/class_sum]
 print(top.count.dt[order(mRNA_trsl_intersection_by_functions, TOP_motif_length_capped)])
 
-library("ggrepel")
 
 ggplot(
     data = top.count.dt,

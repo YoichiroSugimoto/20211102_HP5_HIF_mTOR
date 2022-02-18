@@ -51,23 +51,12 @@ set.seed(0)
 
 ```{r data_import}
 
-mtor.tss.sig.dt <- file.path(s8.2.dte.iso.dir, "RCC4_noVHL_EIF4E2_(NA|Torin1).csv") %>% fread
-
 all.filtered.tss.dt <- file.path(
     s8.3.dir,
     "filtered_tss_for_polysome_analysis.csv"
 ) %>%
     fread
 
-mtor.tss.sig.dt <- mtor.tss.sig.dt[
-]
-
-print("The number of all significant genes (at least two isoforms with FDR < 0.1)")
-nrow(
-    mtor.tss.sig.dt[
-        gene_FDR < 0.1 & tx_FDR < 0.1
-    ][, .N, by = gene_id][N > 1]
-)
 
 rcc4.vhl.mrl.dt <- file.path(
     s8.1.2.dir,
@@ -80,28 +69,23 @@ tx.meta.info.dt <- file.path(s8.3.dir, "processed-tx-meta-info.csv") %>%
 
 sig.rcc4.vhl.mrl.dt <- merge(
     rcc4.vhl.mrl.dt[
-       biotype == "protein_coding",
+        biotype == "protein_coding",
         .(tss_name, gene_id, gene_name, MRL_treated, MRL_base, MRL_log2fc)],
-    mtor.tss.sig.dt[, .(tss_name, gene_FDR, tx_FDR)],
-    all.x = TRUE,
+    y = tx.meta.info.dt[
+      , .(tss_name, TOP_motif_length, uORF_all, uORF_all_capped, cds_len)
+    ],
     by = "tss_name"
-) %>%
-    merge(
-        y = tx.meta.info.dt[
-          , .(tss_name, TOP_motif_length, uORF_all, uORF_all_capped, cds_len)
-        ],
-        by = "tss_name"
-    )
+)
 
-sig.rcc4.vhl.mrl.dt[
+sig.rcc4.vhl.mrl.dt <- sig.rcc4.vhl.mrl.dt[
         tss_name %in% all.filtered.tss.dt[
                       RCC4_VHL_NA == TRUE & RCC4_VHL_Torin1 == TRUE, tss_name
                   ]
 ]
 
-sig.rcc4.vhl.mrl.dt <- sig.rcc4.vhl.mrl.dt[
-    ## gene_FDR < 0.1 & tx_FDR < 0.1
-]
+## To be deleted
+p.dt <- fread(file.path(s8.2.dte.iso.dir, "RCC4_VHL_EIF4E2_NA.csv"))
+
 
 ```
 
@@ -148,7 +132,22 @@ d.sl.sig.rcc4.vhl.mrl.dt <- dcast(
     )
 )
 
-print("All significant genes with annotation of multiple TSS available")
+## To be deleted
+d.sl.sig.rcc4.vhl.mrl.dt <- merge(
+    d.sl.sig.rcc4.vhl.mrl.dt,
+    p.dt[!duplicated(gene_id), .(gene_id, gene_FDR)],
+    by = "gene_id"
+)
+
+d.sl.sig.rcc4.vhl.mrl.dt[
+    gene_FDR < 0.001 & te_diff_by_tss == "Large (> 1.5)"
+][, .(gene_name,
+      tss_name_Hypersensitive, tss_name_Resistant,
+      TOP_motif_length_Hypersensitive, TOP_motif_length_Resistant, uORF_all_Hypersensitive, uORF_all_Resistant)][
+    uORF_all_Hypersensitive == 0 & uORF_all_Resistant > 2
+]
+
+print("All genes with annotation of multiple TSS available")
 d.sl.sig.rcc4.vhl.mrl.dt[, table(te_diff_by_tss) %>% addmargins]
 
 ## Test function
@@ -257,12 +256,6 @@ ggplot(
     xlab("MRL log2 fold change difference between TSS isoforms") +
     ylab("uORF number")
 
-d.sl.sig.rcc4.vhl.mrl.dt[
-    gene_id %in% mtor.tss.sig.dt[gene_FDR < 0.1, gene_id] &
-    tss_name_Hypersensitive %in% mtor.tss.sig.dt[tx_FDR < 0.1, tss_name] &
-    tss_name_Resistant %in% mtor.tss.sig.dt[tx_FDR < 0.1, tss_name] &
-    te_diff_by_tss == "Large (> 1.5)", .(gene_name, gene_id, TOP_motif_length_Hypersensitive, TOP_motif_length_Resistant)
-]
 
 ```
 
@@ -306,6 +299,11 @@ r4novhl.prop.dt[, `:=`(
 DERA (ENSG00000023697)
 
 ```{r DERA}
+
+tx.meta.info.dt[
+    gene_id == "ENSG00000023697",
+    .(tss_name, tss_p1_TOP, uORF_all)
+]
 
 treatment.colors <- c(
     "NA" = "gray40",
@@ -392,9 +390,9 @@ ggplot(
 
 Other examples
 
-SERP1 (ENSG00000120742); stress associated endoplasmic reticulum protein
-SCARB2 (ENSG00000138760); Scavenger receptor class B member 2
-GTF2F1 (ENSG00000125651); General transcription factor IIF subunit 1
+- SERP1 (ENSG00000120742); stress associated endoplasmic reticulum protein
+- SCARB2 (ENSG00000138760); Scavenger receptor class B member 2
+
 
 ```{r other_examples}
 
@@ -405,20 +403,20 @@ rcc4.tss.de.res.dt <- tss.de.res.dt[
     .(tss_name, gene_id, meanNormCount_base)
 ][tss_name %in% r4vhl.prop.dt[, tss_name]]
 
-top3.tss.dt <- rcc4.tss.de.res.dt[
-    order(gene_id, meanNormCount_base, decreasing = TRUE)
-][, head(.SD, 3), by = list(gene_id)]
 
-r4vhl.prop.dt <- r4vhl.prop.dt[tss_name %in% top3.tss.dt[, tss_name]]
+r4vhl.prop.dt <- r4vhl.prop.dt[
+    tss_name %in% sl.sig.rcc4.vhl.mrl.dt[, tss_name]
+]
 
 sl.genes <- c(
     "SERP1" = "ENSG00000120742",
     "SCARB2" = "ENSG00000138760",
-    "GTF2F1" = "ENSG00000125651"
+    "PABPN1" = "ENSG00000100836"
 )
 
 plotTssExamples <- function(sl.gene.id, sl.gene.name, r4vhl.prop.dt, tx.meta.info.dt){
 
+    print(sl.gene.name)
     tx.meta.info.dt[
         tss_name %in% r4vhl.prop.dt[gene_id == sl.gene.id, tss_name],
         .(

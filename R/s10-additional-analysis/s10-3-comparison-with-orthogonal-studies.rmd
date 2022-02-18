@@ -239,15 +239,14 @@ sl.rcc4.diff.trsl.dt <- rcc4.diff.trsl.dt[
 ```{r sig_diff_trsl_genes}
 
 
-library("ggbeeswarm")
-
 compareWithBase <- function(
                             base.dt,
                             base.data.source,
                             subject.dts,
                             subject.data.sources,
                             value.col,
-                            yaxis.title
+                            yaxis.title,
+                            ylim.range
                             ){
 
     base.dt[, data_source := base.data.source]
@@ -327,6 +326,7 @@ compareWithBase <- function(
             axis.title.x = element_blank()
         ) +
         scale_x_discrete(guide = guide_axis(angle = 90)) +
+        coord_cartesian(ylim = ylim.range)
         ylab(yaxis.title)
 
     print(g1)
@@ -348,7 +348,7 @@ compareWithBase <- function(
 
 hp5.vs.others.dt <- compareWithBase(
     base.dt = sl.rcc4.diff.trsl.dt,
-    base.data.source = "HP5_all",
+    base.data.source = "HP5_all____",
     subject.dts = list(
         Hsieh.all.dt,
         Thoreen.all.dt,
@@ -359,7 +359,8 @@ hp5.vs.others.dt <- compareWithBase(
         "Hsieh", "Thoreen", "Larsson", "Morita"
     ),
     value.col = "MRL_log2fc",
-    yaxis.title = "MRL log2 fold change with Torin 1\n(defined by HP5 data)"
+    yaxis.title = "MRL log2 fold change with Torin 1\n(defined by HP5 data)",
+    ylim.range = c(-2, 0.5)
 )
 
  
@@ -372,7 +373,7 @@ hp5.vs.others.dt <- compareWithBase(
 
 Hsieh.vs.others.dt <- compareWithBase(
     base.dt = Hsieh.all.dt,
-    base.data.source = "Hsieh_all",
+    base.data.source = "Hsieh_all__",
     subject.dts = list(
         Hsieh.all.dt,
         Thoreen.all.dt,
@@ -383,7 +384,8 @@ Hsieh.vs.others.dt <- compareWithBase(
         "Hsieh", "Thoreen", "Larsson", "Morita"
     ),
     value.col = "trsl_eff_log2fc",
-    yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Hsieh et al. data)"
+    yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Hsieh et al. data)",
+    ylim.range = c(-3, 1)
 )
 
 ```
@@ -407,7 +409,8 @@ Thoreen.vs.others.dt <- compareWithBase(
         "Hsieh", "Thoreen", "Larsson", "Morita"
     ),
     value.col = "trsl_eff_log2fc",
-    yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Thoreen et al. data)"
+    yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Thoreen et al. data)",
+    ylim.range = c(-3, 1)
 )
 
 ```
