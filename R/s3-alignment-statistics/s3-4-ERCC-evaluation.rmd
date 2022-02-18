@@ -115,7 +115,8 @@ This is a default procedure.
 
 ```{r calculate_normalization_factor_based_on_ERCC}
 
-non0.sl.sample.names <- sl.sample.names[!grepl("(ribo0A|ribo0B)", sl.sample.names)]
+non0.sl.sample.names <-
+    sl.sample.names[!grepl("(ribo0A|ribo0B)", sl.sample.names)]
 
 dds <- DESeqDataSetFromMatrix(
     countData = ercc.count.dt[
@@ -129,6 +130,9 @@ dds <- DESeqDataSetFromMatrix(
     design = ~ 1
 ) %>%
     estimateSizeFactors
+
+## Sanity check
+all(rownames(colData(dds)) == colnames(assay(dds)))
 
 sizefactor.dt <- sizeFactors(dds) %>%
     data.frame %>%
@@ -144,12 +148,12 @@ sample.count.with.sizefactor.dt <- merge(
     sample.dt,
     sizefactor.dt,
     by = "sample_name",
-    all = TRUE
+    all.y = TRUE
 ) %>%
     merge(
         y = d.ercc.sum.count.dt,
         by = "sample_name",
-        all = TRUE
+        all.x = TRUE
     )
 
 ```
@@ -164,18 +168,17 @@ Thus, I decided to use the DESeq2 calculated size factors.
 
 ```{r ERCC_total_vs_DESeq2_size_factors}
 
-ercc.total.size.factor.lm <- lm(
-    ERCCs ~ size_factor,
-    data = sample.count.with.sizefactor.dt[sample_name %in% non0.sl.sample.names]
-)
-
-sample.count.with.sizefactor.dt[
-    sample_name %in% non0.sl.sample.names,
-    residual2lm_ERCC_sizefactor := resid(ercc.total.size.factor.lm)
-]
-
 poly.sample.count.with.sizefactor.dt <- sample.count.with.sizefactor.dt[
     grepl("^ribo", fraction)
+]
+
+ercc.total.size.factor.lm <- lm(
+    ERCCs ~ size_factor,
+    data = poly.sample.count.with.sizefactor.dt
+)
+
+poly.sample.count.with.sizefactor.dt[
+    , residual2lm_ERCC_sizefactor := resid(ercc.total.size.factor.lm)
 ]
 
 poly.sample.count.with.sizefactor.dt[, `:=`(
@@ -255,6 +258,9 @@ dds <- DESeqDataSetFromMatrix(
 ) %>%
     estimateSizeFactors
 
+## Sanity check
+all(rownames(colData(dds)) == colnames(assay(dds)))
+
 sizefactor.dt <- sizeFactors(dds) %>%
     data.frame %>%
     data.table(keep.rownames = TRUE)
@@ -265,16 +271,16 @@ setnames(
     new = c("sample_name", "size_factor")
 )
 
-sample.count.with.sizefactor.dt <- merge(
+sample.count.with.sizefactor.with0.dt <- merge(
     sample.dt,
     sizefactor.dt,
     by = "sample_name",
-    all = TRUE
+    all.y = TRUE
 ) %>%
     merge(
         y = d.ercc.sum.count.dt,
         by = "sample_name",
-        all = TRUE
+        all.x = TRUE
     )
 
 ```
@@ -289,26 +295,26 @@ Thus, I decided to use the DESeq2 calculated size factors.
 
 ```{r ERCC_total_vs_DESeq2_size_factors_with_ribo_0}
 
-ercc.total.size.factor.lm <- lm(
-    ERCCs ~ size_factor,
-    data = sample.count.with.sizefactor.dt[sample_name %in% sl.sample.names]
-)
-
-sample.count.with.sizefactor.dt[
-    sample_name %in% sl.sample.names,
-    residual2lm_ERCC_sizefactor := resid(ercc.total.size.factor.lm)
-]
-
-poly.sample.count.with.sizefactor.dt <- sample.count.with.sizefactor.dt[
+poly.sample.count.with.sizefactor.with0.dt <- sample.count.with.sizefactor.with0.dt[
     grepl("^ribo", fraction)
 ]
 
-poly.sample.count.with.sizefactor.dt[, `:=`(
+poly.sample.count.with.sizefactor.with0.dt[, `:=`(
     size_factor_by_count_sum = ERCCs / mean(ERCCs)
 )]
 
+ercc.total.size.factor.lm <- lm(
+    ERCCs ~ size_factor,
+    data = poly.sample.count.with.sizefactor.with0.dt
+)
+
+poly.sample.count.with.sizefactor.with0.dt[
+   , residual2lm_ERCC_sizefactor := resid(ercc.total.size.factor.lm)
+]
+
+
 ggplot(
-    data = poly.sample.count.with.sizefactor.dt,
+    data = poly.sample.count.with.sizefactor.with0.dt,
     aes(
         x = ERCCs,
         y = size_factor,
@@ -322,7 +328,7 @@ ggplot(
     )
 
 ggplot(
-    data = poly.sample.count.with.sizefactor.dt,
+    data = poly.sample.count.with.sizefactor.with0.dt,
     aes(
         x = size_factor_by_count_sum,
         y = size_factor,
@@ -345,7 +351,7 @@ ggplot(
 
 ```{r export_predicted_size_factors_with_ribo_0}
 
-poly.sample.count.with.sizefactor.dt[
+poly.sample.count.with.sizefactor.with0.dt[
    , .(sample_name, size_factor, size_factor_by_count_sum)
 ] %>%
     fwrite(

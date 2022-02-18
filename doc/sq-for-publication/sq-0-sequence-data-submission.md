@@ -1,7 +1,7 @@
 ---
 title: "sq-0 Sequence data submission"
 author: "Yoichiro Sugimoto"
-date: "11 February, 2022"
+date: "18 February, 2022"
 vignette: >
   %\VignetteIndexEntry{Bioconductor style for PDF documents}
   %\VignetteEngine{knitr::rmarkdown}
@@ -288,9 +288,11 @@ print(paste0(cut.point * 2, " files uploaded by the first function"))
 ```
 
 ```r
+ftp.url <- "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/E-MTAB-10689-2lfdbpko2rskk/"
+
 temp1 <- uploadToFtp(
     hp5.raw.fastq.dt[1:cut.point],
-    ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/kzh4ihgf-2g4omuukpuhnf/",
+    ftp.url = ftp.url,
     processors = processors
 )
 
@@ -306,7 +308,7 @@ if(nrow(data.table(stack(unlist(temp1)))[ind != "OK"]) != 0){
 ```r
 temp3 <- uploadToFtp(
     hp5.raw.fastq.dt[(cut.point + 1):nrow(hp5.raw.fastq.dt)],
-    ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/kzh4ihgf-2g4omuukpuhnf/",
+    ftp.url = ftp.url,
     processors = processors,
     verbose = FALSE
 )

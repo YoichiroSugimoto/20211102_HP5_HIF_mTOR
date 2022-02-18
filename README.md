@@ -16,6 +16,13 @@ Two `conda` environments summarised in `./conda_environment` must be created bef
 - ERCC RNA sequence: the sequences downloaded from NIST (https://www-s.nist.gov/srmors/certificates/documents/SRM2374_putative_T7_products_NoPolyA_v1.fasta) should be stored at `./data/ERCC_sequence`. The sequence file is also available from this github repository.
 - Human CAGE data from FANTOM5
 
+## Required software
+In addition to the software included in the `conda` environments, the following software is required to run this pipeline.
+
+- [paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/)
+- [dpi](https://github.com/hkawaji/dpi1)
+    - I slightly rewrote some of the script of dpi so that the software can be run on `Slurm`. The modified version is available from the following link (https://github.com/YoichiroSugimoto/dpi).
+
 # Analysis overview
 
 ## Structure
@@ -32,6 +39,7 @@ The analyses consist of the following 9 steps:
 - s7 HIF binding sites definition
 - s8 Analysis of translation
 - s9 Integrative analysis
+- s10 Additional analysis
 
 ## **sp-0 Annotation preparation**
 
@@ -87,4 +95,6 @@ Finally, the effect of mTOR inhibition on translational efficiency is evaluated 
 ## **s9 Integrative analysis**
 
 Most of analyses used for the publication are performed in this section.
+
+## **s10 Additional analysis**
 

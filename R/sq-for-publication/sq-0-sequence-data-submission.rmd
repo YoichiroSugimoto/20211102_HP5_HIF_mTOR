@@ -244,9 +244,11 @@ uploadToFtp <- function(raw.fastq.dt, ftp.url, processors, user.pwd = "aexpress:
 cut.point <- round(nrow(hp5.raw.fastq.dt)/2)
 print(paste0(cut.point * 2, " files uploaded by the first function"))
 
+ftp.url <- "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/E-MTAB-10689-2lfdbpko2rskk/"
+
 temp1 <- uploadToFtp(
     hp5.raw.fastq.dt[1:cut.point],
-    ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/kzh4ihgf-2g4omuukpuhnf/",
+    ftp.url = ftp.url,
     processors = processors
 )
 
@@ -256,7 +258,7 @@ if(nrow(data.table(stack(unlist(temp1)))[ind != "OK"]) != 0){
 
 temp3 <- uploadToFtp(
     hp5.raw.fastq.dt[(cut.point + 1):nrow(hp5.raw.fastq.dt)],
-    ftp.url = "ftp://aexpress:aexpress1@ftp-private-2.ebi.ac.uk/kzh4ihgf-2g4omuukpuhnf/",
+    ftp.url = ftp.url,
     processors = processors,
     verbose = FALSE
 )

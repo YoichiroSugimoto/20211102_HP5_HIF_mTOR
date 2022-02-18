@@ -24,8 +24,6 @@ The number of reads by the RNA source is analysed.
 library("GenomicAlignments")
 library("Biostrings")
 library("GenomicFeatures")
-## knitr
-library("kableExtra")
 
 ## Specify the number of CPUs to be used
 processors <- 8
@@ -384,7 +382,11 @@ createReadNumberDt <- function(all.rnums, no.rRNA.rnums, sum.rrna.ercc.count.dt,
     file.path(
         s3.alignment.stats.dir, paste0(out.prefix, "alignment-statistics.csv")
     ) %>%
-        {fwrite(for.export.annotated.rnums.dt, file = .)}
+        {fwrite(
+             for.export.annotated.rnums.dt[
+                 !grepl("(ribo0A|ribo0B)", fraction)
+             ], file = .
+         )}
     
     m.annotated.rnums.dt <- melt(
         annotated.rnums.dt,
@@ -562,15 +564,6 @@ total.for.export.annotated.rnums.dt <- createReadNumberDt(
 
 ```
 
-
-```{r print_tables, results = "asis"}
-
-total.for.export.annotated.rnums.dt %>%
-    kable(., format.args = list(big.mark = ',')) %>%
-    kable_styling(bootstrap_options = c("striped", "condensed"))
-
-
-```
 
 
 
