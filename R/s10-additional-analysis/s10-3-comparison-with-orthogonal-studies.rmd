@@ -23,10 +23,12 @@ The ability of HP5 to assess translation will be evaluated compared to orthogona
 
 ```{r load_libraries, message = FALSE, warning = FALSE}
 
-library("readxl")
 
 temp <- sapply(list.files("../functions", full.names = TRUE), source)
 temp <- sapply(list.files("./functions", full.names = TRUE), source, chdir = TRUE)
+
+library("readxl")
+library("ggbeeswarm")
 
 processors <- 8
 
@@ -296,27 +298,6 @@ compareWithBase <- function(
             ),
             linetype = c("solid")
         ) +
-        geom_violin(
-            aes(
-                fill = ifelse(
-                    data_source == base.data.source, "gray60", "NA"
-                ),
-                color = ifelse(
-                    data_source == base.data.source, "gray60", "NA"
-                )
-            ),
-            alpha = 0.6
-        ) +
-        geom_quasirandom(
-            data = all.dt[data_source != base.data.source],
-            aes_string(
-                x = "data_source",
-                y = value.col
-            ),
-            alpha = 0.3,
-            shape = 16,
-            varwidth = TRUE
-        ) +
         geom_boxplot(fill = "white", outlier.shape = NA, alpha = 0.6) +
         scale_color_manual(values = c("gray60" = "gray60", "NA" = NA)) +
         scale_fill_manual(values = c("gray60" = "gray60", "NA" = NA)) +
@@ -385,7 +366,7 @@ Hsieh.vs.others.dt <- compareWithBase(
     ),
     value.col = "trsl_eff_log2fc",
     yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Hsieh et al. data)",
-    ylim.range = c(-3, 1)
+    ylim.range = c(-3, 2)
 )
 
 ```
@@ -410,13 +391,13 @@ Thoreen.vs.others.dt <- compareWithBase(
     ),
     value.col = "trsl_eff_log2fc",
     yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Thoreen et al. data)",
-    ylim.range = c(-3, 1)
+    ylim.range = c(-3, 2)
 )
 
 ```
 
-# Orthogonal validation of mTOR dependency of HIF-target genes
 
+# Orthogonal validation of mTOR dependency of HIF-target genes
 
 
 ```{r import_RCC4_noVHL_data}
