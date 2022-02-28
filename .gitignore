@@ -31,7 +31,7 @@ R/**/*.md
 R/**/*_files/*.png
 
 ## ignore figure documents in doc
-doc/**/*_files
+## doc/**/*_files
 
 ## ignore raw data
 *.fastq
@@ -52,7 +52,7 @@ doc/**/*_files
 
 ## Figures
 *.pdf
-*.png
+## *.png
 *.ai
 *.eps
 *.jpeg
