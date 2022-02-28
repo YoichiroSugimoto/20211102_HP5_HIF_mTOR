@@ -98,3 +98,6 @@ Most of analyses used for the publication are performed in this section.
 
 ## **s10 Additional analysis**
 
+# Analysis outputs
+
+`doc` stores the outputs of the rmakdown scripts. The files contain the scripts, documentations and outputs except those exported as independent files that are stored in `results`.

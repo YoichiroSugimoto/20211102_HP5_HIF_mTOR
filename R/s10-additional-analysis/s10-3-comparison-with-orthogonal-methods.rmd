@@ -1,5 +1,5 @@
 ---
-title: "s10-3 Comparison with orthgonal studies"
+title: "s10-3 Comparison with orthgonal methods"
 author: "Yoichiro Sugimoto"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 vignette: >
