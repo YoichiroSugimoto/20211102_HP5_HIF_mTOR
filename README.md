@@ -100,4 +100,4 @@ Most of analyses used for the publication are performed in this section.
 
 # Analysis outputs
 
-`doc` stores the outputs of the rmakdown scripts. The files contain the scripts, documentations and outputs except those exported as independent files that are stored in `results`.
+`doc` stores the outputs of the `rmakdown` scripts. The files contain the scripts, documentations and outputs except those exported as independent files that are stored in `results`.
