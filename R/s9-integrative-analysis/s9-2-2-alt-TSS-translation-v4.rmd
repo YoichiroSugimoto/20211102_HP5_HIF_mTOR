@@ -1025,39 +1025,6 @@ m.rcc4.tss.de.res.dt[, `:=`(
 plotExamples <- function(gene.id, m.count.per.fraction.dt, m.tss.count.per.fraction.dt, m.rcc4.tss.de.res.dt){
 
     gene.name <- m.count.per.fraction.dt[gene_id == gene.id][1, gene_name]
-    ## ## Gene level
-    ## g <- m.count.per.fraction.dt[gene_id == gene.id] %>%
-    ##     ggplot(
-    ##         aes(
-    ##             x = fraction,
-    ##             y = mean_ratio,
-    ##             color = VHL,
-    ##             group = VHL
-    ##         )
-    ##     ) +
-    ##     geom_ribbon(
-    ##         aes(
-    ##             ymin = lower_ratio_range, ymax = upper_ratio_range, fill = VHL
-    ##         ),
-    ##         color = NA, alpha = 0.2
-    ##     ) +
-    ##     geom_line(
-    ##         size = 1.25
-    ##     ) +
-    ##     ylab("% of mRNA in each polysome fraction in RCC-4") +
-    ##     xlab("Fraction") +
-    ##     ggsci::scale_color_npg() +
-    ##     ggsci::scale_fill_npg() +
-    ##     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-    ##     geom_hline(yintercept = 0) +
-    ##     coord_cartesian(ylim = c(0, 0.4)) +
-    ##     theme(
-    ##         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-    ##         aspect.ratio = 2
-    ##     ) +
-    ##     ggtitle(paste0(gene.name, " (gene level)"))
-
-    ## print(g)
 
     ## TSS level
     tss.to.plot.dt <- data.table(
@@ -1153,23 +1120,14 @@ plotExamples <- function(gene.id, m.count.per.fraction.dt, m.tss.count.per.fract
 
 ## Plot examples
 
-The following genes were selected as the examples.
-
-- Translationally up-regulated genes
-  - Dispropotionally upregulated: MXI1, WFDC3
-- Translationally down-regulated genes
-  - Dispropotionally upregulated: DERA
-  - Dispropotionally downregulated: RGS5
-
+The following genes were selected as the examples: MXI1, UAP1, and DERA
 
 ```{r plot_examples}
 
 selected.gene.id <- c(
-    "UAP1" = "ENSG00000117143", 
     "MXI1" = "ENSG00000119950",
-    "WFDC3" = "ENSG00000124116",
-    "DERA" = "ENSG00000023697",
-    "RGS5" = "ENSG00000143248"
+    "UAP1" = "ENSG00000117143", 
+    "DERA" = "ENSG00000023697"
 )
 
 temp <- lapply(

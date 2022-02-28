@@ -189,15 +189,14 @@ setnames(
     new = c("mRNA_by_VHL_loss", "mTOR_inh_noVHL", "mRNA_log2fc", "mRNA_padj")
 )
 
-to.show.th.dt[
-    order(match(
-        gene_name,
-        c(
-            "HK1", "GPI", "PFKL", "PFKM", "ALDOA", "ALDOC",
-            "GAPDH", "TPI1", "PGK1", "PGAM1", "ENO1", "ENO2",
-            "PKM", "LDHA", "LDHB"
-            )
-    )),
+typical.glycolytic.genes <- c(
+    "HK1", "GPI", "PFKL", "PFKM", "ALDOA", "ALDOC",
+    "GAPDH", "TPI1", "PGK1", "PGAM1", "ENO1", "ENO2",
+    "PKM", "LDHA", "LDHB"
+)
+
+to.show.th.dt[gene_name %in% typical.glycolytic.genes][
+    order(match(gene_name, typical.glycolytic.genes)),
     .(gene_name, mRNA_by_VHL_loss, mTOR_inh_noVHL, mRNA_log2fc, mRNA_padj)
 ]
 
@@ -661,6 +660,7 @@ tss.prop.dt <- copy(tss.de.res.dt[
 ])[
   , meanNormCount_treated_gene := sum(meanNormCount_treated), by = gene_id
 ]
+
 tss.prop.dt[
   , proportion_treated := meanNormCount_treated / meanNormCount_treated_gene
 ]
@@ -680,18 +680,28 @@ tx.meta.info.dt <- file.path(s8.3.dir, "processed-tx-meta-info.csv") %>%
 ) %>%
     merge(
         y = tss.prop.dt[
-            , .(tss_name, proportion_treated)
+            , .(tss_name, meanNormCount_treated, proportion_treated)
         ],
         by = "tss_name"
     )
+
+## For the calculation of values for mRNA features, isoforms not annotated are ignored
+tx.meta.info.dt[
+  , meanNormCount_treated_annotated_gene := sum(meanNormCount_treated),
+    by = gene_id
+]
+tx.meta.info.dt[
+  , proportion_treated_annotated := meanNormCount_treated / meanNormCount_treated_annotated_gene,
+]
+
 
 tx.meta.info.by.class.dt <- tx.meta.info.dt[, .(
     gene_name,
     VHL_target_RCC4,
     mRNA_trsl_intersection_by_functions,
-    cds_len = sum(cds_len * proportion_treated),
-    uORF_all = sum(uORF_all * proportion_treated),
-    TOP_motif_length = sum(TOP_motif_length * proportion_treated),
+    cds_len = sum(cds_len * proportion_treated_annotated),
+    uORF_all = sum(uORF_all * proportion_treated_annotated),
+    TOP_motif_length = sum(TOP_motif_length * proportion_treated_annotated),
     total_proportion = sum(proportion_treated)
 ), by = gene_id][!duplicated(gene_id)]
 
