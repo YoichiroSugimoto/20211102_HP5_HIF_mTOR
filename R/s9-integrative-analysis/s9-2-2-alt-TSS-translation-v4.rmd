@@ -609,61 +609,6 @@ ggplot(
     expand_limits(y = c(0, 1.25))
 
 
-## utr5_len
-utr5_len.count.dt <- bin.mrl.alt.other.dt[
-    alt_TSS_diff_poly == "Different",
-    .N,
-    by = list(
-        dMRL = ifelse(
-            MRL_log2fc_alt_others > 0,
-            "alternative TSS\n> other TSS",
-            "alternative TSS\n< other TSS"
-        ),
-        utr5_len_num = case_when(
-            d_utr5_len > 0 ~ "alternative TSS\n> other TSS",
-            d_utr5_len == 0 ~ "alternative TSS\n= other TSS",
-            d_utr5_len < 0 ~ "alternative TSS\n< other TSS"
-        )
-    )
-][order(dMRL, utr5_len_num)] %T>%
-    {print(copy(.)[, class_sum := sum(N), by = dMRL])}
-utr5_len.count.dt <- utr5_len.count.dt[!is.na(utr5_len_num)]
-
-utr5_len.count.dt[, class_sum := sum(N), by = dMRL]
-utr5_len.count.dt[, proportion := N/class_sum]
-print(utr5_len.count.dt)
-
-ggplot(
-    data = utr5_len.count.dt,
-    aes(
-        x = utr5_len_num,
-        y = dMRL
-    )
-) +
-    geom_point(
-        aes(
-            size = proportion
-        )
-    ) +
-    geom_text_repel(
-        aes(label = paste0(round(proportion * 100), "%")),
-        nudge_x = 0,
-        nudge_y = -0.5,
-        min.segment.length = Inf
-    ) +
-    ## scale_color_manual(values = go.annot.colors, guide = "none") +
-    scale_size_area(max_size = 15) +
-    scale_x_discrete(guide = guide_axis(angle = 90)) +
-    theme(
-        aspect.ratio = 1/2,
-        legend.position = "none"
-    ) +
-    xlab("5' UTR length") +
-    ylab("dMRL") +
-    expand_limits(y = c(0, 1.25))
-
-
-
 ```
 
 
@@ -748,6 +693,10 @@ for.export.dt[, `:=`(
     alt_TSS_flag = case_when(
         base_alt_TSS_flag == "alternative_TSS" ~ "alternate_TSS",
         TRUE ~ ""
+    ),
+    alt_vs_others_CDS_diff = case_when(
+        base_alt_TSS_flag == "alternative_TSS" ~ alt_vs_others_CDS_diff,
+        TRUE ~ NA_character_
     )
 )]
 
@@ -812,7 +761,7 @@ setnames(
 fwrite(
     for.export.dt,
     file.path(
-        s9.dir, "alteranate_TSS_and_translation_in_RCC4.csv"
+        s9.dir, "alternate_TSS_and_translation_in_RCC4.csv"
     )
 )
 
