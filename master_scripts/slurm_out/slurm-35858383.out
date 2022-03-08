@@ -1,0 +1,901 @@
+> args <- commandArgs(trailingOnly = TRUE)
+> 
+> library(rmarkdown)
+> rmarkdown::render(args[1])
+
+
+processing file: sp-1-parse_gene_annotation.rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |..                                                                    |   3%
+   inline R code fragments
+
+  |                                                                              |....                                                                  |   6%
+label: knitr config (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+
+Attaching package: 'dplyr'
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:dplyr':
+
+    between, first, last
+
+  |                                                                              |......                                                                |   9%
+  ordinary text without R code
+
+  |                                                                              |........                                                              |  12%
+label: load packages (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from 'package:dplyr':
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following objects are masked from 'package:data.table':
+
+    first, second
+
+The following objects are masked from 'package:dplyr':
+
+    first, rename
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+The following object is masked from 'package:data.table':
+
+    shift
+
+The following objects are masked from 'package:dplyr':
+
+    collapse, desc, slice
+
+Loading required package: GenomeInfoDb
+Loading required package: AnnotationDbi
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: 'AnnotationDbi'
+
+The following object is masked from 'package:dplyr':
+
+    select
+
+
+  |                                                                              |..........                                                            |  15%
+  ordinary text without R code
+
+  |                                                                              |............                                                          |  18%
+label: setup directories
+  |                                                                              |..............                                                        |  21%
+  ordinary text without R code
+
+  |                                                                              |................                                                      |  24%
+label: setup data sources, filenames
+  |                                                                              |...................                                                   |  26%
+  ordinary text without R code
+
+  |                                                                              |.....................                                                 |  29%
+label: download GFF3 from GENCODE
+trying URL 'http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.annotation.gff3.gz'
+Content type 'application/octet-stream' length 52429460 bytes (50.0 MB)
+==================================================
+downloaded 50.0 MB
+
+trying URL 'http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.annotation.gtf.gz'
+Content type 'application/octet-stream' length 43164654 bytes (41.2 MB)
+==================================================
+downloaded 41.2 MB
+
+trying URL 'http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.metadata.RefSeq.gz'
+Content type 'application/octet-stream' length 780757 bytes (762 KB)
+==================================================
+downloaded 762 KB
+
+  |                                                                              |.......................                                               |  32%
+  ordinary text without R code
+
+  |                                                                              |.........................                                             |  35%
+label: import GENCODE annotation
+  |                                                                              |...........................                                           |  38%
+  ordinary text without R code
+
+  |                                                                              |.............................                                         |  41%
+label: extract tags
+  |                                                                              |...............................                                       |  44%
+  ordinary text without R code
+
+  |                                                                              |.................................                                     |  47%
+label: add additional information
+  |                                                                              |...................................                                   |  50%
+  ordinary text without R code
+
+  |                                                                              |.....................................                                 |  53%
+label: primary transcript selection
+  |                                                                              |.......................................                               |  56%
+  ordinary text without R code
+
+  |                                                                              |.........................................                             |  59%
+label: annoation further added
+  |                                                                              |...........................................                           |  62%
+  ordinary text without R code
+
+  |                                                                              |.............................................                         |  65%
+label: exon information is parsed
+  |                                                                              |...............................................                       |  68%
+  ordinary text without R code
+
+  |                                                                              |.................................................                     |  71%
+label: export R objects and others
+  |                                                                              |...................................................                   |  74%
+  ordinary text without R code
+
+  |                                                                              |......................................................                |  76%
+label: exported files
+  |                                                                              |........................................................              |  79%
+  ordinary text without R code
+
+  |                                                                              |..........................................................            |  82%
+label: download and process RefSeq annotation
+trying URL 'https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/annotation_releases/109.20200522/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_genomic.gtf.gz'
+Content type 'application/x-gzip' length 40241645 bytes (38.4 MB)
+==================================================
+downloaded 38.4 MB
+
+  |                                                                              |............................................................          |  85%
+  ordinary text without R code
+
+  |                                                                              |..............................................................        |  88%
+label: export gencode and refseq annotated transcript information
+  |                                                                              |................................................................      |  91%
+  ordinary text without R code
+
+  |                                                                              |..................................................................    |  94%
+label: create gtf for all transcripts
+  |                                                                              |....................................................................  |  97%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: session info
+
+output file: sp-1-parse_gene_annotation.knit.md
+
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS sp-1-parse_gene_annotation.utf8.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output sp-1-parse_gene_annotation.html --email-obfuscation none --self-contained --standalone --section-divs --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/h/default.html --highlight-style haddock --variable 'theme:bootstrap' --include-in-header /tmp/slurm_35858383/RtmpjhqZGb/rmarkdown-str68e710ddbb53.html --mathjax --variable 'mathjax-url:https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/pagebreak.lua --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/latex-div.lua 
+
+Output created: sp-1-parse_gene_annotation.html
+> 
+> if(TRUE){
++     full.rmd.path <- normalizePath(args[1])
++ 
++     doc.dir <- file.path(
++         gsub("/R/", "/doc/", dirname(full.rmd.path))
++     )
++ 
++     create.dir <- function(dir.name){
++         if(dir.exists(dir.name) == FALSE) {
++             dir.create(dir.name, recursive = TRUE)
++         }
++     }
++ 
++     create.dir(doc.dir)
++ 
++     ## Move knitr output files to doc dir
++     non.rmd.files <- grep(
++         list.files(
++             dirname(full.rmd.path),
++             pattern = gsub(".rmd", "", basename(full.rmd.path)),
++             full.names = TRUE
++         ),
++         pattern = ".rmd$",
++         inv = TRUE,
++         value = TRUE
++     )
++ 
++     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
++     
++     file.rename(
++         from = file.path(dirname(full.rmd.path), non.rmd.files),
++         to = file.path(doc.dir, non.rmd.files)
++     )
++ 
++     ## If figure directory exists
++     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
++ 
++     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
++ 
++         file.mv.cmd <- paste(
++             "rsync", "--remove-source-files", "-r",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             file.path(doc.dir)
++         )
++ 
++         system(file.mv.cmd)
++ 
++         empty.file.rm.cmd <- paste(
++             "find",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             "-type", "d",
++             "-empty", "-delete"
++         )
++ 
++         system(empty.file.rm.cmd)
++         
++     } else {"No output dir"}
++     
++ } else {
++     "knitr output not moved"
++ }
+[1] "No output dir"
+> 
+> args <- commandArgs(trailingOnly = TRUE)
+> 
+> library(rmarkdown)
+> rmarkdown::render(args[1])
+
+
+processing file: sp-2-preparation_of_STAR_index.rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |.....                                                                 |   7%
+   inline R code fragments
+
+  |                                                                              |..........                                                            |  14%
+label: knitr config (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+
+Attaching package: 'dplyr'
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:dplyr':
+
+    between, first, last
+
+  |                                                                              |...............                                                       |  21%
+  ordinary text without R code
+
+  |                                                                              |....................                                                  |  29%
+label: load packages (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+Loading required package: BSgenome
+Loading required package: BiocGenerics
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from 'package:dplyr':
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+Loading required package: stats4
+
+Attaching package: 'S4Vectors'
+
+The following objects are masked from 'package:data.table':
+
+    first, second
+
+The following objects are masked from 'package:dplyr':
+
+    first, rename
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+The following object is masked from 'package:data.table':
+
+    shift
+
+The following objects are masked from 'package:dplyr':
+
+    collapse, desc, slice
+
+Loading required package: GenomeInfoDb
+Loading required package: GenomicRanges
+Loading required package: Biostrings
+Loading required package: XVector
+
+Attaching package: 'Biostrings'
+
+The following object is masked from 'package:base':
+
+    strsplit
+
+Loading required package: rtracklayer
+  |                                                                              |.........................                                             |  36%
+  ordinary text without R code
+
+  |                                                                              |..............................                                        |  43%
+label: setup directories
+  |                                                                              |...................................                                   |  50%
+  ordinary text without R code
+
+  |                                                                              |........................................                              |  57%
+label: load pre-processed data
+  |                                                                              |.............................................                         |  64%
+  ordinary text without R code
+
+  |                                                                              |..................................................                    |  71%
+label: genome (with options) 
+List of 1
+ $ results: chr "hide"
+
+  |                                                                              |.......................................................               |  79%
+  ordinary text without R code
+
+  |                                                                              |............................................................          |  86%
+label: index
+  |                                                                              |.................................................................     |  93%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: session info
+
+output file: sp-2-preparation_of_STAR_index.knit.md
+
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS sp-2-preparation_of_STAR_index.utf8.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output sp-2-preparation_of_STAR_index.html --email-obfuscation none --self-contained --standalone --section-divs --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/h/default.html --highlight-style haddock --variable 'theme:bootstrap' --include-in-header /tmp/slurm_35858383/RtmpZJn80r/rmarkdown-str155478694c43.html --mathjax --variable 'mathjax-url:https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/pagebreak.lua --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/latex-div.lua 
+
+Output created: sp-2-preparation_of_STAR_index.html
+> 
+> if(TRUE){
++     full.rmd.path <- normalizePath(args[1])
++ 
++     doc.dir <- file.path(
++         gsub("/R/", "/doc/", dirname(full.rmd.path))
++     )
++ 
++     create.dir <- function(dir.name){
++         if(dir.exists(dir.name) == FALSE) {
++             dir.create(dir.name, recursive = TRUE)
++         }
++     }
++ 
++     create.dir(doc.dir)
++ 
++     ## Move knitr output files to doc dir
++     non.rmd.files <- grep(
++         list.files(
++             dirname(full.rmd.path),
++             pattern = gsub(".rmd", "", basename(full.rmd.path)),
++             full.names = TRUE
++         ),
++         pattern = ".rmd$",
++         inv = TRUE,
++         value = TRUE
++     )
++ 
++     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
++     
++     file.rename(
++         from = file.path(dirname(full.rmd.path), non.rmd.files),
++         to = file.path(doc.dir, non.rmd.files)
++     )
++ 
++     ## If figure directory exists
++     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
++ 
++     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
++ 
++         file.mv.cmd <- paste(
++             "rsync", "--remove-source-files", "-r",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             file.path(doc.dir)
++         )
++ 
++         system(file.mv.cmd)
++ 
++         empty.file.rm.cmd <- paste(
++             "find",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             "-type", "d",
++             "-empty", "-delete"
++         )
++ 
++         system(empty.file.rm.cmd)
++         
++     } else {"No output dir"}
++     
++ } else {
++     "knitr output not moved"
++ }
+[1] "No output dir"
+> 
+> args <- commandArgs(trailingOnly = TRUE)
+> 
+> library(rmarkdown)
+> rmarkdown::render(args[1])
+
+
+processing file: sp-3-preparation_of_bowtie2_index.rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |.........                                                             |  12%
+   inline R code fragments
+
+  |                                                                              |..................                                                    |  25%
+label: knitr config (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: XVector
+
+Attaching package: 'Biostrings'
+
+The following object is masked from 'package:base':
+
+    strsplit
+
+
+Attaching package: 'dplyr'
+
+The following objects are masked from 'package:Biostrings':
+
+    collapse, intersect, setdiff, setequal, union
+
+The following object is masked from 'package:XVector':
+
+    slice
+
+The following objects are masked from 'package:GenomicRanges':
+
+    intersect, setdiff, union
+
+The following object is masked from 'package:GenomeInfoDb':
+
+    intersect
+
+The following objects are masked from 'package:IRanges':
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following objects are masked from 'package:BiocGenerics':
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:dplyr':
+
+    between, first, last
+
+The following object is masked from 'package:GenomicRanges':
+
+    shift
+
+The following object is masked from 'package:IRanges':
+
+    shift
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, second
+
+  |                                                                              |..........................                                            |  38%
+  ordinary text without R code
+
+  |                                                                              |...................................                                   |  50%
+label: setup directories
+  |                                                                              |............................................                          |  62%
+  ordinary text without R code
+
+  |                                                                              |....................................................                  |  75%
+label: genome (with options) 
+List of 1
+ $ results: chr "hide"
+
+Building a SMALL index
+  |                                                                              |.............................................................         |  88%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: session info
+
+output file: sp-3-preparation_of_bowtie2_index.knit.md
+
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS sp-3-preparation_of_bowtie2_index.utf8.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output sp-3-preparation_of_bowtie2_index.html --email-obfuscation none --self-contained --standalone --section-divs --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/h/default.html --highlight-style haddock --variable 'theme:bootstrap' --include-in-header /tmp/slurm_35858383/RtmpPXgjiU/rmarkdown-str66d2795c8d08.html --mathjax --variable 'mathjax-url:https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/pagebreak.lua --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/latex-div.lua 
+
+Output created: sp-3-preparation_of_bowtie2_index.html
+> 
+> if(TRUE){
++     full.rmd.path <- normalizePath(args[1])
++ 
++     doc.dir <- file.path(
++         gsub("/R/", "/doc/", dirname(full.rmd.path))
++     )
++ 
++     create.dir <- function(dir.name){
++         if(dir.exists(dir.name) == FALSE) {
++             dir.create(dir.name, recursive = TRUE)
++         }
++     }
++ 
++     create.dir(doc.dir)
++ 
++     ## Move knitr output files to doc dir
++     non.rmd.files <- grep(
++         list.files(
++             dirname(full.rmd.path),
++             pattern = gsub(".rmd", "", basename(full.rmd.path)),
++             full.names = TRUE
++         ),
++         pattern = ".rmd$",
++         inv = TRUE,
++         value = TRUE
++     )
++ 
++     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
++     
++     file.rename(
++         from = file.path(dirname(full.rmd.path), non.rmd.files),
++         to = file.path(doc.dir, non.rmd.files)
++     )
++ 
++     ## If figure directory exists
++     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
++ 
++     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
++ 
++         file.mv.cmd <- paste(
++             "rsync", "--remove-source-files", "-r",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             file.path(doc.dir)
++         )
++ 
++         system(file.mv.cmd)
++ 
++         empty.file.rm.cmd <- paste(
++             "find",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             "-type", "d",
++             "-empty", "-delete"
++         )
++ 
++         system(empty.file.rm.cmd)
++         
++     } else {"No output dir"}
++     
++ } else {
++     "knitr output not moved"
++ }
+[1] "No output dir"
+> 
+> args <- commandArgs(trailingOnly = TRUE)
+> 
+> library(rmarkdown)
+> rmarkdown::render(args[1])
+
+
+processing file: sp-4-preparation_of_KEGG_mapping.rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |.......                                                               |  10%
+   inline R code fragments
+
+  |                                                                              |..............                                                        |  20%
+label: load libraries (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+Loading required package: AnnotationDbi
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: IRanges
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+
+
+Attaching package: 'limma'
+
+The following object is masked from 'package:BiocGenerics':
+
+    plotMA
+
+
+Attaching package: 'dplyr'
+
+The following object is masked from 'package:AnnotationDbi':
+
+    select
+
+The following objects are masked from 'package:IRanges':
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following object is masked from 'package:Biobase':
+
+    combine
+
+The following objects are masked from 'package:BiocGenerics':
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:dplyr':
+
+    between, first, last
+
+The following object is masked from 'package:IRanges':
+
+    shift
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, second
+
+  |                                                                              |.....................                                                 |  30%
+  ordinary text without R code
+
+  |                                                                              |............................                                          |  40%
+label: define directory
+  |                                                                              |...................................                                   |  50%
+  ordinary text without R code
+
+  |                                                                              |..........................................                            |  60%
+label: download key kegg pathways
+  |                                                                              |.................................................                     |  70%
+  ordinary text without R code
+
+  |                                                                              |........................................................              |  80%
+label: kegg brite
+  |                                                                              |...............................................................       |  90%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: sessionInfo
+
+output file: sp-4-preparation_of_KEGG_mapping.knit.md
+
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS sp-4-preparation_of_KEGG_mapping.utf8.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output sp-4-preparation_of_KEGG_mapping.html --email-obfuscation none --self-contained --standalone --section-divs --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/h/default.html --highlight-style haddock --variable 'theme:bootstrap' --include-in-header /tmp/slurm_35858383/RtmpyruYFh/rmarkdown-str677a53004f36.html --mathjax --variable 'mathjax-url:https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/pagebreak.lua --lua-filter /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmd/lua/latex-div.lua 
+
+Output created: sp-4-preparation_of_KEGG_mapping.html
+> 
+> if(TRUE){
++     full.rmd.path <- normalizePath(args[1])
++ 
++     doc.dir <- file.path(
++         gsub("/R/", "/doc/", dirname(full.rmd.path))
++     )
++ 
++     create.dir <- function(dir.name){
++         if(dir.exists(dir.name) == FALSE) {
++             dir.create(dir.name, recursive = TRUE)
++         }
++     }
++ 
++     create.dir(doc.dir)
++ 
++     ## Move knitr output files to doc dir
++     non.rmd.files <- grep(
++         list.files(
++             dirname(full.rmd.path),
++             pattern = gsub(".rmd", "", basename(full.rmd.path)),
++             full.names = TRUE
++         ),
++         pattern = ".rmd$",
++         inv = TRUE,
++         value = TRUE
++     )
++ 
++     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
++     
++     file.rename(
++         from = file.path(dirname(full.rmd.path), non.rmd.files),
++         to = file.path(doc.dir, non.rmd.files)
++     )
++ 
++     ## If figure directory exists
++     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
++ 
++     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
++ 
++         file.mv.cmd <- paste(
++             "rsync", "--remove-source-files", "-r",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             file.path(doc.dir)
++         )
++ 
++         system(file.mv.cmd)
++ 
++         empty.file.rm.cmd <- paste(
++             "find",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             "-type", "d",
++             "-empty", "-delete"
++         )
++ 
++         system(empty.file.rm.cmd)
++         
++     } else {"No output dir"}
++     
++ } else {
++     "knitr output not moved"
++ }
+[1] "No output dir"
+> 

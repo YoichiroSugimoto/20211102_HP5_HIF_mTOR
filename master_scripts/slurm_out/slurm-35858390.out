@@ -1,0 +1,764 @@
+> args <- commandArgs(trailingOnly = TRUE)
+> 
+> library(rmarkdown)
+> rmarkdown::render(args[1])
+
+
+processing file: s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |....                                                                  |   6%
+   inline R code fragments
+
+  |                                                                              |........                                                              |  11%
+label: load_libraries (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+
+Attaching package: 'dplyr'
+
+The following objects are masked from 'package:GenomicRanges':
+
+    intersect, setdiff, union
+
+The following object is masked from 'package:GenomeInfoDb':
+
+    intersect
+
+The following objects are masked from 'package:IRanges':
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following objects are masked from 'package:BiocGenerics':
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:dplyr':
+
+    between, first, last
+
+The following object is masked from 'package:GenomicRanges':
+
+    shift
+
+The following object is masked from 'package:IRanges':
+
+    shift
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, second
+
+  |                                                                              |............                                                          |  17%
+  ordinary text without R code
+
+  |                                                                              |................                                                      |  22%
+label: set_paths
+  |                                                                              |...................                                                   |  28%
+  ordinary text without R code
+
+  |                                                                              |.......................                                               |  33%
+label: idr_narrowpeak_to_bed
+  |                                                                              |...........................                                           |  39%
+  ordinary text without R code
+
+  |                                                                              |...............................                                       |  44%
+label: filter_idr_selected_peaks
+  |                                                                              |...................................                                   |  50%
+  ordinary text without R code
+
+  |                                                                              |.......................................                               |  56%
+label: fold_change_bigwig_file_renaming
+  |                                                                              |...........................................                           |  61%
+  ordinary text without R code
+
+  |                                                                              |...............................................                       |  67%
+label: run_macs2
+INFO  @ Wed, 02 Mar 2022 08:17:31: 
+# Command line: callpeak -t ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter/shard-0/execution/RCC4_N_HIF2A_1.sorted.nodup.bam ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter/shard-1/execution/RCC4_N_HIF2A_2.sorted.nodup.bam -c ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter_ctl/shard-0/execution/RCC4_N_HIF1AHIF2ACtrl_1.sorted.nodup.bam ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter_ctl/shard-1/execution/RCC4_N_HIF1AHIF2ACtrl_2.sorted.nodup.bam -f BAMPE -g hs -n RCC4_N_HIF2A -q 0.1 --call-summits --outdir ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF2A
+# ARGUMENTS LIST:
+# name = RCC4_N_HIF2A
+# format = BAMPE
+# ChIP-seq file = ['../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter/shard-0/execution/RCC4_N_HIF2A_1.sorted.nodup.bam', '../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter/shard-1/execution/RCC4_N_HIF2A_2.sorted.nodup.bam']
+# control file = ['../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter_ctl/shard-0/execution/RCC4_N_HIF1AHIF2ACtrl_1.sorted.nodup.bam', '../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF2A/chip/aaea037d-cda9-4f48-8e1a-1eb201a0b313/call-filter_ctl/shard-1/execution/RCC4_N_HIF1AHIF2ACtrl_2.sorted.nodup.bam']
+# effective genome size = 2.70e+09
+# band width = 300
+# model fold = [5, 50]
+# qvalue cutoff = 1.00e-01
+# The maximum gap between significant sites is assigned as the read length/tag size.
+# The minimum length of peaks is assigned as the predicted fragment length "d".
+# Larger dataset will be scaled towards smaller dataset.
+# Range for calculating regional lambda is: 1000 bps and 10000 bps
+# Broad region calling is off
+# Paired-End mode is on
+# Searching for subpeak summits is on
+ 
+INFO  @ Wed, 02 Mar 2022 08:17:31: 
+# Command line: callpeak -t ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter/shard-0/execution/RCC4_N_HIF1A_1.sorted.nodup.bam ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter/shard-1/execution/RCC4_N_HIF1A_2.sorted.nodup.bam -c ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter_ctl/shard-0/execution/RCC4_N_HIF1AHIF2ACtrl_1.sorted.nodup.bam ../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter_ctl/shard-1/execution/RCC4_N_HIF1AHIF2ACtrl_2.sorted.nodup.bam -f BAMPE -g hs -n RCC4_N_HIF1A -q 0.1 --call-summits --outdir ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF1A
+# ARGUMENTS LIST:
+# name = RCC4_N_HIF1A
+# format = BAMPE
+# ChIP-seq file = ['../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter/shard-0/execution/RCC4_N_HIF1A_1.sorted.nodup.bam', '../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter/shard-1/execution/RCC4_N_HIF1A_2.sorted.nodup.bam']
+# control file = ['../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter_ctl/shard-0/execution/RCC4_N_HIF1AHIF2ACtrl_1.sorted.nodup.bam', '../../../20200519_reprocessing_HIF_ChIP-Seq/RCC4_N_HIF1A/chip/c0ee8131-ea88-4d54-bbc7-bd6393815785/call-filter_ctl/shard-1/execution/RCC4_N_HIF1AHIF2ACtrl_2.sorted.nodup.bam']
+# effective genome size = 2.70e+09
+# band width = 300
+# model fold = [5, 50]
+# qvalue cutoff = 1.00e-01
+# The maximum gap between significant sites is assigned as the read length/tag size.
+# The minimum length of peaks is assigned as the predicted fragment length "d".
+# Larger dataset will be scaled towards smaller dataset.
+# Range for calculating regional lambda is: 1000 bps and 10000 bps
+# Broad region calling is off
+# Paired-End mode is on
+# Searching for subpeak summits is on
+ 
+INFO  @ Wed, 02 Mar 2022 08:17:31: #1 read fragment files... 
+INFO  @ Wed, 02 Mar 2022 08:17:31: #1 read fragment files... 
+INFO  @ Wed, 02 Mar 2022 08:17:31: #1 read treatment fragments... 
+INFO  @ Wed, 02 Mar 2022 08:17:31: #1 read treatment fragments... 
+INFO  @ Wed, 02 Mar 2022 08:17:35:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:17:35:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:17:38:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:17:38:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:17:42:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:17:42:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:17:45:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:17:45:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:17:49:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:17:49:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:17:52:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:17:52:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:17:55:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:17:55:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:17:59:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:17:59:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:18:02:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:18:02:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:18:06:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:18:06:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:18:09:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:18:09:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:18:13:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:18:13:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:18:16:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:18:16:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:18:19:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:18:19:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:18:23:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:18:23:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:18:26:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:18:27:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:18:30:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:18:30:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:18:33:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:18:34:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:18:36: 18689158 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:18:37:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:18:37: 19213883 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:18:40:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:18:41:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:18:43:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:18:45:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:18:47:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:18:48:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:18:50:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:18:52:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:18:54:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:18:55:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:18:58:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:18:59:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:19:01:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:19:02:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:19:05:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:19:06:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:19:08:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:19:09:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:19:12:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:19:13:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:19:15:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:19:16:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:19:19:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:19:19:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:19:22:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:19:23:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:19:26:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:19:27:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:19:30:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:19:30:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:19:33:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:19:33:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:19:37:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:19:37:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:19:40:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:19:40:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:19:44:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:19:44:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:19:47:  20000000 
+INFO  @ Wed, 02 Mar 2022 08:19:47:  20000000 
+INFO  @ Wed, 02 Mar 2022 08:19:50:  21000000 
+INFO  @ Wed, 02 Mar 2022 08:19:51:  21000000 
+INFO  @ Wed, 02 Mar 2022 08:19:51: 21199923 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:19:52: 21394832 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:20:22: #1.2 read input fragments... 
+INFO  @ Wed, 02 Mar 2022 08:20:25: #1.2 read input fragments... 
+INFO  @ Wed, 02 Mar 2022 08:20:26:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:20:29:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:20:29:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:20:32:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:20:33:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:20:35:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:20:36:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:20:39:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:20:39:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:20:42:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:20:43:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:20:46:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:20:46:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:20:49:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:20:50:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:20:53:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:20:53:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:20:56:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:20:57:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:20:59:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:21:00:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:21:03:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:21:03:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:21:06:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:21:07:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:21:09:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:21:10:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:21:13:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:21:14:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:21:16:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:21:17:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:21:20:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:21:21:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:21:23:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:21:24:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:21:27:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:21:27:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:21:30:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:21:31:  20000000 
+INFO  @ Wed, 02 Mar 2022 08:21:33:  20000000 
+INFO  @ Wed, 02 Mar 2022 08:21:34:  21000000 
+INFO  @ Wed, 02 Mar 2022 08:21:37:  21000000 
+INFO  @ Wed, 02 Mar 2022 08:21:38:  22000000 
+INFO  @ Wed, 02 Mar 2022 08:21:40:  22000000 
+INFO  @ Wed, 02 Mar 2022 08:21:41:  23000000 
+INFO  @ Wed, 02 Mar 2022 08:21:44:  23000000 
+INFO  @ Wed, 02 Mar 2022 08:21:45:  24000000 
+INFO  @ Wed, 02 Mar 2022 08:21:47:  24000000 
+INFO  @ Wed, 02 Mar 2022 08:21:48:  25000000 
+INFO  @ Wed, 02 Mar 2022 08:21:51:  25000000 
+INFO  @ Wed, 02 Mar 2022 08:21:52:  26000000 
+INFO  @ Wed, 02 Mar 2022 08:21:54:  26000000 
+INFO  @ Wed, 02 Mar 2022 08:21:55:  27000000 
+INFO  @ Wed, 02 Mar 2022 08:21:58:  27000000 
+INFO  @ Wed, 02 Mar 2022 08:21:58:  28000000 
+INFO  @ Wed, 02 Mar 2022 08:22:01:  28000000 
+INFO  @ Wed, 02 Mar 2022 08:22:02:  29000000 
+INFO  @ Wed, 02 Mar 2022 08:22:04:  29000000 
+INFO  @ Wed, 02 Mar 2022 08:22:05:  30000000 
+INFO  @ Wed, 02 Mar 2022 08:22:08:  30000000 
+INFO  @ Wed, 02 Mar 2022 08:22:08:  31000000 
+INFO  @ Wed, 02 Mar 2022 08:22:11:  31000000 
+INFO  @ Wed, 02 Mar 2022 08:22:12:  32000000 
+INFO  @ Wed, 02 Mar 2022 08:22:15:  32000000 
+INFO  @ Wed, 02 Mar 2022 08:22:15:  33000000 
+INFO  @ Wed, 02 Mar 2022 08:22:17: 33463782 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:22:18:  33000000 
+INFO  @ Wed, 02 Mar 2022 08:22:20: 33463782 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:22:21:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:22:23:  1000000 
+INFO  @ Wed, 02 Mar 2022 08:22:24:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:22:27:  2000000 
+INFO  @ Wed, 02 Mar 2022 08:22:28:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:22:30:  3000000 
+INFO  @ Wed, 02 Mar 2022 08:22:31:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:22:33:  4000000 
+INFO  @ Wed, 02 Mar 2022 08:22:35:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:22:37:  5000000 
+INFO  @ Wed, 02 Mar 2022 08:22:38:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:22:40:  6000000 
+INFO  @ Wed, 02 Mar 2022 08:22:42:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:22:44:  7000000 
+INFO  @ Wed, 02 Mar 2022 08:22:45:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:22:47:  8000000 
+INFO  @ Wed, 02 Mar 2022 08:22:49:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:22:51:  9000000 
+INFO  @ Wed, 02 Mar 2022 08:22:52:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:22:54:  10000000 
+INFO  @ Wed, 02 Mar 2022 08:22:56:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:22:57:  11000000 
+INFO  @ Wed, 02 Mar 2022 08:22:59:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:23:01:  12000000 
+INFO  @ Wed, 02 Mar 2022 08:23:03:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:23:04:  13000000 
+INFO  @ Wed, 02 Mar 2022 08:23:06:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:23:08:  14000000 
+INFO  @ Wed, 02 Mar 2022 08:23:10:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:23:11:  15000000 
+INFO  @ Wed, 02 Mar 2022 08:23:13:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:23:15:  16000000 
+INFO  @ Wed, 02 Mar 2022 08:23:17:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:23:18:  17000000 
+INFO  @ Wed, 02 Mar 2022 08:23:20:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:23:21:  18000000 
+INFO  @ Wed, 02 Mar 2022 08:23:24:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:23:25:  19000000 
+INFO  @ Wed, 02 Mar 2022 08:23:27:  20000000 
+INFO  @ Wed, 02 Mar 2022 08:23:28:  20000000 
+INFO  @ Wed, 02 Mar 2022 08:23:31:  21000000 
+INFO  @ Wed, 02 Mar 2022 08:23:32:  21000000 
+INFO  @ Wed, 02 Mar 2022 08:23:34:  22000000 
+INFO  @ Wed, 02 Mar 2022 08:23:35:  22000000 
+INFO  @ Wed, 02 Mar 2022 08:23:38:  23000000 
+INFO  @ Wed, 02 Mar 2022 08:23:39:  23000000 
+INFO  @ Wed, 02 Mar 2022 08:23:42:  24000000 
+INFO  @ Wed, 02 Mar 2022 08:23:42:  24000000 
+INFO  @ Wed, 02 Mar 2022 08:23:45:  25000000 
+INFO  @ Wed, 02 Mar 2022 08:23:46:  25000000 
+INFO  @ Wed, 02 Mar 2022 08:23:49:  26000000 
+INFO  @ Wed, 02 Mar 2022 08:23:49:  26000000 
+INFO  @ Wed, 02 Mar 2022 08:23:52:  27000000 
+INFO  @ Wed, 02 Mar 2022 08:23:52:  27000000 
+INFO  @ Wed, 02 Mar 2022 08:23:56:  28000000 
+INFO  @ Wed, 02 Mar 2022 08:23:56:  28000000 
+INFO  @ Wed, 02 Mar 2022 08:23:59:  29000000 
+INFO  @ Wed, 02 Mar 2022 08:23:59:  29000000 
+INFO  @ Wed, 02 Mar 2022 08:24:03: 29979996 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:24:03: 29979996 fragments have been read. 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 mean fragment size is determined as 231.4 bp from treatment 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 note: mean fragment size in control is 211.8 bp -- value ignored 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 fragment size = 231.4 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1  total fragments in treatment: 39889081 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 user defined the maximum fragments... 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 filter out redundant fragments by allowing at most 1 identical fragment(s) 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 mean fragment size is determined as 235.8 bp from treatment 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 note: mean fragment size in control is 211.8 bp -- value ignored 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 fragment size = 235.8 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1  total fragments in treatment: 40608715 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 user defined the maximum fragments... 
+INFO  @ Wed, 02 Mar 2022 08:24:53: #1 filter out redundant fragments by allowing at most 1 identical fragment(s) 
+INFO  @ Wed, 02 Mar 2022 08:26:02: #1  fragments after filtering in treatment: 40600599 
+INFO  @ Wed, 02 Mar 2022 08:26:02: #1  Redundant rate of treatment: 0.00 
+INFO  @ Wed, 02 Mar 2022 08:26:02: #1  total fragments in control: 63443778 
+INFO  @ Wed, 02 Mar 2022 08:26:02: #1 user defined the maximum fragments... 
+INFO  @ Wed, 02 Mar 2022 08:26:02: #1 filter out redundant fragments by allowing at most 1 identical fragment(s) 
+INFO  @ Wed, 02 Mar 2022 08:26:07: #1  fragments after filtering in treatment: 39881621 
+INFO  @ Wed, 02 Mar 2022 08:26:07: #1  Redundant rate of treatment: 0.00 
+INFO  @ Wed, 02 Mar 2022 08:26:07: #1  total fragments in control: 63443778 
+INFO  @ Wed, 02 Mar 2022 08:26:07: #1 user defined the maximum fragments... 
+INFO  @ Wed, 02 Mar 2022 08:26:07: #1 filter out redundant fragments by allowing at most 1 identical fragment(s) 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #1  fragments after filtering in control: 63432886 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #1  Redundant rate of control: 0.00 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #1 finished! 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #2 Build Peak Model... 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #2 Skipped... 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #3 Call peaks... 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #3 Going to call summits inside each peak ... 
+INFO  @ Wed, 02 Mar 2022 08:27:50: #3 Pre-compute pvalue-qvalue table... 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #1  fragments after filtering in control: 63432886 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #1  Redundant rate of control: 0.00 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #1 finished! 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #2 Build Peak Model... 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #2 Skipped... 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #3 Call peaks... 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #3 Going to call summits inside each peak ... 
+INFO  @ Wed, 02 Mar 2022 08:28:09: #3 Pre-compute pvalue-qvalue table... 
+INFO  @ Wed, 02 Mar 2022 08:34:30: #3 Call peaks for each chromosome... 
+INFO  @ Wed, 02 Mar 2022 08:35:08: #3 Call peaks for each chromosome... 
+INFO  @ Wed, 02 Mar 2022 08:37:44: #4 Write output xls file... ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF1A/RCC4_N_HIF1A_peaks.xls 
+INFO  @ Wed, 02 Mar 2022 08:37:44: #4 Write peak in narrowPeak format file... ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF1A/RCC4_N_HIF1A_peaks.narrowPeak 
+INFO  @ Wed, 02 Mar 2022 08:37:44: #4 Write summits bed file... ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF1A/RCC4_N_HIF1A_summits.bed 
+INFO  @ Wed, 02 Mar 2022 08:37:44: Done! 
+INFO  @ Wed, 02 Mar 2022 08:38:35: #4 Write output xls file... ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF2A/RCC4_N_HIF2A_peaks.xls 
+INFO  @ Wed, 02 Mar 2022 08:38:35: #4 Write peak in narrowPeak format file... ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF2A/RCC4_N_HIF2A_peaks.narrowPeak 
+INFO  @ Wed, 02 Mar 2022 08:38:35: #4 Write summits bed file... ../../results/s7-HIF-binding-site/s7-1-ChIP-Seq/macs_out/RCC4_N_HIF2A/RCC4_N_HIF2A_summits.bed 
+INFO  @ Wed, 02 Mar 2022 08:38:35: Done! 
+  |                                                                              |...................................................                   |  72%
+  ordinary text without R code
+
+  |                                                                              |......................................................                |  78%
+label: filter_macs_output_with_FDR
+  |                                                                              |..........................................................            |  83%
+  ordinary text without R code
+
+  |                                                                              |..............................................................        |  89%
+label: identify_closest_HRE
+  |                                                                              |..................................................................    |  94%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: sessionInfo
+
+output file: s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.knit.md
+
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.md --to html4 --from gfm --output s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
+
+Preview created: s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.html
+
+Output created: s7-1-curate-ENCODE-pipeline-processed-ChIP-Seq-data.md
+> 
+> if(TRUE){
++     full.rmd.path <- normalizePath(args[1])
++ 
++     doc.dir <- file.path(
++         gsub("/R/", "/doc/", dirname(full.rmd.path))
++     )
++ 
++     create.dir <- function(dir.name){
++         if(dir.exists(dir.name) == FALSE) {
++             dir.create(dir.name, recursive = TRUE)
++         }
++     }
++ 
++     create.dir(doc.dir)
++ 
++     ## Move knitr output files to doc dir
++     non.rmd.files <- grep(
++         list.files(
++             dirname(full.rmd.path),
++             pattern = gsub(".rmd", "", basename(full.rmd.path)),
++             full.names = TRUE
++         ),
++         pattern = ".rmd$",
++         inv = TRUE,
++         value = TRUE
++     )
++ 
++     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
++     
++     file.rename(
++         from = file.path(dirname(full.rmd.path), non.rmd.files),
++         to = file.path(doc.dir, non.rmd.files)
++     )
++ 
++     ## If figure directory exists
++     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
++ 
++     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
++ 
++         file.mv.cmd <- paste(
++             "rsync", "--remove-source-files", "-r",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             file.path(doc.dir)
++         )
++ 
++         system(file.mv.cmd)
++ 
++         empty.file.rm.cmd <- paste(
++             "find",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             "-type", "d",
++             "-empty", "-delete"
++         )
++ 
++         system(empty.file.rm.cmd)
++         
++     } else {"No output dir"}
++     
++ } else {
++     "knitr output not moved"
++ }
+[1] "No output dir"
+> 
+> args <- commandArgs(trailingOnly = TRUE)
+> 
+> library(rmarkdown)
+> rmarkdown::render(args[1])
+
+
+processing file: s7-2-HIF1A-and-HIF2A-binding-ratio.rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |.......                                                               |  10%
+   inline R code fragments
+
+  |                                                                              |..............                                                        |  20%
+label: load_libraries (with options) 
+List of 2
+ $ message: logi FALSE
+ $ warning: logi FALSE
+
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+Loading required package: stats4
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: GenomicRanges
+Loading required package: AnnotationDbi
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: SummarizedExperiment
+Loading required package: DelayedArray
+Loading required package: matrixStats
+
+Attaching package: 'matrixStats'
+
+The following objects are masked from 'package:Biobase':
+
+    anyMissing, rowMedians
+
+
+Attaching package: 'DelayedArray'
+
+The following objects are masked from 'package:matrixStats':
+
+    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
+
+The following objects are masked from 'package:base':
+
+    aperm, apply, rowsum
+
+
+
+Attaching package: 'dplyr'
+
+The following object is masked from 'package:kableExtra':
+
+    group_rows
+
+The following object is masked from 'package:matrixStats':
+
+    count
+
+The following object is masked from 'package:AnnotationDbi':
+
+    select
+
+The following object is masked from 'package:Biobase':
+
+    combine
+
+The following objects are masked from 'package:GenomicRanges':
+
+    intersect, setdiff, union
+
+The following object is masked from 'package:GenomeInfoDb':
+
+    intersect
+
+The following objects are masked from 'package:IRanges':
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following objects are masked from 'package:BiocGenerics':
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:dplyr':
+
+    between, first, last
+
+The following object is masked from 'package:SummarizedExperiment':
+
+    shift
+
+The following object is masked from 'package:GenomicRanges':
+
+    shift
+
+The following object is masked from 'package:IRanges':
+
+    shift
+
+The following objects are masked from 'package:S4Vectors':
+
+    first, second
+
+  |                                                                              |.....................                                                 |  30%
+  ordinary text without R code
+
+  |                                                                              |............................                                          |  40%
+label: positional_relationship_of_novel_tss_and_hif_binding_sites
+  |                                                                              |...................................                                   |  50%
+  ordinary text without R code
+
+  |                                                                              |..........................................                            |  60%
+label: export_HIF_binding_sites_information
+  |                                                                              |.................................................                     |  70%
+  ordinary text without R code
+
+  |                                                                              |........................................................              |  80%
+label: assign_closest_hif_binding_sites_to_TSS
+  |                                                                              |...............................................................       |  90%
+  ordinary text without R code
+
+  |                                                                              |......................................................................| 100%
+label: sessionInfo
+
+output file: s7-2-HIF1A-and-HIF2A-binding-ratio.knit.md
+
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s7-2-HIF1A-and-HIF2A-binding-ratio.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s7-2-HIF1A-and-HIF2A-binding-ratio.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
+/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s7-2-HIF1A-and-HIF2A-binding-ratio.md --to html4 --from gfm --output s7-2-HIF1A-and-HIF2A-binding-ratio.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
+
+Preview created: s7-2-HIF1A-and-HIF2A-binding-ratio.html
+
+Output created: s7-2-HIF1A-and-HIF2A-binding-ratio.md
+Warning message:
+package 'DiffBind' was built under R version 4.0.2 
+> 
+> if(TRUE){
++     full.rmd.path <- normalizePath(args[1])
++ 
++     doc.dir <- file.path(
++         gsub("/R/", "/doc/", dirname(full.rmd.path))
++     )
++ 
++     create.dir <- function(dir.name){
++         if(dir.exists(dir.name) == FALSE) {
++             dir.create(dir.name, recursive = TRUE)
++         }
++     }
++ 
++     create.dir(doc.dir)
++ 
++     ## Move knitr output files to doc dir
++     non.rmd.files <- grep(
++         list.files(
++             dirname(full.rmd.path),
++             pattern = gsub(".rmd", "", basename(full.rmd.path)),
++             full.names = TRUE
++         ),
++         pattern = ".rmd$",
++         inv = TRUE,
++         value = TRUE
++     )
++ 
++     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
++     
++     file.rename(
++         from = file.path(dirname(full.rmd.path), non.rmd.files),
++         to = file.path(doc.dir, non.rmd.files)
++     )
++ 
++     ## If figure directory exists
++     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
++ 
++     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
++ 
++         file.mv.cmd <- paste(
++             "rsync", "--remove-source-files", "-r",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             file.path(doc.dir)
++         )
++ 
++         system(file.mv.cmd)
++ 
++         empty.file.rm.cmd <- paste(
++             "find",
++             file.path(dirname(full.rmd.path), non.rmd.dir),
++             "-type", "d",
++             "-empty", "-delete"
++         )
++ 
++         system(empty.file.rm.cmd)
++         
++     } else {"No output dir"}
++     
++ } else {
++     "knitr output not moved"
++ }
+[1] "No output dir"
+> 
