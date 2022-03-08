@@ -16,7 +16,7 @@ cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/s10-additio
 
 Rscript ../run_rmd.R s10-1-validation-of-HP5-by-RT-qPCR.rmd
 Rscript ../run_rmd.R s10-2-HP5-dynamic-range.rmd
-Rscript ../run_rmd.R s10-3-comparison-with-orthogonal-studies.rmd
+Rscript ../run_rmd.R s10-3-comparison-with-orthogonal-methods.rmd
 
 
 ## Template for sbatch
