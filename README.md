@@ -1,6 +1,6 @@
 # Introduction
 
-This repository contains the pipeline for **Isoform-resolved mRNA profiling of ribosome load defines interplay of HIF and mTOR dysregulation in kidney cancer** (Sugimoto and Ratcliffe).
+This repository contains the pipeline for **"Isoform-resolved mRNA profiling of ribosome load defines interplay of HIF and mTOR dysregulation in kidney cancer"** (Sugimoto and Ratcliffe).
 
 This pipeline can generate most of plots and results presented in the article using the following sequence data deposited in ArrayExpress as input:
 
@@ -14,12 +14,12 @@ The script to run the entire pipeline is located at `master_scripts` directory. 
 
 # Prerequisite
 
-Two `conda` environments summarised in `./conda_environment` must be created before the analysis. A few additional packages may be required for some of the analyses.
+Two `conda` environments summarised in `conda_environment` must be created before the analysis. A few additional packages may be required for some of the analyses.
 
 ## Required data
 
 - Raw sequence data (available from ArrayExpress, HP5: E-MTAB-10689, 5′ end-Seq of total mRNAs: E-MTAB-10688)
-- ERCC RNA sequence: the sequences downloaded from NIST (https://www-s.nist.gov/srmors/certificates/documents/SRM2374_putative_T7_products_NoPolyA_v1.fasta) should be stored at `./data/ERCC_sequence`. The sequence file is also available from this github repository.
+- ERCC RNA sequence: the sequences downloaded from NIST (https://www-s.nist.gov/srmors/certificates/documents/SRM2374_putative_T7_products_NoPolyA_v1.fasta) should be stored at `data/ERCC_sequence`. The sequence file is also available from this github repository.
 - Human CAGE data from FANTOM5
 
 ## Required software
@@ -103,8 +103,3 @@ Finally, the effect of mTOR inhibition on translational efficiency is evaluated 
 Most of analyses used for the publication are performed in this section.
 
 ## **s10 Additional analysis**
-
-
-# Analysis outputs
-
-`doc` stores the outputs of the `rmakdown` scripts. The files contain the scripts, documentations and outputs except those exported as independent files that are stored in `results`.
