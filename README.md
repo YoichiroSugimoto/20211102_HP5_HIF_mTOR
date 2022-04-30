@@ -33,7 +33,7 @@ In addition to the software included in the `conda` environments, the following 
 
 ## Structure
 
-The analyses consist of the following 9 steps:
+The analyses consist of the following steps:
 
 - sp-0 Annotation preparation
 - s1 sequence read preprocessing
