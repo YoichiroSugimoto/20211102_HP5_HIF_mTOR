@@ -1,18 +1,24 @@
 # Introduction
 
-This pipeline performs the analyses of high-resolution polysome profiling followed by 5' end-Seq (HP5) to understand mTOR and VHL/HIF dependent translational regulation.
+This repository contains the pipeline for **Isoform-resolved mRNA profiling of ribosome load defines interplay of HIF and mTOR dysregulation in kidney cancer** (Sugimoto and Ratcliffe).
+
+This pipeline can generate most of plots and results presented in the article using the following sequence data deposited in ArrayExpress as input:
+
+- HP5: E-MTAB-10689
+- 5′ end-Seq of total mRNAs: E-MTAB-10688
+
 
 # Usage
 
-Master script to run all the scripts at once is located at `./master_scripts`. It is also possible to run individual scripts in `./R` directory in a sequential manner according to the index.
+The script to run the entire pipeline is located at `master_scripts` directory. The output of the analyses is stored in `doc` directory.
 
 # Prerequisite
 
-Two `conda` environments summarised in `./conda_environment` must be created before the analysis. A few additional packages may be required for the individual analyses.
+Two `conda` environments summarised in `./conda_environment` must be created before the analysis. A few additional packages may be required for some of the analyses.
 
 ## Required data
 
-- Raw sequence data (available from ArrayExpress, HP5: xx, 5′ end-Seq of total mRNAs: xx)
+- Raw sequence data (available from ArrayExpress, HP5: E-MTAB-10689, 5′ end-Seq of total mRNAs: E-MTAB-10688)
 - ERCC RNA sequence: the sequences downloaded from NIST (https://www-s.nist.gov/srmors/certificates/documents/SRM2374_putative_T7_products_NoPolyA_v1.fasta) should be stored at `./data/ERCC_sequence`. The sequence file is also available from this github repository.
 - Human CAGE data from FANTOM5
 
@@ -97,6 +103,7 @@ Finally, the effect of mTOR inhibition on translational efficiency is evaluated 
 Most of analyses used for the publication are performed in this section.
 
 ## **s10 Additional analysis**
+
 
 # Analysis outputs
 
