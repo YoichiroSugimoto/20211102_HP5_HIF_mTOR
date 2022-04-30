@@ -1,7 +1,7 @@
 ---
 title: "sp-1 Preprocessing annotation"
 author: "Yoichiro Sugimoto"
-date: "28 February, 2022"
+date: "27 April, 2022"
 vignette: >
   %\VignetteIndexEntry{Bioconductor style for PDF documents}
   %\VignetteEngine{knitr::rmarkdown}

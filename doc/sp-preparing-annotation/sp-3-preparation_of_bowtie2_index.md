@@ -1,7 +1,7 @@
 ---
 title: "sp-3 Preparation of bowtie2 index for the alignments to rRNA and ERCC"
 author: "Yoichiro Sugimoto"
-date: "28 February, 2022"
+date: "27 April, 2022"
 vignette: >
   %\VignetteIndexEntry{Bioconductor style for PDF documents}
   %\VignetteEngine{knitr::rmarkdown}

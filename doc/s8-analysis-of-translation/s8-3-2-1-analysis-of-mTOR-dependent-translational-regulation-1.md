@@ -1,7 +1,7 @@
 s8-3-2-1 Analysis of mTOR-dependent translational regulation (1/2)
 ================
 Yoichiro Sugimoto
-03 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Evaluation of translation changes by mTOR inhibition (gene
@@ -327,8 +327,8 @@ all.term.sig.dt <- plotTrslChangeByClass(
     ##  5:             Cytoplasmic ribosome 8.007361e-32 -0.78600  75  8952
     ##  6:           Mitochondrial ribosome 1.379340e-13 -0.49900  74  8952
     ##  7:              Translation factors 1.142642e-06 -0.31400  81  8952
-    ##  8: Chaperones and folding catalysts 7.632713e-09 -0.26100 166  8952
-    ##  9:             Membrane trafficking 6.919845e-02 -0.03670 908  8952
+    ##  8: Chaperones and folding catalysts 1.820175e-08 -0.25400 167  8952
+    ##  9:             Membrane trafficking 6.304979e-02 -0.03750 911  8952
     ## 10:                 Ubiquitin system 7.086448e-08  0.14000 526  8952
     ## 11:                       Proteasome 7.389658e-13 -0.53600  60  8952
     ## 12:                       Glycolysis 1.486860e-08 -0.52500  39  8952
@@ -347,11 +347,11 @@ all.term.sig.dt <- plotTrslChangeByClass(
     ##  5: 1.441325e-30      Down       **
     ##  6: 2.344879e-12      Down       **
     ##  7: 1.091083e-05      Down       **
-    ##  8: 1.144907e-07      Down       **
-    ##  9: 2.767938e-01      N.S.     <NA>
+    ##  8: 2.548245e-07      Down       **
+    ##  9: 2.521992e-01      N.S.     <NA>
     ## 10: 8.503738e-07        Up       **
     ## 11: 1.182345e-11      Down       **
-    ## 12: 2.081604e-07      Down       **
+    ## 12: 2.230290e-07      Down       **
     ## 13: 6.048246e-07      Down       **
     ## 14: 1.534523e-03      Down       **
     ## 15: 1.093296e-02      Down        *

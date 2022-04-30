@@ -1,7 +1,7 @@
 ---
 title: "sp-2 Preparation of STAR index"
 author: "Yoichiro Sugimoto"
-date: "28 February, 2022"
+date: "27 April, 2022"
 vignette: >
   %\VignetteIndexEntry{Bioconductor style for PDF documents}
   %\VignetteEngine{knitr::rmarkdown}
@@ -152,20 +152,20 @@ buildSTARIndex(star.cmd = "STAR", star.index.dir, genome.fa.file, all.tx.gtf)
 ```
 
 ```
-## Feb 28 11:11:15 ..... started STAR run
-##  Feb 28 11:11:15 ... starting to generate Genome files
-##  Feb 28 11:12:16 ... starting to sort Suffix Array. This may take a long time...
-##  Feb 28 11:12:32 ... sorting Suffix Array chunks and saving them to disk...
-##  Feb 28 12:01:14 ... loading chunks from disk, packing SA...
-##  Feb 28 12:02:11 ... finished generating suffix array
-##  Feb 28 12:02:11 ... generating Suffix Array index
-##  Feb 28 12:05:01 ... completed Suffix Array index
-##  Feb 28 12:05:01 ..... processing annotations GTF
-##  Feb 28 12:05:15 ..... inserting junctions into the genome indices
-##  Feb 28 12:08:17 ... writing Genome to disk ...
-##  Feb 28 12:08:18 ... writing Suffix Array to disk ...
-##  Feb 28 12:08:25 ... writing SAindex to disk
-##  Feb 28 12:08:26 ..... finished successfully
+## Apr 27 14:46:42 ..... started STAR run
+##  Apr 27 14:46:42 ... starting to generate Genome files
+##  Apr 27 14:47:44 ... starting to sort Suffix Array. This may take a long time...
+##  Apr 27 14:48:00 ... sorting Suffix Array chunks and saving them to disk...
+##  Apr 27 15:38:03 ... loading chunks from disk, packing SA...
+##  Apr 27 15:39:03 ... finished generating suffix array
+##  Apr 27 15:39:03 ... generating Suffix Array index
+##  Apr 27 15:42:17 ... completed Suffix Array index
+##  Apr 27 15:42:17 ..... processing annotations GTF
+##  Apr 27 15:42:31 ..... inserting junctions into the genome indices
+##  Apr 27 15:46:02 ... writing Genome to disk ...
+##  Apr 27 15:46:06 ... writing Suffix Array to disk ...
+##  Apr 27 15:46:20 ... writing SAindex to disk
+##  Apr 27 15:46:21 ..... finished successfully
 ```
 
 # Session information

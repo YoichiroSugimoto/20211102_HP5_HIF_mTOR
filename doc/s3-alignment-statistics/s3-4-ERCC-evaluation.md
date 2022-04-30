@@ -1,7 +1,7 @@
 s3-4 Evaluation of ERCC control
 ================
 Yoichiro Sugimoto
-01 March, 2022
+28 April, 2022
 
   - [Overview](#overview)
   - [Calculate sum of reads from ERCC

@@ -1,7 +1,7 @@
 s1-2 Preprocessing of fastq files
 ================
 Yoichiro Sugimoto
-28 February, 2022
+27 April, 2022
 
   - [Strategy](#strategy)
   - [Set up](#set-up)

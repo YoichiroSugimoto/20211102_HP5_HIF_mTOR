@@ -212,7 +212,7 @@ m.torin.tx.trsl.dt <- melt(
         "tss_name",
         "gene_name",
         "MRL_log2fc", "trsl_reg_class",
-        "mean_utr5_len", "cds_len",
+        "mean_utr5_len", "cds_len", "mean_tx_len",
         "tx_kozak_score",
         "tss_p1_TOP", "tss_p2_TOP", "tss_p3_TOP",
         "tss_p1_tTOP", "tss_p2_tTOP", "tss_p3_tTOP",
@@ -228,7 +228,8 @@ m.torin.tx.trsl.dt <- melt(
              variable == "MRL_treated" ~ "Torin_1",
              variable == "MRL_base" ~ "No_treatment"
          ),
-         log10_cds_len = log10(cds_len)
+         log10_cds_len = log10(cds_len),
+         log10_tx_len = log10(mean_tx_len)
      )]}
 
 
@@ -405,6 +406,58 @@ ggplot(
 
 
 ```
+
+### Transcript length
+
+
+```{r the_same_analysis_for_tx_len}
+
+m.torin.tx.trsl.dt[, `:=`(
+    tx_len_bin = cut(
+        log10_tx_len,
+        breaks = seq(2, 5, by = 0.25),
+        labels = paste0(
+            "(",
+            seq(2, 5, by = 0.25) %>% {.[1:(length(.) - 1)]} %>% {round(10^.)},
+            ", ",
+            seq(2, 5, by = 0.25) %>% {.[2:length(.)]} %>% {round(10^.)},
+            "]"
+        )
+    )
+)]
+
+ggplot(
+    data = m.torin.tx.trsl.dt[
+        !is.na(tx_len_bin)
+    ],
+    aes(
+        x = tx_len_bin,
+        y = MRL,
+        fill = treatment
+    )
+) +
+    geom_boxplot(
+        outlier.shape = NA
+    ) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("Transcript length [nts]")
+
+print("The number of samples for the boxplots")
+m.torin.tx.trsl.dt[!is.na(MRL)][
+    , table(treatment, tx_len_bin)
+] %>% print
+
+
+```
+
 
 ## uORF
 

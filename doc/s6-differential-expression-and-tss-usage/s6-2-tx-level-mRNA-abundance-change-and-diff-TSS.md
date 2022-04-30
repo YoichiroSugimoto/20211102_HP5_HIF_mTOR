@@ -2,7 +2,7 @@ s6-2 Transcript level mRNA abundance changes and differential TSS
 analysis
 ================
 Yoichiro Sugimoto
-02 March, 2022
+29 April, 2022
 
   - [Overview](#overview)
   - [Differential TSS usage analysis by

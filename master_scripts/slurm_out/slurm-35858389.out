@@ -1,528 +1,0 @@
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s6-1-gene-level-mRNA-abundance-change-analysis.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |.....                                                                 |   7%
-   inline R code fragments
-
-  |                                                                              |..........                                                            |  14%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-Loading required package: S4Vectors
-Loading required package: stats4
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: 'BiocGenerics'
-
-The following objects are masked from 'package:parallel':
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from 'package:stats':
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from 'package:base':
-
-    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    union, unique, unsplit, which, which.max, which.min
-
-
-Attaching package: 'S4Vectors'
-
-The following object is masked from 'package:base':
-
-    expand.grid
-
-Loading required package: IRanges
-Loading required package: GenomicRanges
-Loading required package: GenomeInfoDb
-Loading required package: SummarizedExperiment
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-Loading required package: DelayedArray
-Loading required package: matrixStats
-
-Attaching package: 'matrixStats'
-
-The following objects are masked from 'package:Biobase':
-
-    anyMissing, rowMedians
-
-
-Attaching package: 'DelayedArray'
-
-The following objects are masked from 'package:matrixStats':
-
-    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
-
-The following objects are masked from 'package:base':
-
-    aperm, apply, rowsum
-
-
-Attaching package: 'dplyr'
-
-The following object is masked from 'package:matrixStats':
-
-    count
-
-The following object is masked from 'package:Biobase':
-
-    combine
-
-The following objects are masked from 'package:GenomicRanges':
-
-    intersect, setdiff, union
-
-The following object is masked from 'package:GenomeInfoDb':
-
-    intersect
-
-The following objects are masked from 'package:IRanges':
-
-    collapse, desc, intersect, setdiff, slice, union
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, intersect, rename, setdiff, setequal, union
-
-The following objects are masked from 'package:BiocGenerics':
-
-    combine, intersect, setdiff, union
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-The following object is masked from 'package:SummarizedExperiment':
-
-    shift
-
-The following object is masked from 'package:GenomicRanges':
-
-    shift
-
-The following object is masked from 'package:IRanges':
-
-    shift
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, second
-
-  |                                                                              |...............                                                       |  21%
-  ordinary text without R code
-
-  |                                                                              |....................                                                  |  29%
-label: define_directory
-  |                                                                              |.........................                                             |  36%
-  ordinary text without R code
-
-  |                                                                              |..............................                                        |  43%
-label: read_start_count_data
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |........................................                              |  57%
-label: deseq2_set_up
-  |                                                                              |.............................................                         |  64%
-  ordinary text without R code
-
-  |                                                                              |..................................................                    |  71%
-label: prepare_list_of_comparisons
-  |                                                                              |.......................................................               |  79%
-  ordinary text without R code
-
-  |                                                                              |............................................................          |  86%
-label: Analsyis_of_VHL_dependent_mRNA_abundance_changes
-  |                                                                              |.................................................................     |  93%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s6-1-gene-level-mRNA-abundance-change-analysis.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s6-1-gene-level-mRNA-abundance-change-analysis.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s6-1-gene-level-mRNA-abundance-change-analysis.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s6-1-gene-level-mRNA-abundance-change-analysis.md --to html4 --from gfm --output s6-1-gene-level-mRNA-abundance-change-analysis.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s6-1-gene-level-mRNA-abundance-change-analysis.html
-
-Output created: s6-1-gene-level-mRNA-abundance-change-analysis.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |....                                                                  |   6%
-   inline R code fragments
-
-  |                                                                              |.........                                                             |  12%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'DRIMSeq'
-
-The following object is masked from 'package:base':
-
-    proportions
-
-Loading required package: S4Vectors
-Loading required package: stats4
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: 'BiocGenerics'
-
-The following objects are masked from 'package:parallel':
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from 'package:stats':
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from 'package:base':
-
-    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    union, unique, unsplit, which, which.max, which.min
-
-
-Attaching package: 'S4Vectors'
-
-The following object is masked from 'package:base':
-
-    expand.grid
-
-Loading required package: IRanges
-Loading required package: GenomicRanges
-Loading required package: GenomeInfoDb
-Loading required package: SummarizedExperiment
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-
-Attaching package: 'Biobase'
-
-The following object is masked from 'package:DRIMSeq':
-
-    samples
-
-Loading required package: DelayedArray
-Loading required package: matrixStats
-
-Attaching package: 'matrixStats'
-
-The following objects are masked from 'package:Biobase':
-
-    anyMissing, rowMedians
-
-
-Attaching package: 'DelayedArray'
-
-The following objects are masked from 'package:matrixStats':
-
-    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
-
-The following objects are masked from 'package:base':
-
-    aperm, apply, rowsum
-
-
-Attaching package: 'DESeq2'
-
-The following object is masked from 'package:DRIMSeq':
-
-    results
-
-Loading required package: BiocParallel
-Loading required package: AnnotationDbi
-Loading required package: RColorBrewer
-
-Attaching package: 'stageR'
-
-The following object is masked from 'package:methods':
-
-    getMethod
-
-
-Attaching package: 'dplyr'
-
-The following object is masked from 'package:AnnotationDbi':
-
-    select
-
-The following object is masked from 'package:matrixStats':
-
-    count
-
-The following object is masked from 'package:Biobase':
-
-    combine
-
-The following objects are masked from 'package:GenomicRanges':
-
-    intersect, setdiff, union
-
-The following object is masked from 'package:GenomeInfoDb':
-
-    intersect
-
-The following objects are masked from 'package:IRanges':
-
-    collapse, desc, intersect, setdiff, slice, union
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, intersect, rename, setdiff, setequal, union
-
-The following objects are masked from 'package:BiocGenerics':
-
-    combine, intersect, setdiff, union
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-The following object is masked from 'package:SummarizedExperiment':
-
-    shift
-
-The following object is masked from 'package:GenomicRanges':
-
-    shift
-
-The following object is masked from 'package:IRanges':
-
-    shift
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, second
-
-  |                                                                              |.............                                                         |  19%
-  ordinary text without R code
-
-  |                                                                              |..................                                                    |  25%
-label: define_directory
-  |                                                                              |......................                                                |  31%
-  ordinary text without R code
-
-  |                                                                              |..........................                                            |  38%
-label: diff_TSS_ratio_analysis_by_DEXSeq
-  |                                                                              |...............................                                       |  44%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: run_DEXSeq_analysis
-  |                                                                              |.......................................                               |  56%
-  ordinary text without R code
-
-  |                                                                              |............................................                          |  62%
-label: de_by_TSS
-  |                                                                              |................................................                      |  69%
-  ordinary text without R code
-
-  |                                                                              |....................................................                  |  75%
-label: run_deseq2_comparison_for_tss
-  |                                                                              |.........................................................             |  81%
-  ordinary text without R code
-
-  |                                                                              |.............................................................         |  88%
-label: classify_diff_TSS_evenets
-  |                                                                              |..................................................................    |  94%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.md --to html4 --from gfm --output s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.html
-
-Output created: s6-2-tx-level-mRNA-abundance-change-and-diff-TSS.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 

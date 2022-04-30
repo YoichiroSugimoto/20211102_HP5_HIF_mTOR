@@ -1,7 +1,7 @@
 ---
 title: "sp-4 KEGG and gene ID mapping"
 author: "Yoichiro Sugimoto"
-date: "28 February, 2022"
+date: "27 April, 2022"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}

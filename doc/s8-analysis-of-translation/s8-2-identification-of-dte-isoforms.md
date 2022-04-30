@@ -1,7 +1,7 @@
 s8-2 Identification of differentially translated mRNA isoforms
 ================
 Yoichiro Sugimoto
-02 March, 2022
+29 April, 2022
 
   - [Overview](#overview)
   - [Read raw and normalized count

@@ -216,9 +216,7 @@ venn.dt <- merge(
     all.y = TRUE
 )
 
-
-library("openxlsx")
-write.xlsx(
+openxlsx::write.xlsx(
     list("Supplementary Fig. 4a" = venn.dt),
     file = file.path(
         source.data.dir, "Supplementary Fig. 4 source data.xlsx"
@@ -232,6 +230,9 @@ venn.dt[gene_name == "YBX1"]
 
 ## Analysis of typical TOP genes in reported targets
 
+### Load "known" TOP mRNAs
+
+
 ```{r top_genes_in_reported_targets}
 
 known.top.dt <- read_excel(
@@ -241,6 +242,7 @@ known.top.dt <- read_excel(
 
 setnames(known.top.dt, "...1", "top_genes")
 
+## Correct nomenclature
 known.top.dt[, gene_name := ifelse(top_genes == "GNB2L1", "RACK1", top_genes)]
 
 known.top.dt <- merge(
@@ -262,23 +264,9 @@ m.venn.dt <- melt(
 
 m.venn.dt <- m.venn.dt[value == TRUE]
 
-ggplot(
-    data = m.venn.dt,
-    aes(
-        x = Source_data,
-        fill = known_TOP_mRNA 
-    )
-) +
-    geom_bar() +
-    scale_fill_manual(values = c("TRUE" = "#EE6677", "FALSE" = "gray40")) +
-    scale_x_discrete(guide = guide_axis(angle = 90)) +
-    theme(aspect.ratio = 2)
-
-m.venn.dt[, table(Source_data, known_TOP_mRNA)]
-
 ```
 
-## Confirmation that microarray used by Larsson et al. contains probes for TOP mRNAs
+### Import probe information for the microarray used by Larsson et al.
 
 
 ```{r probe_check}
@@ -314,7 +302,7 @@ probe.with.id.dt[, table(gene_id %in% known.top.dt[, gene_id])]
 
 ```
 
-## Analysis of ratio of canonical TOP mRNAs identified as mTOR hypersensitive by each study
+### Analysis of the proportion of "known" TOP mRNAs identified as mTOR hypersensitive by each study
 
 
 ```{r top_identified_by_each}
@@ -650,7 +638,7 @@ all.mtor.hif.dt[, data_source := factor(
 ```
 
 
-```{r another_visualization}
+```{r data_visualization_for_diff_reg_by_class}
 
 print(all.mtor.hif.dt[, table(data_source, Functional_classes)])
 

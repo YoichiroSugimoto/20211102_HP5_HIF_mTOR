@@ -1,7 +1,7 @@
 s8-1-2 Trasncript level translationa analysis
 ================
 Yoichiro Sugimoto
-02 March, 2022
+29 April, 2022
 
   - [Overview](#overview)
   - [Read raw and normalize count

@@ -1,7 +1,7 @@
 s7-1 Curate ENCODE pipeline processed ChIP-Seq data
 ================
 Yoichiro Sugimoto
-02 March, 2022
+29 April, 2022
 
   - [Overview](#overview)
   - [Environment setup and data

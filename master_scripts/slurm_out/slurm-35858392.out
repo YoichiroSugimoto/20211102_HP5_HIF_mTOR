@@ -1,1094 +1,0 @@
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |.....                                                                 |   7%
-   inline R code fragments
-
-  |                                                                              |..........                                                            |  14%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |...............                                                       |  21%
-  ordinary text without R code
-
-  |                                                                              |....................                                                  |  29%
-label: define_directory
-  |                                                                              |.........................                                             |  36%
-  ordinary text without R code
-
-  |                                                                              |..............................                                        |  43%
-label: load_diff_reg_data
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |........................................                              |  57%
-label: load_translation_data
-  |                                                                              |.............................................                         |  64%
-  ordinary text without R code
-
-  |                                                                              |..................................................                    |  71%
-label: classification_of_genes
-  |                                                                              |.......................................................               |  79%
-  ordinary text without R code
-
-  |                                                                              |............................................................          |  86%
-label: go_information
-  |                                                                              |.................................................................     |  93%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.md --to html4 --from gfm --output s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.html
-
-Output created: s9-1-1-transcriptional-and-translational-regulation_data_preprocessing.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-[1] "No output dir"
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-1-2-transcriptional-and-translational-regulation_VHL.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |...                                                                   |   4%
-   inline R code fragments
-
-  |                                                                              |.....                                                                 |   8%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |........                                                              |  12%
-  ordinary text without R code
-
-  |                                                                              |...........                                                           |  15%
-label: define_directory
-  |                                                                              |.............                                                         |  19%
-  ordinary text without R code
-
-  |                                                                              |................                                                      |  23%
-label: load_preprocessed_data
-  |                                                                              |...................                                                   |  27%
-  ordinary text without R code
-
-  |                                                                              |......................                                                |  31%
-label: analysis_of_VHL_dependent_mRNA_regulation_and_translational_regulation
-  |                                                                              |........................                                              |  35%
-  ordinary text without R code
-
-  |                                                                              |...........................                                           |  38%
-label: plot_for_r4 (with options) 
-List of 2
- $ fig.height: num 5
- $ fig.width : num 7
-
-  |                                                                              |..............................                                        |  42%
-  ordinary text without R code
-
-  |                                                                              |................................                                      |  46%
-label: similar_analysis_with_786O (with options) 
-List of 2
- $ fig.height: num 5
- $ fig.width : num 7
-
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |......................................                                |  54%
-label: compare_the_effect_size (with options) 
-List of 2
- $ fig.height: num 7
- $ fig.width : num 7
-
-  |                                                                              |........................................                              |  58%
-  ordinary text without R code
-
-  |                                                                              |...........................................                           |  62%
-label: expression_level_changes_of_mTOR_regulators
-  |                                                                              |..............................................                        |  65%
-  ordinary text without R code
-
-  |                                                                              |................................................                      |  69%
-label: corrleation_of_the_effect_of_translation_by_VHL_loss_and_mTOR_inhibition
-  |                                                                              |...................................................                   |  73%
-  ordinary text without R code
-
-  |                                                                              |......................................................                |  77%
-label: corrleation_of_the_effect_of_translation_by_VHL_loss_and_mTOR_inhibition_in_786O
-  |                                                                              |.........................................................             |  81%
-  ordinary text without R code
-
-  |                                                                              |...........................................................           |  85%
-label: qc_for_top_motif_length
-  |                                                                              |..............................................................        |  88%
-  ordinary text without R code
-
-  |                                                                              |.................................................................     |  92%
-label: top_motif_length_vs_VHL_loss_trsl
-  |                                                                              |...................................................................   |  96%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-1-2-transcriptional-and-translational-regulation_VHL.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-2-transcriptional-and-translational-regulation_VHL.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-1-2-transcriptional-and-translational-regulation_VHL.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-2-transcriptional-and-translational-regulation_VHL.md --to html4 --from gfm --output s9-1-2-transcriptional-and-translational-regulation_VHL.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-1-2-transcriptional-and-translational-regulation_VHL.html
-
-Output created: s9-1-2-transcriptional-and-translational-regulation_VHL.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-1-3-transcriptional-and-translational-regulation_EIF4E2.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |......                                                                |   8%
-   inline R code fragments
-
-  |                                                                              |............                                                          |  17%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-Loading required package: ggplot2
-
-********************************************************
-Note: As of version 1.0.0, cowplot does not change the
-  default ggplot2 theme anymore. To recover the previous
-  behavior, execute:
-  theme_set(theme_cowplot())
-********************************************************
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |..................                                                    |  25%
-  ordinary text without R code
-
-  |                                                                              |.......................                                               |  33%
-label: define_directory
-  |                                                                              |.............................                                         |  42%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: load_preprocessed_data
-  |                                                                              |.........................................                             |  58%
-  ordinary text without R code
-
-  |                                                                              |...............................................                       |  67%
-label: analyse_global_effect
-  |                                                                              |....................................................                  |  75%
-  ordinary text without R code
-
-  |                                                                              |..........................................................            |  83%
-label: comparisons of the effect of EIF4E2 KO
-  |                                                                              |................................................................      |  92%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-1-3-transcriptional-and-translational-regulation_EIF4E2.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-3-transcriptional-and-translational-regulation_EIF4E2.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-1-3-transcriptional-and-translational-regulation_EIF4E2.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-3-transcriptional-and-translational-regulation_EIF4E2.md --to html4 --from gfm --output s9-1-3-transcriptional-and-translational-regulation_EIF4E2.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-1-3-transcriptional-and-translational-regulation_EIF4E2.html
-
-Output created: s9-1-3-transcriptional-and-translational-regulation_EIF4E2.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |...                                                                   |   4%
-   inline R code fragments
-
-  |                                                                              |.....                                                                 |   8%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-Loading required package: ggplot2
-
-********************************************************
-Note: As of version 1.0.0, cowplot does not change the
-  default ggplot2 theme anymore. To recover the previous
-  behavior, execute:
-  theme_set(theme_cowplot())
-********************************************************
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |........                                                              |  12%
-  ordinary text without R code
-
-  |                                                                              |...........                                                           |  15%
-label: define_directory
-  |                                                                              |.............                                                         |  19%
-  ordinary text without R code
-
-  |                                                                              |................                                                      |  23%
-label: load_preprocessed_data
-  |                                                                              |...................                                                   |  27%
-  ordinary text without R code
-
-  |                                                                              |......................                                                |  31%
-label: analyze_GO_term_enrichment (with options) 
-List of 2
- $ fig.height: num 5
- $ fig.width : num 6
-
-  |                                                                              |........................                                              |  35%
-  ordinary text without R code
-
-  |                                                                              |...........................                                           |  38%
-label: hif_and_mTOR_on_glycolytic_genes
-  |                                                                              |..............................                                        |  42%
-  ordinary text without R code
-
-  |                                                                              |................................                                      |  46%
-label: VHL_dependent_mRNA_changes_and_mTOR_dependent_translation_changes
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |......................................                                |  54%
-label: export_table_for_publication
-  |                                                                              |........................................                              |  58%
-  ordinary text without R code
-
-  |                                                                              |...........................................                           |  62%
-label: analysis_of_mrna_vs_translation_by_protein_functions
-  |                                                                              |..............................................                        |  65%
-  ordinary text without R code
-
-  |                                                                              |................................................                      |  69%
-label: hif2a_hif1a_binding_ratio (with options) 
-List of 1
- $ fig.height: num 7
-
-  |                                                                              |...................................................                   |  73%
-  ordinary text without R code
-
-  |                                                                              |......................................................                |  77%
-label: analysis_of_hif2a_and_vascular_system_remodling_gene (with options) 
-List of 1
- $ fig.height: num 7
-
-  |                                                                              |.........................................................             |  81%
-  ordinary text without R code
-
-  |                                                                              |...........................................................           |  85%
-label: mTOR_inhibition_effect_upon_VHL_loss
-  |                                                                              |..............................................................        |  88%
-  ordinary text without R code
-
-  |                                                                              |.................................................................     |  92%
-label: sequence_features_glycolytic_angiogenesis_genes
-  |                                                                              |...................................................................   |  96%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.md --to html4 --from gfm --output s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.html
-
-Output created: s9-1-4-transcriptional-and-translational-regulation_intersection-of-VHL-and-mTOR-v2.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-2-1-alt-TSS-and-HIF.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |.......                                                               |  10%
-   inline R code fragments
-
-  |                                                                              |..............                                                        |  20%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |.....................                                                 |  30%
-  ordinary text without R code
-
-  |                                                                              |............................                                          |  40%
-label: load_data
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |..........................................                            |  60%
-label: alt_base_long_comparison_table_export
-  |                                                                              |.................................................                     |  70%
-  ordinary text without R code
-
-  |                                                                              |........................................................              |  80%
-label: cross_sample_comparison (with options) 
-List of 2
- $ fig.width : num 9
- $ fig.height: num 7
-
-  |                                                                              |...............................................................       |  90%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-2-1-alt-TSS-and-HIF.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-2-1-alt-TSS-and-HIF.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-2-1-alt-TSS-and-HIF.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-2-1-alt-TSS-and-HIF.md --to html4 --from gfm --output s9-2-1-alt-TSS-and-HIF.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-2-1-alt-TSS-and-HIF.html
-
-Output created: s9-2-1-alt-TSS-and-HIF.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-2-2-alt-TSS-translation-v4.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |..                                                                    |   3%
-   inline R code fragments
-
-  |                                                                              |....                                                                  |   5%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |......                                                                |   8%
-  ordinary text without R code
-
-  |                                                                              |.......                                                               |  11%
-label: import_alternate_TSS_summary_data
-  |                                                                              |.........                                                             |  13%
-  ordinary text without R code
-
-  |                                                                              |...........                                                           |  16%
-label: data_for_annotation
-  |                                                                              |.............                                                         |  18%
-  ordinary text without R code
-
-  |                                                                              |...............                                                       |  21%
-label: alternate_vs_base_TSS_sequence_features
-  |                                                                              |.................                                                     |  24%
-  ordinary text without R code
-
-  |                                                                              |..................                                                    |  26%
-label: data_filteration
-  |                                                                              |....................                                                  |  29%
-  ordinary text without R code
-
-  |                                                                              |......................                                                |  32%
-label: stats
-  |                                                                              |........................                                              |  34%
-  ordinary text without R code
-
-  |                                                                              |..........................                                            |  37%
-label: calculate_te_differences
-  |                                                                              |............................                                          |  39%
-  ordinary text without R code
-
-  |                                                                              |.............................                                         |  42%
-label: plot_te_differences (with options) 
-List of 2
- $ fig.width : num 7
- $ fig.height: num 18
-
-  |                                                                              |...............................                                       |  45%
-  ordinary text without R code
-
-  |                                                                              |.................................                                     |  47%
-label: sequence_features
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |.....................................                                 |  53%
-label: data_preprocessing_for_simulation
-  |                                                                              |.......................................                               |  55%
-  ordinary text without R code
-
-  |                                                                              |.........................................                             |  58%
-label: data_export_for_publication
-  |                                                                              |..........................................                            |  61%
-  ordinary text without R code
-
-  |                                                                              |............................................                          |  63%
-label: calculate_blocked_gene_level_MRL_estimate (with options) 
-List of 1
- $ fig.width: num 7
-
-  |                                                                              |..............................................                        |  66%
-  ordinary text without R code
-
-  |                                                                              |................................................                      |  68%
-label: plot_a_range_of_gene_level_MRL_log2_fold_change
-  |                                                                              |..................................................                    |  71%
-  ordinary text without R code
-
-  |                                                                              |....................................................                  |  74%
-label: preprocess_data_for_gene_level_analysis
-  |                                                                              |.....................................................                 |  76%
-  ordinary text without R code
-
-  |                                                                              |.......................................................               |  79%
-label: import_expression_data
-  |                                                                              |.........................................................             |  82%
-  ordinary text without R code
-
-  |                                                                              |...........................................................           |  84%
-label: processing_data_for_TSS_analysis
-  |                                                                              |.............................................................         |  87%
-  ordinary text without R code
-
-  |                                                                              |...............................................................       |  89%
-label: plot_data_for_examples
-  |                                                                              |................................................................      |  92%
-  ordinary text without R code
-
-  |                                                                              |..................................................................    |  95%
-label: plot_examples
-  |                                                                              |....................................................................  |  97%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-2-2-alt-TSS-translation-v4.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-2-2-alt-TSS-translation-v4.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-2-2-alt-TSS-translation-v4.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-2-2-alt-TSS-translation-v4.md --to html4 --from gfm --output s9-2-2-alt-TSS-translation-v4.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-2-2-alt-TSS-translation-v4.html
-
-Output created: s9-2-2-alt-TSS-translation-v4.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s9-3-1-mTOR-and-TSS-isoforms.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |.........                                                             |  12%
-   inline R code fragments
-
-  |                                                                              |..................                                                    |  25%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |..........................                                            |  38%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: data_import
-  |                                                                              |............................................                          |  62%
-  ordinary text without R code
-
-  |                                                                              |....................................................                  |  75%
-label: TSS_dependent_sensitivity_to_mTOR
-  |                                                                              |.............................................................         |  88%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s9-3-1-mTOR-and-TSS-isoforms.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-3-1-mTOR-and-TSS-isoforms.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s9-3-1-mTOR-and-TSS-isoforms.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s9-3-1-mTOR-and-TSS-isoforms.md --to html4 --from gfm --output s9-3-1-mTOR-and-TSS-isoforms.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s9-3-1-mTOR-and-TSS-isoforms.html
-
-Output created: s9-3-1-mTOR-and-TSS-isoforms.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 

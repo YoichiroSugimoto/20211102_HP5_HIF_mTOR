@@ -2,7 +2,7 @@ s9-1-1 Intersection of transcriptional and translational regulation
 (data preprocessing)
 ================
 Yoichiro Sugimoto
-03 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Summarization of differential gene expression regulation analysis

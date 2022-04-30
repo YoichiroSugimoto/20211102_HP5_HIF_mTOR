@@ -1,7 +1,7 @@
 s6-1 Gene level mRNA differential expression analysis
 ================
 Yoichiro Sugimoto
-02 March, 2022
+29 April, 2022
 
   - [Overview](#overview)
   - [Data preparation](#data-preparation)

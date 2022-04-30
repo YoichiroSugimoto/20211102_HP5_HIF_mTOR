@@ -1,7 +1,7 @@
 s2-2 Process aligned reads (UMI accounting and tss count export)
 ================
 Yoichiro Sugimoto
-01 March, 2022
+28 April, 2022
 
   - [Overview](#overview)
   - [Set up](#set-up)
@@ -501,7 +501,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4087485                                              ||
     ## ||    Successfully assigned alignments : 3871807 (94.7%)                      ||
-    ## ||    Running time : 0.09 minutes                                             ||
+    ## ||    Running time : 0.08 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo1.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -557,28 +557,28 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2727658                                              ||
     ## ||    Successfully assigned alignments : 2650525 (97.2%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo0A.bam...            ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1387740                                              ||
     ## ||    Successfully assigned alignments : 1303844 (94.0%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo0B.bam...            ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5055388                                              ||
     ## ||    Successfully assigned alignments : 4868647 (96.3%)                      ||
-    ## ||    Running time : 0.11 minutes                                             ||
+    ## ||    Running time : 0.10 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo1.bam...             ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3401828                                              ||
     ## ||    Successfully assigned alignments : 3287530 (96.6%)                      ||
-    ## ||    Running time : 0.06 minutes                                             ||
+    ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo2.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -592,7 +592,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3444366                                              ||
     ## ||    Successfully assigned alignments : 3310991 (96.1%)                      ||
-    ## ||    Running time : 0.04 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo4.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -620,7 +620,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2565801                                              ||
     ## ||    Successfully assigned alignments : 2496061 (97.3%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo8.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -641,14 +641,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5473635                                              ||
     ## ||    Successfully assigned alignments : 5198912 (95.0%)                      ||
-    ## ||    Running time : 0.13 minutes                                             ||
+    ## ||    Running time : 0.11 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo1.bam...             ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4052946                                              ||
     ## ||    Successfully assigned alignments : 3872056 (95.5%)                      ||
-    ## ||    Running time : 0.07 minutes                                             ||
+    ## ||    Running time : 0.06 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo2.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -662,7 +662,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2646085                                              ||
     ## ||    Successfully assigned alignments : 2553341 (96.5%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo4.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -676,7 +676,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2892451                                              ||
     ## ||    Successfully assigned alignments : 2817960 (97.4%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo6.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -704,28 +704,28 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 618458                                               ||
     ## ||    Successfully assigned alignments : 584437 (94.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo0B.bam...        ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4825896                                              ||
     ## ||    Successfully assigned alignments : 4707473 (97.5%)                      ||
-    ## ||    Running time : 0.09 minutes                                             ||
+    ## ||    Running time : 0.08 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo1.bam...         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4066319                                              ||
     ## ||    Successfully assigned alignments : 3963076 (97.5%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo2.bam...         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3783016                                              ||
     ## ||    Successfully assigned alignments : 3660593 (96.8%)                      ||
-    ## ||    Running time : 0.04 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo3.bam...         ||
     ## ||    Strand specific : stranded                                              ||
@@ -746,21 +746,21 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1018795                                              ||
     ## ||    Successfully assigned alignments : 981666 (96.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo6.bam...         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 985247                                               ||
     ## ||    Successfully assigned alignments : 953089 (96.7%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo7.bam...         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 866040                                               ||
     ## ||    Successfully assigned alignments : 834289 (96.3%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo8.bam...         ||
     ## ||    Strand specific : stranded                                              ||
@@ -830,7 +830,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 861279                                               ||
     ## ||    Successfully assigned alignments : 831748 (96.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo8.bam...         ||
     ## ||    Strand specific : stranded                                              ||
@@ -851,14 +851,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5902895                                              ||
     ## ||    Successfully assigned alignments : 5687404 (96.3%)                      ||
-    ## ||    Running time : 0.11 minutes                                             ||
+    ## ||    Running time : 0.10 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo1.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5556612                                              ||
     ## ||    Successfully assigned alignments : 5371820 (96.7%)                      ||
-    ## ||    Running time : 0.09 minutes                                             ||
+    ## ||    Running time : 0.08 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo2.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -879,7 +879,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2275890                                              ||
     ## ||    Successfully assigned alignments : 2203821 (96.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo5.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -900,7 +900,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2048599                                              ||
     ## ||    Successfully assigned alignments : 1997600 (97.5%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo8.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -921,7 +921,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 6620789                                              ||
     ## ||    Successfully assigned alignments : 6366028 (96.2%)                      ||
-    ## ||    Running time : 0.15 minutes                                             ||
+    ## ||    Running time : 0.13 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo1.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -963,7 +963,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2454163                                              ||
     ## ||    Successfully assigned alignments : 2387741 (97.3%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo7.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -984,21 +984,21 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2008054                                              ||
     ## ||    Successfully assigned alignments : 1879039 (93.6%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo0B.bam...          ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4758340                                              ||
     ## ||    Successfully assigned alignments : 4640588 (97.5%)                      ||
-    ## ||    Running time : 0.09 minutes                                             ||
+    ## ||    Running time : 0.08 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo1.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5549486                                              ||
     ## ||    Successfully assigned alignments : 5383132 (97.0%)                      ||
-    ## ||    Running time : 0.09 minutes                                             ||
+    ## ||    Running time : 0.08 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo2.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1047,7 +1047,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1058895                                              ||
     ## ||    Successfully assigned alignments : 1025175 (96.8%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo0A.bam...      ||
     ## ||    Strand specific : stranded                                              ||
@@ -1061,7 +1061,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4887915                                              ||
     ## ||    Successfully assigned alignments : 4774757 (97.7%)                      ||
-    ## ||    Running time : 0.09 minutes                                             ||
+    ## ||    Running time : 0.08 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo1.bam...       ||
     ## ||    Strand specific : stranded                                              ||
@@ -1082,7 +1082,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2590664                                              ||
     ## ||    Successfully assigned alignments : 2499700 (96.5%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo4.bam...       ||
     ## ||    Strand specific : stranded                                              ||
@@ -1131,7 +1131,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4343297                                              ||
     ## ||    Successfully assigned alignments : 4216302 (97.1%)                      ||
-    ## ||    Running time : 0.07 minutes                                             ||
+    ## ||    Running time : 0.06 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo1.bam...       ||
     ## ||    Strand specific : stranded                                              ||
@@ -1229,14 +1229,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2735000                                              ||
     ## ||    Successfully assigned alignments : 2668486 (97.6%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo7.bam...             ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2632968                                              ||
     ## ||    Successfully assigned alignments : 2574722 (97.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo8.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -1250,7 +1250,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 520264                                               ||
     ## ||    Successfully assigned alignments : 496822 (95.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo2.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -1264,7 +1264,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 980769                                               ||
     ## ||    Successfully assigned alignments : 949431 (96.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo4.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -1278,7 +1278,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 835485                                               ||
     ## ||    Successfully assigned alignments : 815269 (97.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo6.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -1292,14 +1292,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 900577                                               ||
     ## ||    Successfully assigned alignments : 881023 (97.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo8.bam...             ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1058100                                              ||
     ## ||    Successfully assigned alignments : 1035126 (97.8%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo1.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -1320,14 +1320,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 922874                                               ||
     ## ||    Successfully assigned alignments : 893296 (96.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo4.bam...             ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 989007                                               ||
     ## ||    Successfully assigned alignments : 958892 (97.0%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo5.bam...             ||
     ## ||    Strand specific : stranded                                              ||
@@ -1369,14 +1369,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2436589                                              ||
     ## ||    Successfully assigned alignments : 2357867 (96.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo3.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2926763                                              ||
     ## ||    Successfully assigned alignments : 2839621 (97.0%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo4.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1404,28 +1404,28 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2353907                                              ||
     ## ||    Successfully assigned alignments : 2301171 (97.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo8.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2586346                                              ||
     ## ||    Successfully assigned alignments : 2529189 (97.8%)                      ||
-    ## ||    Running time : 0.04 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo1.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 748208                                               ||
     ## ||    Successfully assigned alignments : 723214 (96.7%)                       ||
-    ## ||    Running time : 0.01 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo2.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1002038                                              ||
     ## ||    Successfully assigned alignments : 965561 (96.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo3.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1453,7 +1453,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 714596                                               ||
     ## ||    Successfully assigned alignments : 698848 (97.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo7.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1495,7 +1495,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 886454                                               ||
     ## ||    Successfully assigned alignments : 862579 (97.3%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo5.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1509,21 +1509,21 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 839310                                               ||
     ## ||    Successfully assigned alignments : 819025 (97.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo7.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 804056                                               ||
     ## ||    Successfully assigned alignments : 784163 (97.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo8.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 703317                                               ||
     ## ||    Successfully assigned alignments : 681544 (96.9%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo1.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1551,7 +1551,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2651042                                              ||
     ## ||    Successfully assigned alignments : 2579215 (97.3%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo5.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1586,14 +1586,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3089435                                              ||
     ## ||    Successfully assigned alignments : 2936082 (95.0%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo2.bam...           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2901990                                              ||
     ## ||    Successfully assigned alignments : 2792104 (96.2%)                      ||
-    ## ||    Running time : 0.04 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo3.bam...           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1642,14 +1642,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2167653                                              ||
     ## ||    Successfully assigned alignments : 2069072 (95.5%)                      ||
-    ## ||    Running time : 0.04 minutes                                             ||
+    ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo2.bam...         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2108517                                              ||
     ## ||    Successfully assigned alignments : 2034350 (96.5%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo3.bam...         ||
     ## ||    Strand specific : stranded                                              ||
@@ -1670,7 +1670,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2186887                                              ||
     ## ||    Successfully assigned alignments : 2138424 (97.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo6.bam...         ||
     ## ||    Strand specific : stranded                                              ||
@@ -1698,14 +1698,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2923244                                              ||
     ## ||    Successfully assigned alignments : 2802025 (95.9%)                      ||
-    ## ||    Running time : 0.06 minutes                                             ||
+    ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo2.bam...         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2605508                                              ||
     ## ||    Successfully assigned alignments : 2523071 (96.8%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo3.bam...         ||
     ## ||    Strand specific : stranded                                              ||
@@ -1761,7 +1761,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 13796719                                             ||
     ## ||    Successfully assigned alignments : 13114357 (95.1%)                     ||
-    ## ||    Running time : 0.15 minutes                                             ||
+    ## ||    Running time : 0.14 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_N_4.bam...                           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1775,7 +1775,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 16130518                                             ||
     ## ||    Successfully assigned alignments : 15338752 (95.1%)                     ||
-    ## ||    Running time : 0.19 minutes                                             ||
+    ## ||    Running time : 0.17 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_N_3.bam...                         ||
     ## ||    Strand specific : stranded                                              ||
@@ -1789,14 +1789,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 10483906                                             ||
     ## ||    Successfully assigned alignments : 9979229 (95.2%)                      ||
-    ## ||    Running time : 0.11 minutes                                             ||
+    ## ||    Running time : 0.10 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_H_1.bam...                           ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 18011169                                             ||
     ## ||    Successfully assigned alignments : 17304312 (96.1%)                     ||
-    ## ||    Running time : 0.20 minutes                                             ||
+    ## ||    Running time : 0.19 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_H_3.bam...                           ||
     ## ||    Strand specific : stranded                                              ||
@@ -1817,14 +1817,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 18182265                                             ||
     ## ||    Successfully assigned alignments : 17539487 (96.5%)                     ||
-    ## ||    Running time : 0.22 minutes                                             ||
+    ## ||    Running time : 0.20 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_H_3.bam...                         ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 12389080                                             ||
     ## ||    Successfully assigned alignments : 11936911 (96.4%)                     ||
-    ## ||    Running time : 0.12 minutes                                             ||
+    ## ||    Running time : 0.11 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_H_4.bam...                         ||
     ## ||    Strand specific : stranded                                              ||
@@ -1880,7 +1880,7 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5683044                                              ||
     ## ||    Successfully assigned alignments : 5452815 (95.9%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_HIF1B_N_4.bam...                         ||
     ## ||    Strand specific : stranded                                              ||
@@ -1922,14 +1922,14 @@ total.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 8197438                                              ||
     ## ||    Successfully assigned alignments : 7845978 (95.7%)                      ||
-    ## ||    Running time : 0.06 minutes                                             ||
+    ## ||    Running time : 0.07 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_noHIF1B_N_3.bam...                       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 9372800                                              ||
     ## ||    Successfully assigned alignments : 8997492 (96.0%)                      ||
-    ## ||    Running time : 0.08 minutes                                             ||
+    ## ||    Running time : 0.07 minutes                                             ||
     ## ||                                                                            ||
     ## || Write the final count table.                                               ||
     ## || Write the read assignment summary.                                         ||
@@ -2197,308 +2197,308 @@ dedup.count.dt <- geneCount(
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 397534                                               ||
-    ## ||    Successfully assigned alignments : 362871 (91.3%)                       ||
+    ## ||    Successfully assigned alignments : 362863 (91.3%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo0B.dedup.bam...      ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1502698                                              ||
-    ## ||    Successfully assigned alignments : 1393301 (92.7%)                      ||
+    ## ||    Successfully assigned alignments : 1393258 (92.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo1.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1521460                                              ||
-    ## ||    Successfully assigned alignments : 1436386 (94.4%)                      ||
+    ## ||    Successfully assigned alignments : 1436385 (94.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo2.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1431069                                              ||
-    ## ||    Successfully assigned alignments : 1364163 (95.3%)                      ||
+    ## ||    Successfully assigned alignments : 1364161 (95.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo3.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1953653                                              ||
-    ## ||    Successfully assigned alignments : 1868642 (95.6%)                      ||
+    ## ||    Successfully assigned alignments : 1868685 (95.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo4.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2613547                                              ||
-    ## ||    Successfully assigned alignments : 2518716 (96.4%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2518703 (96.4%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo5.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2923540                                              ||
-    ## ||    Successfully assigned alignments : 2822848 (96.6%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2822831 (96.6%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo6.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1953006                                              ||
-    ## ||    Successfully assigned alignments : 1891543 (96.9%)                      ||
+    ## ||    Successfully assigned alignments : 1891537 (96.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo7.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1465903                                              ||
-    ## ||    Successfully assigned alignments : 1422536 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1422533 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_1_NA_ribo8.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1747956                                              ||
-    ## ||    Successfully assigned alignments : 1692549 (96.8%)                      ||
+    ## ||    Successfully assigned alignments : 1692566 (96.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo0A.dedup.bam...      ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 515169                                               ||
-    ## ||    Successfully assigned alignments : 474288 (92.1%)                       ||
+    ## ||    Successfully assigned alignments : 474270 (92.1%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo0B.dedup.bam...      ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1602869                                              ||
-    ## ||    Successfully assigned alignments : 1503618 (93.8%)                      ||
+    ## ||    Successfully assigned alignments : 1503581 (93.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo1.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1494533                                              ||
-    ## ||    Successfully assigned alignments : 1416361 (94.8%)                      ||
+    ## ||    Successfully assigned alignments : 1416340 (94.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo2.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1647974                                              ||
-    ## ||    Successfully assigned alignments : 1568115 (95.2%)                      ||
+    ## ||    Successfully assigned alignments : 1568146 (95.2%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo3.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2150500                                              ||
-    ## ||    Successfully assigned alignments : 2048304 (95.2%)                      ||
+    ## ||    Successfully assigned alignments : 2048306 (95.2%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo4.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2227298                                              ||
-    ## ||    Successfully assigned alignments : 2149603 (96.5%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2149638 (96.5%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo5.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1430854                                              ||
-    ## ||    Successfully assigned alignments : 1381566 (96.6%)                      ||
+    ## ||    Successfully assigned alignments : 1381597 (96.6%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo6.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1498311                                              ||
-    ## ||    Successfully assigned alignments : 1453446 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1453448 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo7.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1691992                                              ||
-    ## ||    Successfully assigned alignments : 1637057 (96.8%)                      ||
+    ## ||    Successfully assigned alignments : 1637075 (96.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_NA_ribo8.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1527737                                              ||
-    ## ||    Successfully assigned alignments : 1480506 (96.9%)                      ||
+    ## ||    Successfully assigned alignments : 1480513 (96.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo0A.dedup.bam...      ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 379073                                               ||
-    ## ||    Successfully assigned alignments : 344046 (90.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 344034 (90.8%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo0B.dedup.bam...      ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1828877                                              ||
-    ## ||    Successfully assigned alignments : 1696511 (92.8%)                      ||
+    ## ||    Successfully assigned alignments : 1696521 (92.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo1.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1731929                                              ||
-    ## ||    Successfully assigned alignments : 1621568 (93.6%)                      ||
+    ## ||    Successfully assigned alignments : 1621553 (93.6%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo2.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1742608                                              ||
-    ## ||    Successfully assigned alignments : 1652070 (94.8%)                      ||
+    ## ||    Successfully assigned alignments : 1652088 (94.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo3.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1712033                                              ||
-    ## ||    Successfully assigned alignments : 1640138 (95.8%)                      ||
+    ## ||    Successfully assigned alignments : 1640163 (95.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo4.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1756471                                              ||
-    ## ||    Successfully assigned alignments : 1688037 (96.1%)                      ||
+    ## ||    Successfully assigned alignments : 1688033 (96.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo5.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1886534                                              ||
-    ## ||    Successfully assigned alignments : 1828729 (96.9%)                      ||
+    ## ||    Successfully assigned alignments : 1828697 (96.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo6.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1657295                                              ||
-    ## ||    Successfully assigned alignments : 1596911 (96.4%)                      ||
+    ## ||    Successfully assigned alignments : 1596910 (96.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo7.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1531936                                              ||
-    ## ||    Successfully assigned alignments : 1486230 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1486234 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_NA_ribo8.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 963888                                               ||
-    ## ||    Successfully assigned alignments : 938646 (97.4%)                       ||
+    ## ||    Successfully assigned alignments : 938653 (97.4%)                       ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo0A.dedup.bam...  ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 354268                                               ||
-    ## ||    Successfully assigned alignments : 335873 (94.8%)                       ||
+    ## ||    Successfully assigned alignments : 335895 (94.8%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo0B.dedup.bam...  ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1754157                                              ||
-    ## ||    Successfully assigned alignments : 1686780 (96.2%)                      ||
+    ## ||    Successfully assigned alignments : 1686790 (96.2%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo1.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2006996                                              ||
-    ## ||    Successfully assigned alignments : 1935478 (96.4%)                      ||
+    ## ||    Successfully assigned alignments : 1935445 (96.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo2.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2328857                                              ||
-    ## ||    Successfully assigned alignments : 2237476 (96.1%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2237461 (96.1%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo3.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1879085                                              ||
-    ## ||    Successfully assigned alignments : 1793342 (95.4%)                      ||
+    ## ||    Successfully assigned alignments : 1793343 (95.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo4.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1466990                                              ||
-    ## ||    Successfully assigned alignments : 1414892 (96.4%)                      ||
+    ## ||    Successfully assigned alignments : 1414871 (96.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo5.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 775198                                               ||
-    ## ||    Successfully assigned alignments : 744348 (96.0%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 744344 (96.0%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo6.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 759890                                               ||
-    ## ||    Successfully assigned alignments : 732463 (96.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 732454 (96.4%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo7.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 673910                                               ||
-    ## ||    Successfully assigned alignments : 646762 (96.0%)                       ||
+    ## ||    Successfully assigned alignments : 646770 (96.0%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_3_Torin1_ribo8.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 935601                                               ||
-    ## ||    Successfully assigned alignments : 898971 (96.1%)                       ||
+    ## ||    Successfully assigned alignments : 898966 (96.1%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo0A.dedup.bam...  ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 625198                                               ||
-    ## ||    Successfully assigned alignments : 594594 (95.1%)                       ||
+    ## ||    Successfully assigned alignments : 594615 (95.1%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo0B.dedup.bam...  ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1613066                                              ||
-    ## ||    Successfully assigned alignments : 1554084 (96.3%)                      ||
+    ## ||    Successfully assigned alignments : 1554135 (96.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo1.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3425705                                              ||
-    ## ||    Successfully assigned alignments : 3293089 (96.1%)                      ||
+    ## ||    Successfully assigned alignments : 3293090 (96.1%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo2.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2175390                                              ||
-    ## ||    Successfully assigned alignments : 2084845 (95.8%)                      ||
+    ## ||    Successfully assigned alignments : 2084834 (95.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo3.dedup.bam...   ||
@@ -2506,539 +2506,539 @@ dedup.count.dt <- geneCount(
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1127048                                              ||
     ## ||    Successfully assigned alignments : 1083119 (96.1%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo4.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 939400                                               ||
-    ## ||    Successfully assigned alignments : 900590 (95.9%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 900591 (95.9%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo5.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1002799                                              ||
-    ## ||    Successfully assigned alignments : 967990 (96.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 967997 (96.5%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo6.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 880780                                               ||
-    ## ||    Successfully assigned alignments : 840793 (95.5%)                       ||
+    ## ||    Successfully assigned alignments : 840783 (95.5%)                       ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo7.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 689516                                               ||
-    ## ||    Successfully assigned alignments : 663868 (96.3%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 663867 (96.3%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_VHL_EIF4E2_NA_4_Torin1_ribo8.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 376756                                               ||
-    ## ||    Successfully assigned alignments : 363902 (96.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 363899 (96.6%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo0A.dedup.bam...    ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 360538                                               ||
-    ## ||    Successfully assigned alignments : 327392 (90.8%)                       ||
+    ## ||    Successfully assigned alignments : 327372 (90.8%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo0B.dedup.bam...    ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1838157                                              ||
-    ## ||    Successfully assigned alignments : 1720499 (93.6%)                      ||
+    ## ||    Successfully assigned alignments : 1720526 (93.6%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2210858                                              ||
-    ## ||    Successfully assigned alignments : 2087645 (94.4%)                      ||
+    ## ||    Successfully assigned alignments : 2087624 (94.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2482305                                              ||
-    ## ||    Successfully assigned alignments : 2361336 (95.1%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2361303 (95.1%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1995192                                              ||
-    ## ||    Successfully assigned alignments : 1914867 (96.0%)                      ||
+    ## ||    Successfully assigned alignments : 1914872 (96.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1470917                                              ||
-    ## ||    Successfully assigned alignments : 1416145 (96.3%)                      ||
+    ## ||    Successfully assigned alignments : 1416153 (96.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1882758                                              ||
-    ## ||    Successfully assigned alignments : 1826045 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1826036 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1428711                                              ||
-    ## ||    Successfully assigned alignments : 1378644 (96.5%)                      ||
+    ## ||    Successfully assigned alignments : 1378622 (96.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1382396                                              ||
-    ## ||    Successfully assigned alignments : 1341973 (97.1%)                      ||
+    ## ||    Successfully assigned alignments : 1341972 (97.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_1_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1104890                                              ||
-    ## ||    Successfully assigned alignments : 1074999 (97.3%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1075009 (97.3%)                      ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo0A.dedup.bam...    ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 414433                                               ||
-    ## ||    Successfully assigned alignments : 382046 (92.2%)                       ||
+    ## ||    Successfully assigned alignments : 382035 (92.2%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo0B.dedup.bam...    ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2028630                                              ||
-    ## ||    Successfully assigned alignments : 1895258 (93.4%)                      ||
+    ## ||    Successfully assigned alignments : 1895282 (93.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1519424                                              ||
-    ## ||    Successfully assigned alignments : 1430506 (94.1%)                      ||
+    ## ||    Successfully assigned alignments : 1430511 (94.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1686744                                              ||
-    ## ||    Successfully assigned alignments : 1601432 (94.9%)                      ||
+    ## ||    Successfully assigned alignments : 1601431 (94.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1733442                                              ||
-    ## ||    Successfully assigned alignments : 1653804 (95.4%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1653824 (95.4%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2262466                                              ||
-    ## ||    Successfully assigned alignments : 2168536 (95.8%)                      ||
+    ## ||    Successfully assigned alignments : 2168491 (95.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1774723                                              ||
-    ## ||    Successfully assigned alignments : 1714759 (96.6%)                      ||
+    ## ||    Successfully assigned alignments : 1714757 (96.6%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1592791                                              ||
-    ## ||    Successfully assigned alignments : 1540163 (96.7%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1540173 (96.7%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1389563                                              ||
-    ## ||    Successfully assigned alignments : 1349141 (97.1%)                      ||
+    ## ||    Successfully assigned alignments : 1349143 (97.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1261438                                              ||
-    ## ||    Successfully assigned alignments : 1224499 (97.1%)                      ||
+    ## ||    Successfully assigned alignments : 1224505 (97.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo0A.dedup.bam...    ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 763755                                               ||
-    ## ||    Successfully assigned alignments : 698867 (91.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 698883 (91.5%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo0B.dedup.bam...    ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1351720                                              ||
-    ## ||    Successfully assigned alignments : 1279272 (94.6%)                      ||
+    ## ||    Successfully assigned alignments : 1279249 (94.6%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2052628                                              ||
-    ## ||    Successfully assigned alignments : 1946189 (94.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1946213 (94.8%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1440970                                              ||
-    ## ||    Successfully assigned alignments : 1375983 (95.5%)                      ||
+    ## ||    Successfully assigned alignments : 1375988 (95.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1632675                                              ||
-    ## ||    Successfully assigned alignments : 1559245 (95.5%)                      ||
+    ## ||    Successfully assigned alignments : 1559240 (95.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1798589                                              ||
-    ## ||    Successfully assigned alignments : 1729794 (96.2%)                      ||
+    ## ||    Successfully assigned alignments : 1729776 (96.2%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1781844                                              ||
-    ## ||    Successfully assigned alignments : 1713215 (96.1%)                      ||
+    ## ||    Successfully assigned alignments : 1713219 (96.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1182870                                              ||
-    ## ||    Successfully assigned alignments : 1140131 (96.4%)                      ||
+    ## ||    Successfully assigned alignments : 1140130 (96.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1044326                                              ||
-    ## ||    Successfully assigned alignments : 1007906 (96.5%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1007898 (96.5%)                      ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 731467                                               ||
-    ## ||    Successfully assigned alignments : 705378 (96.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 705374 (96.4%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo0A.dedup.b ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 574976                                               ||
-    ## ||    Successfully assigned alignments : 546452 (95.0%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 546453 (95.0%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo0B.dedup.b ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1936059                                              ||
-    ## ||    Successfully assigned alignments : 1866032 (96.4%)                      ||
+    ## ||    Successfully assigned alignments : 1866083 (96.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo1.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2922450                                              ||
-    ## ||    Successfully assigned alignments : 2807021 (96.1%)                      ||
-    ## ||    Running time : 0.04 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2806977 (96.0%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo2.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2038911                                              ||
-    ## ||    Successfully assigned alignments : 1954578 (95.9%)                      ||
+    ## ||    Successfully assigned alignments : 1954604 (95.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo3.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1715495                                              ||
-    ## ||    Successfully assigned alignments : 1642808 (95.8%)                      ||
+    ## ||    Successfully assigned alignments : 1642821 (95.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo4.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1373506                                              ||
-    ## ||    Successfully assigned alignments : 1314272 (95.7%)                      ||
+    ## ||    Successfully assigned alignments : 1314302 (95.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo5.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 897127                                               ||
-    ## ||    Successfully assigned alignments : 862322 (96.1%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 862329 (96.1%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo6.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 640892                                               ||
-    ## ||    Successfully assigned alignments : 614419 (95.9%)                       ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 614410 (95.9%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo7.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 433575                                               ||
-    ## ||    Successfully assigned alignments : 417799 (96.4%)                       ||
+    ## ||    Successfully assigned alignments : 417792 (96.4%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_3_Torin1_ribo8.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 422270                                               ||
-    ## ||    Successfully assigned alignments : 406797 (96.3%)                       ||
+    ## ||    Successfully assigned alignments : 406785 (96.3%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo0A.dedup.b ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 441574                                               ||
-    ## ||    Successfully assigned alignments : 420461 (95.2%)                       ||
+    ## ||    Successfully assigned alignments : 420470 (95.2%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo0B.dedup.b ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1751976                                              ||
-    ## ||    Successfully assigned alignments : 1678988 (95.8%)                      ||
+    ## ||    Successfully assigned alignments : 1679003 (95.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo1.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2775154                                              ||
-    ## ||    Successfully assigned alignments : 2682389 (96.7%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2682414 (96.7%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo2.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1750624                                              ||
-    ## ||    Successfully assigned alignments : 1689032 (96.5%)                      ||
+    ## ||    Successfully assigned alignments : 1689015 (96.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo3.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1098726                                              ||
-    ## ||    Successfully assigned alignments : 1054530 (96.0%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1054541 (96.0%)                      ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo4.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 913695                                               ||
-    ## ||    Successfully assigned alignments : 876976 (96.0%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 876991 (96.0%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo5.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 637438                                               ||
-    ## ||    Successfully assigned alignments : 608361 (95.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 608367 (95.4%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo6.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 308197                                               ||
-    ## ||    Successfully assigned alignments : 293554 (95.2%)                       ||
+    ## ||    Successfully assigned alignments : 293557 (95.2%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo7.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 220892                                               ||
-    ## ||    Successfully assigned alignments : 209163 (94.7%)                       ||
+    ## ||    Successfully assigned alignments : 209166 (94.7%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_RCC4_noVHL_EIF4E2_NA_4_Torin1_ribo8.dedup.ba ... ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 310548                                               ||
-    ## ||    Successfully assigned alignments : 297639 (95.8%)                       ||
+    ## ||    Successfully assigned alignments : 297637 (95.8%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo1.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1204212                                              ||
-    ## ||    Successfully assigned alignments : 1138301 (94.5%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1138277 (94.5%)                      ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo2.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1281456                                              ||
-    ## ||    Successfully assigned alignments : 1226573 (95.7%)                      ||
+    ## ||    Successfully assigned alignments : 1226575 (95.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo3.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1703481                                              ||
-    ## ||    Successfully assigned alignments : 1639952 (96.3%)                      ||
+    ## ||    Successfully assigned alignments : 1639973 (96.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo4.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1769227                                              ||
-    ## ||    Successfully assigned alignments : 1714859 (96.9%)                      ||
+    ## ||    Successfully assigned alignments : 1714860 (96.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo5.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2205521                                              ||
-    ## ||    Successfully assigned alignments : 2141431 (97.1%)                      ||
+    ## ||    Successfully assigned alignments : 2141411 (97.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo6.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1746638                                              ||
-    ## ||    Successfully assigned alignments : 1695664 (97.1%)                      ||
+    ## ||    Successfully assigned alignments : 1695647 (97.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo7.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1712925                                              ||
-    ## ||    Successfully assigned alignments : 1667270 (97.3%)                      ||
+    ## ||    Successfully assigned alignments : 1667275 (97.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_1_NA_ribo8.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1554654                                              ||
-    ## ||    Successfully assigned alignments : 1513631 (97.4%)                      ||
+    ## ||    Successfully assigned alignments : 1513646 (97.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo1.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 320717                                               ||
-    ## ||    Successfully assigned alignments : 304669 (95.0%)                       ||
+    ## ||    Successfully assigned alignments : 304671 (95.0%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo2.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 596472                                               ||
-    ## ||    Successfully assigned alignments : 572986 (96.1%)                       ||
+    ## ||    Successfully assigned alignments : 572981 (96.1%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo3.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 698754                                               ||
-    ## ||    Successfully assigned alignments : 673558 (96.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 673551 (96.4%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo4.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1042720                                              ||
-    ## ||    Successfully assigned alignments : 1014875 (97.3%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1014873 (97.3%)                      ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo5.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 595331                                               ||
-    ## ||    Successfully assigned alignments : 579478 (97.3%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 579469 (97.3%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo6.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 475323                                               ||
-    ## ||    Successfully assigned alignments : 464796 (97.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 464795 (97.8%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo7.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 651854                                               ||
-    ## ||    Successfully assigned alignments : 635946 (97.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 635948 (97.6%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_2_NA_ribo8.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 742524                                               ||
-    ## ||    Successfully assigned alignments : 724185 (97.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 724178 (97.5%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo1.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 701918                                               ||
-    ## ||    Successfully assigned alignments : 661313 (94.2%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 661341 (94.2%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo2.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 607909                                               ||
-    ## ||    Successfully assigned alignments : 580482 (95.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 580493 (95.5%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo3.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 655317                                               ||
-    ## ||    Successfully assigned alignments : 631675 (96.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 631667 (96.4%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo4.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 691257                                               ||
-    ## ||    Successfully assigned alignments : 667947 (96.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 667929 (96.6%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo5.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 882028                                               ||
-    ## ||    Successfully assigned alignments : 858620 (97.3%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 858602 (97.3%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo6.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
@@ -3051,245 +3051,245 @@ dedup.count.dt <- geneCount(
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 741891                                               ||
-    ## ||    Successfully assigned alignments : 723041 (97.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 723047 (97.5%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_EIF4E2_NA_4_NA_ribo8.dedup.bam...       ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 498890                                               ||
-    ## ||    Successfully assigned alignments : 487644 (97.7%)                       ||
+    ## ||    Successfully assigned alignments : 487647 (97.7%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1228816                                              ||
-    ## ||    Successfully assigned alignments : 1162894 (94.6%)                      ||
+    ## ||    Successfully assigned alignments : 1162886 (94.6%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1427297                                              ||
-    ## ||    Successfully assigned alignments : 1367681 (95.8%)                      ||
+    ## ||    Successfully assigned alignments : 1367703 (95.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1776595                                              ||
-    ## ||    Successfully assigned alignments : 1711065 (96.3%)                      ||
+    ## ||    Successfully assigned alignments : 1711064 (96.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1860296                                              ||
-    ## ||    Successfully assigned alignments : 1798266 (96.7%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1798251 (96.7%)                      ||
+    ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2059090                                              ||
-    ## ||    Successfully assigned alignments : 1998341 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1998329 (97.0%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1670679                                              ||
-    ## ||    Successfully assigned alignments : 1620552 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1620554 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1544260                                              ||
-    ## ||    Successfully assigned alignments : 1502551 (97.3%)                      ||
+    ## ||    Successfully assigned alignments : 1502536 (97.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_1_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1697591                                              ||
-    ## ||    Successfully assigned alignments : 1652375 (97.3%)                      ||
+    ## ||    Successfully assigned alignments : 1652368 (97.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 463060                                               ||
-    ## ||    Successfully assigned alignments : 442264 (95.5%)                       ||
+    ## ||    Successfully assigned alignments : 442269 (95.5%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 659331                                               ||
-    ## ||    Successfully assigned alignments : 630815 (95.7%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 630813 (95.7%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 922433                                               ||
-    ## ||    Successfully assigned alignments : 889908 (96.5%)                       ||
+    ## ||    Successfully assigned alignments : 889894 (96.5%)                       ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1035424                                              ||
-    ## ||    Successfully assigned alignments : 1002734 (96.8%)                      ||
+    ## ||    Successfully assigned alignments : 1002714 (96.8%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 821572                                               ||
-    ## ||    Successfully assigned alignments : 800093 (97.4%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 800079 (97.4%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 513388                                               ||
-    ## ||    Successfully assigned alignments : 500448 (97.5%)                       ||
+    ## ||    Successfully assigned alignments : 500439 (97.5%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 461642                                               ||
-    ## ||    Successfully assigned alignments : 451278 (97.8%)                       ||
+    ## ||    Successfully assigned alignments : 451291 (97.8%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_2_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 547925                                               ||
-    ## ||    Successfully assigned alignments : 535396 (97.7%)                       ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 535383 (97.7%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 433585                                               ||
-    ## ||    Successfully assigned alignments : 411254 (94.8%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 411261 (94.9%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 381950                                               ||
-    ## ||    Successfully assigned alignments : 367164 (96.1%)                       ||
+    ## ||    Successfully assigned alignments : 367166 (96.1%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 622699                                               ||
-    ## ||    Successfully assigned alignments : 600922 (96.5%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 600919 (96.5%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 631936                                               ||
-    ## ||    Successfully assigned alignments : 613485 (97.1%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 613472 (97.1%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 856788                                               ||
-    ## ||    Successfully assigned alignments : 831146 (97.0%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 831152 (97.0%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 594590                                               ||
-    ## ||    Successfully assigned alignments : 578439 (97.3%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 578440 (97.3%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 577515                                               ||
-    ## ||    Successfully assigned alignments : 561329 (97.2%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 561336 (97.2%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_EIF4E2_NA_4_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 510059                                               ||
-    ## ||    Successfully assigned alignments : 493579 (96.8%)                       ||
+    ## ||    Successfully assigned alignments : 493588 (96.8%)                       ||
     ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 939834                                               ||
-    ## ||    Successfully assigned alignments : 889573 (94.7%)                       ||
+    ## ||    Successfully assigned alignments : 889580 (94.7%)                       ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo2.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1081230                                              ||
-    ## ||    Successfully assigned alignments : 1034833 (95.7%)                      ||
+    ## ||    Successfully assigned alignments : 1034843 (95.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo3.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1343050                                              ||
-    ## ||    Successfully assigned alignments : 1289529 (96.0%)                      ||
+    ## ||    Successfully assigned alignments : 1289512 (96.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1671906                                              ||
-    ## ||    Successfully assigned alignments : 1619352 (96.9%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1619348 (96.9%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1525628                                              ||
-    ## ||    Successfully assigned alignments : 1478209 (96.9%)                      ||
+    ## ||    Successfully assigned alignments : 1478216 (96.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1047069                                              ||
-    ## ||    Successfully assigned alignments : 1018958 (97.3%)                      ||
+    ## ||    Successfully assigned alignments : 1018951 (97.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 939465                                               ||
-    ## ||    Successfully assigned alignments : 913012 (97.2%)                       ||
+    ## ||    Successfully assigned alignments : 913021 (97.2%)                       ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g1_1_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 997569                                               ||
-    ## ||    Successfully assigned alignments : 969748 (97.2%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 969761 (97.2%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo1.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1538756                                              ||
-    ## ||    Successfully assigned alignments : 1446267 (94.0%)                      ||
+    ## ||    Successfully assigned alignments : 1446293 (94.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo2.dedup.bam...     ||
@@ -3303,336 +3303,336 @@ dedup.count.dt <- geneCount(
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1620332                                              ||
-    ## ||    Successfully assigned alignments : 1558177 (96.2%)                      ||
+    ## ||    Successfully assigned alignments : 1558160 (96.2%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo4.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1917462                                              ||
-    ## ||    Successfully assigned alignments : 1851115 (96.5%)                      ||
+    ## ||    Successfully assigned alignments : 1851093 (96.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo5.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2119765                                              ||
-    ## ||    Successfully assigned alignments : 2058651 (97.1%)                      ||
+    ## ||    Successfully assigned alignments : 2058677 (97.1%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo6.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1813735                                              ||
-    ## ||    Successfully assigned alignments : 1753878 (96.7%)                      ||
+    ## ||    Successfully assigned alignments : 1753891 (96.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo7.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1789538                                              ||
-    ## ||    Successfully assigned alignments : 1741835 (97.3%)                      ||
+    ## ||    Successfully assigned alignments : 1741860 (97.3%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_VHL_noEIF4E2_g2_1_NA_ribo8.dedup.bam...     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1233861                                              ||
-    ## ||    Successfully assigned alignments : 1203194 (97.5%)                      ||
+    ## ||    Successfully assigned alignments : 1203201 (97.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo1.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1099389                                              ||
-    ## ||    Successfully assigned alignments : 1037450 (94.4%)                      ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1037466 (94.4%)                      ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo2.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1260871                                              ||
-    ## ||    Successfully assigned alignments : 1206461 (95.7%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 1206447 (95.7%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo3.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1415475                                              ||
-    ## ||    Successfully assigned alignments : 1366050 (96.5%)                      ||
+    ## ||    Successfully assigned alignments : 1366073 (96.5%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo4.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1525079                                              ||
-    ## ||    Successfully assigned alignments : 1475279 (96.7%)                      ||
+    ## ||    Successfully assigned alignments : 1475270 (96.7%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo5.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1403829                                              ||
-    ## ||    Successfully assigned alignments : 1366738 (97.4%)                      ||
+    ## ||    Successfully assigned alignments : 1366771 (97.4%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo6.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 927397                                               ||
-    ## ||    Successfully assigned alignments : 900650 (97.1%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 900651 (97.1%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo7.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 958629                                               ||
-    ## ||    Successfully assigned alignments : 935381 (97.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 935392 (97.6%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g1_1_NA_ribo8.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 928583                                               ||
-    ## ||    Successfully assigned alignments : 906576 (97.6%)                       ||
-    ## ||    Running time : 0.02 minutes                                             ||
+    ## ||    Successfully assigned alignments : 906588 (97.6%)                       ||
+    ## ||    Running time : 0.01 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo1.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1539662                                              ||
-    ## ||    Successfully assigned alignments : 1462597 (95.0%)                      ||
+    ## ||    Successfully assigned alignments : 1462561 (95.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo2.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1547936                                              ||
-    ## ||    Successfully assigned alignments : 1485009 (95.9%)                      ||
+    ## ||    Successfully assigned alignments : 1484990 (95.9%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo3.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2248041                                              ||
-    ## ||    Successfully assigned alignments : 2161548 (96.2%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2161562 (96.2%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo4.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2604689                                              ||
-    ## ||    Successfully assigned alignments : 2521812 (96.8%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 2521851 (96.8%)                      ||
+    ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo5.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2993238                                              ||
-    ## ||    Successfully assigned alignments : 2896400 (96.8%)                      ||
+    ## ||    Successfully assigned alignments : 2896381 (96.8%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo6.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 2182961                                              ||
-    ## ||    Successfully assigned alignments : 2118295 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 2118314 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo7.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1730271                                              ||
-    ## ||    Successfully assigned alignments : 1679015 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1679027 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file polysome_786O_noVHL_noEIF4E2_g2_1_NA_ribo8.dedup.bam...   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 1622004                                              ||
-    ## ||    Successfully assigned alignments : 1573551 (97.0%)                      ||
+    ## ||    Successfully assigned alignments : 1573550 (97.0%)                      ||
     ## ||    Running time : 0.02 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_N_1.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 7925684                                              ||
-    ## ||    Successfully assigned alignments : 7419381 (93.6%)                      ||
+    ## ||    Successfully assigned alignments : 7419437 (93.6%)                      ||
     ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_N_3.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 7703628                                              ||
-    ## ||    Successfully assigned alignments : 7170505 (93.1%)                      ||
+    ## ||    Successfully assigned alignments : 7170533 (93.1%)                      ||
     ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_N_4.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 7665733                                              ||
-    ## ||    Successfully assigned alignments : 7156646 (93.4%)                      ||
+    ## ||    Successfully assigned alignments : 7156594 (93.4%)                      ||
     ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_N_1.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 8988734                                              ||
-    ## ||    Successfully assigned alignments : 8355874 (93.0%)                      ||
-    ## ||    Running time : 0.06 minutes                                             ||
+    ## ||    Successfully assigned alignments : 8355887 (93.0%)                      ||
+    ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_N_3.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 7394551                                              ||
-    ## ||    Successfully assigned alignments : 6817571 (92.2%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Successfully assigned alignments : 6817623 (92.2%)                      ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_N_4.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5954679                                              ||
-    ## ||    Successfully assigned alignments : 5548449 (93.2%)                      ||
+    ## ||    Successfully assigned alignments : 5548421 (93.2%)                      ||
     ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_H_1.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 9515954                                              ||
-    ## ||    Successfully assigned alignments : 8986846 (94.4%)                      ||
+    ## ||    Successfully assigned alignments : 8986920 (94.4%)                      ||
     ## ||    Running time : 0.06 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_H_3.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 9000165                                              ||
-    ## ||    Successfully assigned alignments : 8437764 (93.8%)                      ||
-    ## ||    Running time : 0.06 minutes                                             ||
+    ## ||    Successfully assigned alignments : 8437791 (93.8%)                      ||
+    ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_VHL_HIF1B_H_4.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 7087913                                              ||
-    ## ||    Successfully assigned alignments : 6696669 (94.5%)                      ||
+    ## ||    Successfully assigned alignments : 6696650 (94.5%)                      ||
     ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_H_1.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 9671223                                              ||
-    ## ||    Successfully assigned alignments : 9182018 (94.9%)                      ||
+    ## ||    Successfully assigned alignments : 9182148 (94.9%)                      ||
     ## ||    Running time : 0.06 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_H_3.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 6867605                                              ||
-    ## ||    Successfully assigned alignments : 6513640 (94.8%)                      ||
-    ## ||    Running time : 0.05 minutes                                             ||
+    ## ||    Successfully assigned alignments : 6513631 (94.8%)                      ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_RCC4_noVHL_HIF1B_H_4.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 7104152                                              ||
-    ## ||    Successfully assigned alignments : 6695838 (94.3%)                      ||
+    ## ||    Successfully assigned alignments : 6695791 (94.3%)                      ||
     ## ||    Running time : 0.05 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_HIF1B_N_1.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4421325                                              ||
-    ## ||    Successfully assigned alignments : 4216076 (95.4%)                      ||
-    ## ||    Running time : 0.03 minutes                                             ||
+    ## ||    Successfully assigned alignments : 4215998 (95.4%)                      ||
+    ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_HIF1B_N_2.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4681190                                              ||
-    ## ||    Successfully assigned alignments : 4391411 (93.8%)                      ||
+    ## ||    Successfully assigned alignments : 4391428 (93.8%)                      ||
     ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_HIF1B_N_3.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4249547                                              ||
-    ## ||    Successfully assigned alignments : 4017850 (94.5%)                      ||
+    ## ||    Successfully assigned alignments : 4017854 (94.5%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_HIF1B_N_4.dedup.bam...                     ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5037900                                              ||
-    ## ||    Successfully assigned alignments : 4746685 (94.2%)                      ||
+    ## ||    Successfully assigned alignments : 4746661 (94.2%)                      ||
     ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_HIF1B_N_1.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4323640                                              ||
-    ## ||    Successfully assigned alignments : 4088543 (94.6%)                      ||
+    ## ||    Successfully assigned alignments : 4088521 (94.6%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_HIF1B_N_2.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4138233                                              ||
-    ## ||    Successfully assigned alignments : 3903010 (94.3%)                      ||
+    ## ||    Successfully assigned alignments : 3903005 (94.3%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_HIF1B_N_3.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3713274                                              ||
-    ## ||    Successfully assigned alignments : 3517393 (94.7%)                      ||
+    ## ||    Successfully assigned alignments : 3517371 (94.7%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_HIF1B_N_4.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3714253                                              ||
-    ## ||    Successfully assigned alignments : 3516685 (94.7%)                      ||
+    ## ||    Successfully assigned alignments : 3516741 (94.7%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_noHIF1B_N_1.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 4174755                                              ||
-    ## ||    Successfully assigned alignments : 3966005 (95.0%)                      ||
+    ## ||    Successfully assigned alignments : 3965990 (95.0%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_noHIF1B_N_2.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3883485                                              ||
-    ## ||    Successfully assigned alignments : 3694123 (95.1%)                      ||
+    ## ||    Successfully assigned alignments : 3694091 (95.1%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_VHL_noHIF1B_N_3.dedup.bam...                   ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 3319075                                              ||
-    ## ||    Successfully assigned alignments : 3145050 (94.8%)                      ||
+    ## ||    Successfully assigned alignments : 3145042 (94.8%)                      ||
     ## ||    Running time : 0.03 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_noHIF1B_N_1.dedup.bam...                 ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5734981                                              ||
-    ## ||    Successfully assigned alignments : 5407205 (94.3%)                      ||
+    ## ||    Successfully assigned alignments : 5407207 (94.3%)                      ||
     ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_noHIF1B_N_2.dedup.bam...                 ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5049582                                              ||
-    ## ||    Successfully assigned alignments : 4763984 (94.3%)                      ||
+    ## ||    Successfully assigned alignments : 4763925 (94.3%)                      ||
     ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Process BAM file total_786O_noVHL_noHIF1B_N_3.dedup.bam...                 ||
     ## ||    Strand specific : stranded                                              ||
     ## ||    Paired-end reads are included.                                          ||
     ## ||    Total alignments : 5315539                                              ||
-    ## ||    Successfully assigned alignments : 5017697 (94.4%)                      ||
+    ## ||    Successfully assigned alignments : 5017657 (94.4%)                      ||
     ## ||    Running time : 0.04 minutes                                             ||
     ## ||                                                                            ||
     ## || Write the final count table.                                               ||

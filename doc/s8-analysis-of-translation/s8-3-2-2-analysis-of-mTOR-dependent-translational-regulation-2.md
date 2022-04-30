@@ -1,7 +1,7 @@
 s8-3-2-2 Analysis of mTOR-dependent translational regulation (2/2)
 ================
 Yoichiro Sugimoto
-03 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Evaluation of translation changes by mTOR inhibition (gene
@@ -207,7 +207,7 @@ m.torin.tx.trsl.dt <- melt(
         "tss_name",
         "gene_name",
         "MRL_log2fc", "trsl_reg_class",
-        "mean_utr5_len", "cds_len",
+        "mean_utr5_len", "cds_len", "mean_tx_len",
         "tx_kozak_score",
         "tss_p1_TOP", "tss_p2_TOP", "tss_p3_TOP",
         "tss_p1_tTOP", "tss_p2_tTOP", "tss_p3_tTOP",
@@ -223,7 +223,8 @@ m.torin.tx.trsl.dt <- melt(
              variable == "MRL_treated" ~ "Torin_1",
              variable == "MRL_base" ~ "No_treatment"
          ),
-         log10_cds_len = log10(cds_len)
+         log10_cds_len = log10(cds_len),
+         log10_tx_len = log10(mean_tx_len)
      )]}
 ```
 
@@ -447,6 +448,75 @@ ggplot(
 ```
 
 ![](s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2_files/figure-gfm/analyse_the_effect_of_coding_sequence_length-3.png)<!-- -->
+
+### Transcript length
+
+``` r
+m.torin.tx.trsl.dt[, `:=`(
+    tx_len_bin = cut(
+        log10_tx_len,
+        breaks = seq(2, 5, by = 0.25),
+        labels = paste0(
+            "(",
+            seq(2, 5, by = 0.25) %>% {.[1:(length(.) - 1)]} %>% {round(10^.)},
+            ", ",
+            seq(2, 5, by = 0.25) %>% {.[2:length(.)]} %>% {round(10^.)},
+            "]"
+        )
+    )
+)]
+
+ggplot(
+    data = m.torin.tx.trsl.dt[
+        !is.na(tx_len_bin)
+    ],
+    aes(
+        x = tx_len_bin,
+        y = MRL,
+        fill = treatment
+    )
+) +
+    geom_boxplot(
+        outlier.shape = NA
+    ) +
+    theme(
+        legend.position = "bottom",
+        aspect.ratio = 1,
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+    ) +
+    scale_fill_manual(values = c(
+                          "No_treatment" = "#4477AA",
+                          "Torin_1" = "#AA3377"
+                      )) +
+    xlab("Transcript length [nts]")
+```
+
+![](s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2_files/figure-gfm/the_same_analysis_for_tx_len-1.png)<!-- -->
+
+``` r
+print("The number of samples for the boxplots")
+```
+
+    ## [1] "The number of samples for the boxplots"
+
+``` r
+m.torin.tx.trsl.dt[!is.na(MRL)][
+    , table(treatment, tx_len_bin)
+] %>% print
+```
+
+    ##               tx_len_bin
+    ## treatment      (100, 178] (178, 316] (316, 562] (562, 1000] (1000, 1778]
+    ##   No_treatment          0          1        103         521         1636
+    ##   Torin_1               0          1        103         521         1636
+    ##               tx_len_bin
+    ## treatment      (1778, 3162] (3162, 5623] (5623, 10000] (10000, 17783]
+    ##   No_treatment         2994         2718          1326            265
+    ##   Torin_1              2994         2718          1326            265
+    ##               tx_len_bin
+    ## treatment      (17783, 31623] (31623, 56234] (56234, 1e+05]
+    ##   No_treatment             24              1              0
+    ##   Torin_1                  24              1              0
 
 ## uORF
 

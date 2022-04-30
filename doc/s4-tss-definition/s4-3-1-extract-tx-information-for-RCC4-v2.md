@@ -1,7 +1,7 @@
 s4-3-1 Extract transcript information for RCC4 v2
 ================
 Yoichiro Sugimoto
-02 March, 2022
+29 April, 2022
 
   - [Overview](#overview)
   - [Define variables](#define-variables)

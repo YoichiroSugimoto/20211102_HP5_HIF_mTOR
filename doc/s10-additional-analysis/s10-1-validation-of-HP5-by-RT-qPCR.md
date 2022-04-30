@@ -1,7 +1,7 @@
 s10-1 Validation of HP5 by RT-qPCR
 ================
 Yoichiro Sugimoto
-08 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Environment setup](#environment-setup)

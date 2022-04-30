@@ -1,7 +1,7 @@
 s2-1 Alignment of reads with STAR (2 pass mode)
 ================
 Yoichiro Sugimoto
-01 March, 2022
+28 April, 2022
 
   - [Strategy](#strategy)
   - [Set up](#set-up)
@@ -206,8 +206,8 @@ system.cat(clear.genome.cmd)
     ## outFileNamePrefix ../../results/s2-read-alignment/s2-1-a-star-aligned_reads/
     ## temp/' had status 105
 
-    ## [1] "Mar 01 07:04:14 ..... started STAR run"
-    ## [2] "Mar 01 07:04:14 ..... loading genome"  
+    ## [1] "Apr 28 10:15:41 ..... started STAR run"
+    ## [2] "Apr 28 10:15:41 ..... loading genome"  
     ## attr(,"status")
     ## [1] 105
 
@@ -280,8 +280,8 @@ for(i in 1:length(sample.names)){
 system.cat(clear.genome.cmd) 
 ```
 
-    ## [1] "Mar 01 11:24:47 ..... started STAR run"
-    ## [2] "Mar 01 11:24:47 ..... loading genome"
+    ## [1] "Apr 28 14:17:49 ..... started STAR run"
+    ## [2] "Apr 28 14:17:49 ..... loading genome"
 
 ``` r
 unlink(temp.dir, recursive = TRUE)

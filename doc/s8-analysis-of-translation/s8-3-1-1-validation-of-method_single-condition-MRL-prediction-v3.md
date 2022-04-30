@@ -2,7 +2,7 @@ s8-3-1-1 Validation of method (single condition / prediction of MRL by
 GAM)
 ================
 Yoichiro Sugimoto
-03 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Master table preparation](#master-table-preparation)

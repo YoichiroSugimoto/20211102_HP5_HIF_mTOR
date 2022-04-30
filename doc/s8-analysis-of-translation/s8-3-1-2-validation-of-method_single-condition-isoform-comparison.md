@@ -2,7 +2,7 @@ s8-3-1-2 Validation of method (single condition / comparisons between
 isoforms)
 ================
 Yoichiro Sugimoto
-03 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Data import](#data-import)

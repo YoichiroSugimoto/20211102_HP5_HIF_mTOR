@@ -1,7 +1,7 @@
 s10-3 Comparison with orthgonal methods
 ================
 Yoichiro Sugimoto
-08 March, 2022
+30 April, 2022
 
   - [Overview](#overview)
   - [Environment setup](#environment-setup)
@@ -9,6 +9,8 @@ Yoichiro Sugimoto
     studies](#import-the-results-of-previous-studies)
       - [Comparison of previously reported mTOR target
         genes](#comparison-of-previously-reported-mtor-target-genes)
+      - [Analysis of typical TOP genes in reported
+        targets](#analysis-of-typical-top-genes-in-reported-targets)
   - [Analysis of the ability of HP5 to identify differential translation
     of previously reported
     targets](#analysis-of-the-ability-of-hp5-to-identify-differential-translation-of-previously-reported-targets)
@@ -61,6 +63,9 @@ s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
 
 s10.dir <- file.path(results.dir, "s10-additional-analysis")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
 
 create.dirs(c(
     s10.dir
@@ -203,6 +208,174 @@ plot(euler(venn.dt[
 ```
 
 ![](s10-3-comparison-with-orthogonal-methods_files/figure-gfm/comparisons_of_known_targets-1.png)<!-- -->
+
+``` r
+venn.dt <- merge(
+    primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+    venn.dt,
+    by = "gene_id",
+    all.y = TRUE
+)
+
+openxlsx::write.xlsx(
+    list("Supplementary Fig. 4a" = venn.dt),
+    file = file.path(
+        source.data.dir, "Supplementary Fig. 4 source data.xlsx"
+    )
+)
+
+print("Sanity check: overlap between Hsieh and Larsson, reported by Larsson et al.")
+```
+
+    ## [1] "Sanity check: overlap between Hsieh and Larsson, reported by Larsson et al."
+
+``` r
+venn.dt[gene_name == "YBX1"]
+```
+
+    ##            gene_id gene_name Hsieh Thoreen Larsson Morita
+    ## 1: ENSG00000065978      YBX1  TRUE   FALSE    TRUE  FALSE
+
+## Analysis of typical TOP genes in reported targets
+
+### Load “known” TOP mRNAs
+
+``` r
+known.top.dt <- read_excel(
+    "../../data/others/PMID32094190_SD01.xlsx", col_names = FALSE
+) %>%    
+    data.table
+```
+
+    ## New names:
+    ## * `` -> ...1
+
+``` r
+setnames(known.top.dt, "...1", "top_genes")
+
+## Correct nomenclature
+known.top.dt[, gene_name := ifelse(top_genes == "GNB2L1", "RACK1", top_genes)]
+
+known.top.dt <- merge(
+    known.top.dt,
+    primary.tx.dt[!duplicated(gene_id), .(gene_name, gene_id)],
+    all.x = TRUE,
+    by = "gene_name"
+)
+
+print(paste0("The number of known TOP mRNA: ", nrow(known.top.dt)))
+```
+
+    ## [1] "The number of known TOP mRNA: 97"
+
+``` r
+venn.dt[, known_TOP_mRNA := gene_name %in% known.top.dt[, gene_name]]
+
+m.venn.dt <- melt(
+    venn.dt,
+    id.vars = c("gene_id", "gene_name", "known_TOP_mRNA"),
+    variable.name = "Source_data"
+)
+
+m.venn.dt <- m.venn.dt[value == TRUE]
+```
+
+### Import probe information for the microarray used by Larsson et al.
+
+``` r
+probe.dt <- fread("../../data/others/GPL14877_HGU133Plus2_Hs_ENTREZG_desc.txt")
+
+probe.dt[, entrez := gsub("_at", "", get("Probe Set Name"))]
+
+library("gprofiler2")
+set_base_url("https://biit.cs.ut.ee/gprofiler_archive3/e102_eg49_p15") 
+
+entrez2ensembl.dt <- gconvert(
+    query = as.integer(probe.dt[, entrez]),
+    organism = "hsapiens",
+    target="ENSG", mthreshold = Inf, filter_na = TRUE,
+    numeric_ns = "ENTREZGENE_ACC"
+) %>%
+    data.table
+
+setnames(
+    entrez2ensembl.dt,
+    old = c("input", "target", "name"), new = c("entrez", "gene_id", "gene_name")
+)
+
+probe.with.id.dt <- merge(
+    probe.dt,
+    entrez2ensembl.dt[, c("entrez", "gene_id", "gene_name"), with = FALSE],
+    by = "entrez"
+)
+
+probe.with.id.dt[, table(gene_id %in% known.top.dt[, gene_id])]
+```
+
+    ## 
+    ## FALSE  TRUE 
+    ## 18091    58
+
+### Analysis of the proportion of “known” TOP mRNAs identified as mTOR hypersensitive by each study
+
+``` r
+top.hyp.ratio.dt <- m.venn.dt[, table(Source_data, known_TOP_mRNA)] %>%
+    data.table %>%
+    {.[known_TOP_mRNA == TRUE & Source_data != "Morita"]}
+
+top.hyp.ratio.dt[
+  , total_N := case_when(
+        Source_data == "Hsieh" ~
+            nrow(Hsieh.all.dt[gene_id %in% known.top.dt[, gene_id]]),
+        Source_data == "Thoreen" ~
+            nrow(Thoreen.all.dt[gene_id %in% known.top.dt[, gene_id]]),
+        Source_data == "Larsson" ~
+            nrow(probe.with.id.dt[gene_id %in% known.top.dt[, gene_id]])
+    )]
+
+top.hyp.ratio.dt
+```
+
+    ##    Source_data known_TOP_mRNA  N total_N
+    ## 1:       Hsieh           TRUE 82      93
+    ## 2:     Thoreen           TRUE 45      48
+    ## 3:     Larsson           TRUE  0      58
+
+``` r
+top.hyp.ratio.dt[, `:=`(
+    mTOR_hypersensitive = N,
+    Others = total_N - N
+)]
+
+m.top.hyp.ratio.dt <- melt(
+    top.hyp.ratio.dt,
+    id.vars = "Source_data",
+    measure.vars = c("mTOR_hypersensitive", "Others")
+)
+
+m.top.hyp.ratio.dt[, `:=`(
+    Source_data = factor(Source_data, levels = c("Hsieh", "Thoreen", "Larsson")),
+    variable = factor(variable, levels = c("Others", "mTOR_hypersensitive"))
+)]
+
+ggplot(
+    m.top.hyp.ratio.dt,
+    aes(
+        x = Source_data,
+        y = value,
+        fill = variable
+    )
+) +
+    geom_bar(stat = "identity", position = "fill") +
+    scale_fill_manual(values = c(
+                          "mTOR_hypersensitive" = "#EE6677", "Others" = "gray40"
+                      )) +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    theme(aspect.ratio = 2)
+```
+
+![](s10-3-comparison-with-orthogonal-methods_files/figure-gfm/top_identified_by_each-1.png)<!-- -->
 
 # Analysis of the ability of HP5 to identify differential translation of previously reported targets
 
@@ -603,7 +776,7 @@ gs <- lapply(
 cowplot::plot_grid(plotlist = gs, nrow = 1)
 ```
 
-![](s10-3-comparison-with-orthogonal-methods_files/figure-gfm/another_visualization-1.png)<!-- -->
+![](s10-3-comparison-with-orthogonal-methods_files/figure-gfm/data_visualization_for_diff_reg_by_class-1.png)<!-- -->
 
 # Session information
 
@@ -631,17 +804,20 @@ sessionInfo()
     ## [8] base     
     ## 
     ## other attached packages:
-    ##  [1] eulerr_6.1.0      ggbeeswarm_0.6.0  readxl_1.3.1      knitr_1.28       
-    ##  [5] stringr_1.4.0     magrittr_1.5      data.table_1.12.8 dplyr_1.0.0      
-    ##  [9] khroma_1.3.0      ggplot2_3.3.1     rmarkdown_2.2    
+    ##  [1] gprofiler2_0.1.9  eulerr_6.1.0      ggbeeswarm_0.6.0  readxl_1.3.1     
+    ##  [5] knitr_1.28        stringr_1.4.0     magrittr_1.5      data.table_1.12.8
+    ##  [9] dplyr_1.0.0       khroma_1.3.0      ggplot2_3.3.1     rmarkdown_2.2    
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] Rcpp_1.0.4.6     vipor_0.4.5      pillar_1.4.4     compiler_4.0.0  
-    ##  [5] cellranger_1.1.0 tools_4.0.0      digest_0.6.25    evaluate_0.14   
-    ##  [9] lifecycle_0.2.0  tibble_3.0.1     gtable_0.3.0     pkgconfig_2.0.3 
-    ## [13] rlang_0.4.11     yaml_2.2.1       beeswarm_0.2.3   xfun_0.14       
-    ## [17] withr_2.2.0      generics_0.0.2   vctrs_0.3.1      cowplot_1.0.0   
-    ## [21] grid_4.0.0       tidyselect_1.1.0 glue_1.4.1       R6_2.4.1        
-    ## [25] polyclip_1.10-0  farver_2.0.3     polylabelr_0.2.0 purrr_0.3.4     
-    ## [29] scales_1.1.1     ellipsis_0.3.1   htmltools_0.4.0  colorspace_1.4-1
-    ## [33] labeling_0.3     stringi_1.4.6    munsell_0.5.0    crayon_1.3.4
+    ##  [1] beeswarm_0.2.3    tidyselect_1.1.0  xfun_0.14         purrr_0.3.4      
+    ##  [5] colorspace_1.4-1  vctrs_0.3.1       generics_0.0.2    htmltools_0.4.0  
+    ##  [9] viridisLite_0.3.0 yaml_2.2.1        plotly_4.9.2.1    rlang_0.4.11     
+    ## [13] pillar_1.4.4      glue_1.4.1        withr_2.2.0       lifecycle_0.2.0  
+    ## [17] munsell_0.5.0     gtable_0.3.0      cellranger_1.1.0  zip_2.0.4        
+    ## [21] htmlwidgets_1.5.1 evaluate_0.14     labeling_0.3      vipor_0.4.5      
+    ## [25] Rcpp_1.0.4.6      scales_1.1.1      jsonlite_1.6.1    farver_2.0.3     
+    ## [29] digest_0.6.25     stringi_1.4.6     openxlsx_4.1.5    cowplot_1.0.0    
+    ## [33] polyclip_1.10-0   grid_4.0.0        tools_4.0.0       bitops_1.0-6     
+    ## [37] lazyeval_0.2.2    RCurl_1.98-1.2    tibble_3.0.1      crayon_1.3.4     
+    ## [41] tidyr_1.1.0       pkgconfig_2.0.3   ellipsis_0.3.1    polylabelr_0.2.0 
+    ## [45] httr_1.4.1        R6_2.4.1          compiler_4.0.0

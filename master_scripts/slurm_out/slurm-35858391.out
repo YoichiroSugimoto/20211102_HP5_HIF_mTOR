@@ -1,1654 +1,0 @@
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-1-1-gene-level-translation-analysis.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |..                                                                    |   4%
-   inline R code fragments
-
-  |                                                                              |.....                                                                 |   7%
-label: knitr_setup
-  |                                                                              |........                                                              |  11%
-  ordinary text without R code
-
-  |                                                                              |..........                                                            |  14%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-── Attaching packages ────────────────────────────────────── tidymodels 0.1.0 ──
-✔ broom     0.5.6      ✔ recipes   0.1.12
-✔ dials     0.0.7      ✔ rsample   0.0.7 
-✔ dplyr     1.0.0      ✔ tibble    3.0.1 
-✔ ggplot2   3.3.1      ✔ tune      0.1.0 
-✔ infer     0.5.2      ✔ workflows 0.1.2 
-✔ parsnip   0.1.2      ✔ yardstick 0.0.6 
-✔ purrr     0.3.4      
-── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
-✖ purrr::discard() masks scales::discard()
-✖ dplyr::filter()  masks stats::filter()
-✖ dplyr::lag()     masks stats::lag()
-✖ recipes::step()  masks stats::step()
-
-Attaching package: 'matrixStats'
-
-The following object is masked from 'package:dplyr':
-
-    count
-
-Loading required package: S4Vectors
-Loading required package: stats4
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: 'BiocGenerics'
-
-The following objects are masked from 'package:parallel':
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from 'package:dplyr':
-
-    combine, intersect, setdiff, union
-
-The following objects are masked from 'package:stats':
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from 'package:base':
-
-    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    union, unique, unsplit, which, which.max, which.min
-
-
-Attaching package: 'S4Vectors'
-
-The following objects are masked from 'package:dplyr':
-
-    first, rename
-
-The following object is masked from 'package:base':
-
-    expand.grid
-
-Loading required package: IRanges
-
-Attaching package: 'IRanges'
-
-The following object is masked from 'package:purrr':
-
-    reduce
-
-The following objects are masked from 'package:dplyr':
-
-    collapse, desc, slice
-
-Loading required package: GenomicRanges
-Loading required package: GenomeInfoDb
-Loading required package: SummarizedExperiment
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-
-Attaching package: 'Biobase'
-
-The following objects are masked from 'package:matrixStats':
-
-    anyMissing, rowMedians
-
-Loading required package: DelayedArray
-
-Attaching package: 'DelayedArray'
-
-The following objects are masked from 'package:matrixStats':
-
-    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
-
-The following object is masked from 'package:purrr':
-
-    simplify
-
-The following objects are masked from 'package:base':
-
-    aperm, apply, rowsum
-
-
-Attaching package: 'data.table'
-
-The following object is masked from 'package:SummarizedExperiment':
-
-    shift
-
-The following object is masked from 'package:GenomicRanges':
-
-    shift
-
-The following object is masked from 'package:IRanges':
-
-    shift
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, second
-
-The following object is masked from 'package:purrr':
-
-    transpose
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-
-Attaching package: 'magrittr'
-
-The following object is masked from 'package:purrr':
-
-    set_names
-
-
-Attaching package: 'stringr'
-
-The following object is masked from 'package:recipes':
-
-    fixed
-
-  |                                                                              |............                                                          |  18%
-  ordinary text without R code
-
-  |                                                                              |...............                                                       |  21%
-label: define_directory
-  |                                                                              |..................                                                    |  25%
-  ordinary text without R code
-
-  |                                                                              |....................                                                  |  29%
-label: read_start_count_data
-  |                                                                              |......................                                                |  32%
-  ordinary text without R code
-
-  |                                                                              |.........................                                             |  36%
-label: data_preprocessing
-  |                                                                              |............................                                          |  39%
-  ordinary text without R code
-
-  |                                                                              |..............................                                        |  43%
-label: deseq2_prep_for_dte_analysis
-  |                                                                              |................................                                      |  46%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: rdata_for_development
-  |                                                                              |......................................                                |  54%
-  ordinary text without R code
-
-  |                                                                              |........................................                              |  57%
-label: rcc4_diff_translation
-  |                                                                              |..........................................                            |  61%
-  ordinary text without R code
-
-  |                                                                              |.............................................                         |  64%
-label: rcc4_noVHL_Torin1_diff_translation
-  |                                                                              |................................................                      |  68%
-  ordinary text without R code
-
-  |                                                                              |..................................................                    |  71%
-label: rcc4_VHL_Torin1_diff_translation
-  |                                                                              |....................................................                  |  75%
-  ordinary text without R code
-
-  |                                                                              |.......................................................               |  79%
-label: 786o_diff_translation
-  |                                                                              |..........................................................            |  82%
-  ordinary text without R code
-
-  |                                                                              |............................................................          |  86%
-label: 786O_eif4e2_ko_diff_translation
-  |                                                                              |..............................................................        |  89%
-  ordinary text without R code
-
-  |                                                                              |.................................................................     |  93%
-label: 786O_VHL_eif4e2_ko_diff_translation
-  |                                                                              |....................................................................  |  96%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-1-1-gene-level-translation-analysis.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-1-1-gene-level-translation-analysis.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-1-1-gene-level-translation-analysis.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-1-1-gene-level-translation-analysis.md --to html4 --from gfm --output s8-1-1-gene-level-translation-analysis.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-1-1-gene-level-translation-analysis.html
-
-Output created: s8-1-1-gene-level-translation-analysis.md
-Warning messages:
-1: package 'infer' was built under R version 4.0.1 
-2: package 'parsnip' was built under R version 4.0.2 
-3: package 'workflows' was built under R version 4.0.2 
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-1-2-tx-level-translation-analysis.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |...                                                                   |   4%
-   inline R code fragments
-
-  |                                                                              |......                                                                |   8%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-── Attaching packages ────────────────────────────────────── tidymodels 0.1.0 ──
-✔ broom     0.5.6      ✔ recipes   0.1.12
-✔ dials     0.0.7      ✔ rsample   0.0.7 
-✔ dplyr     1.0.0      ✔ tibble    3.0.1 
-✔ ggplot2   3.3.1      ✔ tune      0.1.0 
-✔ infer     0.5.2      ✔ workflows 0.1.2 
-✔ parsnip   0.1.2      ✔ yardstick 0.0.6 
-✔ purrr     0.3.4      
-── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
-✖ purrr::discard() masks scales::discard()
-✖ dplyr::filter()  masks stats::filter()
-✖ dplyr::lag()     masks stats::lag()
-✖ recipes::step()  masks stats::step()
-
-Attaching package: 'matrixStats'
-
-The following object is masked from 'package:dplyr':
-
-    count
-
-
-Attaching package: 'data.table'
-
-The following object is masked from 'package:purrr':
-
-    transpose
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-
-Attaching package: 'magrittr'
-
-The following object is masked from 'package:purrr':
-
-    set_names
-
-
-Attaching package: 'stringr'
-
-The following object is masked from 'package:recipes':
-
-    fixed
-
-  |                                                                              |.........                                                             |  12%
-  ordinary text without R code
-
-  |                                                                              |............                                                          |  17%
-label: define_directory
-  |                                                                              |...............                                                       |  21%
-  ordinary text without R code
-
-  |                                                                              |..................                                                    |  25%
-label: read_start_count_data
-  |                                                                              |....................                                                  |  29%
-  ordinary text without R code
-
-  |                                                                              |.......................                                               |  33%
-label: data_preprocessing
-  |                                                                              |..........................                                            |  38%
-  ordinary text without R code
-
-  |                                                                              |.............................                                         |  42%
-label: deseq2_prep_for_dte_analysis
-  |                                                                              |................................                                      |  46%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: rcc4_diff_translation
-  |                                                                              |......................................                                |  54%
-  ordinary text without R code
-
-  |                                                                              |.........................................                             |  58%
-label: rcc4_noVHL_Torin1_diff_translation
-  |                                                                              |............................................                          |  62%
-  ordinary text without R code
-
-  |                                                                              |...............................................                       |  67%
-label: rcc4_VHL_Torin1_diff_translation
-  |                                                                              |..................................................                    |  71%
-  ordinary text without R code
-
-  |                                                                              |....................................................                  |  75%
-label: 786o_diff_translation
-  |                                                                              |.......................................................               |  79%
-  ordinary text without R code
-
-  |                                                                              |..........................................................            |  83%
-label: 786O_eif4e2_ko_diff_translation
-  |                                                                              |.............................................................         |  88%
-  ordinary text without R code
-
-  |                                                                              |................................................................      |  92%
-label: 786O_VHL_eif4e2_ko_diff_translation
-  |                                                                              |...................................................................   |  96%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-1-2-tx-level-translation-analysis.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-1-2-tx-level-translation-analysis.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-1-2-tx-level-translation-analysis.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-1-2-tx-level-translation-analysis.md --to html4 --from gfm --output s8-1-2-tx-level-translation-analysis.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-1-2-tx-level-translation-analysis.html
-
-Output created: s8-1-2-tx-level-translation-analysis.md
-Warning messages:
-1: package 'infer' was built under R version 4.0.1 
-2: package 'parsnip' was built under R version 4.0.2 
-3: package 'workflows' was built under R version 4.0.2 
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-2-identification-of-dte-isoforms.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |....                                                                  |   6%
-   inline R code fragments
-
-  |                                                                              |........                                                              |  11%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'DRIMSeq'
-
-The following object is masked from 'package:base':
-
-    proportions
-
-Loading required package: SummarizedExperiment
-Loading required package: GenomicRanges
-Loading required package: stats4
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: 'BiocGenerics'
-
-The following objects are masked from 'package:parallel':
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from 'package:stats':
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from 'package:base':
-
-    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    union, unique, unsplit, which, which.max, which.min
-
-Loading required package: S4Vectors
-
-Attaching package: 'S4Vectors'
-
-The following object is masked from 'package:base':
-
-    expand.grid
-
-Loading required package: IRanges
-Loading required package: GenomeInfoDb
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-
-Attaching package: 'Biobase'
-
-The following object is masked from 'package:DRIMSeq':
-
-    samples
-
-Loading required package: DelayedArray
-Loading required package: matrixStats
-
-Attaching package: 'matrixStats'
-
-The following objects are masked from 'package:Biobase':
-
-    anyMissing, rowMedians
-
-
-Attaching package: 'DelayedArray'
-
-The following objects are masked from 'package:matrixStats':
-
-    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
-
-The following objects are masked from 'package:base':
-
-    aperm, apply, rowsum
-
-
-Attaching package: 'stageR'
-
-The following object is masked from 'package:methods':
-
-    getMethod
-
-Loading required package: BiocParallel
-Loading required package: DESeq2
-
-Attaching package: 'DESeq2'
-
-The following object is masked from 'package:DRIMSeq':
-
-    results
-
-Loading required package: AnnotationDbi
-Loading required package: RColorBrewer
-
-Attaching package: 'dplyr'
-
-The following object is masked from 'package:AnnotationDbi':
-
-    select
-
-The following object is masked from 'package:matrixStats':
-
-    count
-
-The following object is masked from 'package:Biobase':
-
-    combine
-
-The following objects are masked from 'package:GenomicRanges':
-
-    intersect, setdiff, union
-
-The following object is masked from 'package:GenomeInfoDb':
-
-    intersect
-
-The following objects are masked from 'package:IRanges':
-
-    collapse, desc, intersect, setdiff, slice, union
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, intersect, rename, setdiff, setequal, union
-
-The following objects are masked from 'package:BiocGenerics':
-
-    combine, intersect, setdiff, union
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-The following object is masked from 'package:SummarizedExperiment':
-
-    shift
-
-The following object is masked from 'package:GenomicRanges':
-
-    shift
-
-The following object is masked from 'package:IRanges':
-
-    shift
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, second
-
-  |                                                                              |............                                                          |  17%
-  ordinary text without R code
-
-  |                                                                              |................                                                      |  22%
-label: define_directory
-  |                                                                              |...................                                                   |  28%
-  ordinary text without R code
-
-  |                                                                              |.......................                                               |  33%
-label: read_start_count_data
-  |                                                                              |...........................                                           |  39%
-  ordinary text without R code
-
-  |                                                                              |...............................                                       |  44%
-label: data_preprocessing
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |.......................................                               |  56%
-label: dexseq_set_up
-  |                                                                              |...........................................                           |  61%
-  ordinary text without R code
-
-  |                                                                              |...............................................                       |  67%
-label: dte_function
-  |                                                                              |...................................................                   |  72%
-  ordinary text without R code
-
-  |                                                                              |......................................................                |  78%
-label: analysis_of_differentially_translated_isoforms_in_RCC4_VHL
-  |                                                                              |..........................................................            |  83%
-  ordinary text without R code
-
-  |                                                                              |..............................................................        |  89%
-label: analysis_of_differentially_translated_isoforms_in_RCC4_noVHL
-  |                                                                              |..................................................................    |  94%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-2-identification-of-dte-isoforms.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-2-identification-of-dte-isoforms.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-2-identification-of-dte-isoforms.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-2-identification-of-dte-isoforms.md --to html4 --from gfm --output s8-2-identification-of-dte-isoforms.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-2-identification-of-dte-isoforms.html
-
-Output created: s8-2-identification-of-dte-isoforms.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-[1] "No output dir"
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-3-0-validation-of-method_data-preprocessing.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |...                                                                   |   5%
-   inline R code fragments
-
-  |                                                                              |......                                                                |   9%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-Loading required package: AnnotationDbi
-Loading required package: stats4
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: 'BiocGenerics'
-
-The following objects are masked from 'package:parallel':
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from 'package:stats':
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from 'package:base':
-
-    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    union, unique, unsplit, which, which.max, which.min
-
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-Loading required package: IRanges
-Loading required package: S4Vectors
-
-Attaching package: 'S4Vectors'
-
-The following object is masked from 'package:base':
-
-    expand.grid
-
-
-Loading required package: ggplot2
-
-********************************************************
-Note: As of version 1.0.0, cowplot does not change the
-  default ggplot2 theme anymore. To recover the previous
-  behavior, execute:
-  theme_set(theme_cowplot())
-********************************************************
-
-
-Attaching package: 'dplyr'
-
-The following object is masked from 'package:AnnotationDbi':
-
-    select
-
-The following objects are masked from 'package:IRanges':
-
-    collapse, desc, intersect, setdiff, slice, union
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, intersect, rename, setdiff, setequal, union
-
-The following object is masked from 'package:Biobase':
-
-    combine
-
-The following objects are masked from 'package:BiocGenerics':
-
-    combine, intersect, setdiff, union
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-The following object is masked from 'package:IRanges':
-
-    shift
-
-The following objects are masked from 'package:S4Vectors':
-
-    first, second
-
-  |                                                                              |..........                                                            |  14%
-  ordinary text without R code
-
-  |                                                                              |.............                                                         |  18%
-label: define_directory
-  |                                                                              |................                                                      |  23%
-  ordinary text without R code
-
-  |                                                                              |...................                                                   |  27%
-label: metabolism_related_genes
-  |                                                                              |......................                                                |  32%
-  ordinary text without R code
-
-  |                                                                              |.........................                                             |  36%
-label: gene_expression_regulation
-  |                                                                              |.............................                                         |  41%
-  ordinary text without R code
-
-  |                                                                              |................................                                      |  45%
-label: merge_kegg (with options) 
-List of 2
- $ fig.width : num 7
- $ fig.height: num 7
-
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |......................................                                |  55%
-label: plot_intersection_of_KEGG_terms
-  |                                                                              |.........................................                             |  59%
-  ordinary text without R code
-
-  |                                                                              |.............................................                         |  64%
-label: go_information
-  |                                                                              |................................................                      |  68%
-  ordinary text without R code
-
-  |                                                                              |...................................................                   |  73%
-label: filter_data
-  |                                                                              |......................................................                |  77%
-  ordinary text without R code
-
-  |                                                                              |.........................................................             |  82%
-label: gene_level_filteration
-  |                                                                              |............................................................          |  86%
-  ordinary text without R code
-
-  |                                                                              |................................................................      |  91%
-label: tss_level_filtration
-  |                                                                              |...................................................................   |  95%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-3-0-validation-of-method_data-preprocessing.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-0-validation-of-method_data-preprocessing.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-3-0-validation-of-method_data-preprocessing.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-0-validation-of-method_data-preprocessing.md --to html4 --from gfm --output s8-3-0-validation-of-method_data-preprocessing.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-3-0-validation-of-method_data-preprocessing.html
-
-Output created: s8-3-0-validation-of-method_data-preprocessing.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |...                                                                   |   4%
-   inline R code fragments
-
-  |                                                                              |.....                                                                 |   8%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |........                                                              |  12%
-  ordinary text without R code
-
-  |                                                                              |...........                                                           |  15%
-label: define_directory
-  |                                                                              |.............                                                         |  19%
-  ordinary text without R code
-
-  |                                                                              |................                                                      |  23%
-label: import_essential_data
-  |                                                                              |...................                                                   |  27%
-  ordinary text without R code
-
-  |                                                                              |......................                                                |  31%
-label: functions_for_data_preprocessing
-  |                                                                              |........................                                              |  35%
-  ordinary text without R code
-
-  |                                                                              |...........................                                           |  38%
-label: import_master_table
-  |                                                                              |..............................                                        |  42%
-  ordinary text without R code
-
-  |                                                                              |................................                                      |  46%
-label: eval_mRNA_feature_contribution
-  |                                                                              |...................................                                   |  50%
-  ordinary text without R code
-
-  |                                                                              |......................................                                |  54%
-label: preliminary_analysis
-  |                                                                              |........................................                              |  58%
-  ordinary text without R code
-
-  |                                                                              |...........................................                           |  62%
-label: MRL_prediction_with_GAM
-  |                                                                              |..............................................                        |  65%
-  ordinary text without R code
-
-  |                                                                              |................................................                      |  69%
-label: uAUG_vs_MRL
-  |                                                                              |...................................................                   |  73%
-  ordinary text without R code
-
-  |                                                                              |......................................................                |  77%
-label: CDS_length
-  |                                                                              |.........................................................             |  81%
-  ordinary text without R code
-
-  |                                                                              |...........................................................           |  85%
-label: RNA_structure_near_cap
-  |                                                                              |..............................................................        |  88%
-  ordinary text without R code
-
-  |                                                                              |.................................................................     |  92%
-label: kozak_score
-  |                                                                              |...................................................................   |  96%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.md --to html4 --from gfm --output s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.html
-
-Output created: s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-3-1-2-validation-of-method_single-condition-isoform-comparison.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |......                                                                |   8%
-   inline R code fragments
-
-  |                                                                              |............                                                          |  17%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |..................                                                    |  25%
-  ordinary text without R code
-
-  |                                                                              |.......................                                               |  33%
-label: define_directory
-  |                                                                              |.............................                                         |  42%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: import_essential_data
-  |                                                                              |.........................................                             |  58%
-  ordinary text without R code
-
-  |                                                                              |...............................................                       |  67%
-label: convert_table
-  |                                                                              |....................................................                  |  75%
-  ordinary text without R code
-
-  |                                                                              |..........................................................            |  83%
-label: enrichment_analaysis
-  |                                                                              |................................................................      |  92%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-3-1-2-validation-of-method_single-condition-isoform-comparison.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-1-2-validation-of-method_single-condition-isoform-comparison.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-3-1-2-validation-of-method_single-condition-isoform-comparison.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-1-2-validation-of-method_single-condition-isoform-comparison.md --to html4 --from gfm --output s8-3-1-2-validation-of-method_single-condition-isoform-comparison.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-3-1-2-validation-of-method_single-condition-isoform-comparison.html
-
-Output created: s8-3-1-2-validation-of-method_single-condition-isoform-comparison.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |....                                                                  |   5%
-   inline R code fragments
-
-  |                                                                              |.......                                                               |  10%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |..........                                                            |  15%
-  ordinary text without R code
-
-  |                                                                              |..............                                                        |  20%
-label: define_directory
-  |                                                                              |..................                                                    |  25%
-  ordinary text without R code
-
-  |                                                                              |.....................                                                 |  30%
-label: vhl_status
-  |                                                                              |........................                                              |  35%
-  ordinary text without R code
-
-  |                                                                              |............................                                          |  40%
-label: evaluation_of_translation_changes_by_mTOR_inhibition
-  |                                                                              |................................                                      |  45%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: read_translation_analysis_data_by_gene_level
-  |                                                                              |......................................                                |  55%
-  ordinary text without R code
-
-  |                                                                              |..........................................                            |  60%
-label: plot_differential_translation_data
-  |                                                                              |..............................................                        |  65%
-  ordinary text without R code
-
-  |                                                                              |.................................................                     |  70%
-label: torin_by_class (with options) 
-List of 2
- $ fig.height: num 6
- $ fig.width : num 7
-
-  |                                                                              |....................................................                  |  75%
-  ordinary text without R code
-
-  |                                                                              |........................................................              |  80%
-label: map_mouse_genes_to_human_genes
-  |                                                                              |............................................................          |  85%
-  ordinary text without R code
-
-  |                                                                              |...............................................................       |  90%
-label: class_of_mTOR_targets
-  |                                                                              |..................................................................    |  95%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.md --to html4 --from gfm --output s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.html
-
-Output created: s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 
-> args <- commandArgs(trailingOnly = TRUE)
-> 
-> library(rmarkdown)
-> rmarkdown::render(args[1])
-
-
-processing file: s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |..                                                                    |   4%
-   inline R code fragments
-
-  |                                                                              |.....                                                                 |   7%
-label: load_libraries (with options) 
-List of 2
- $ message: logi FALSE
- $ warning: logi FALSE
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-
-Attaching package: 'data.table'
-
-The following objects are masked from 'package:dplyr':
-
-    between, first, last
-
-  |                                                                              |........                                                              |  11%
-  ordinary text without R code
-
-  |                                                                              |..........                                                            |  14%
-label: define_directory
-  |                                                                              |............                                                          |  18%
-  ordinary text without R code
-
-  |                                                                              |...............                                                       |  21%
-label: vhl_status
-  |                                                                              |..................                                                    |  25%
-  ordinary text without R code
-
-  |                                                                              |....................                                                  |  29%
-label: evaluation_of_translation_changes_by_mTOR_inhibition
-  |                                                                              |......................                                                |  32%
-  ordinary text without R code
-
-  |                                                                              |.........................                                             |  36%
-label: read_translation_analysis_data_by_gene_level
-  |                                                                              |............................                                          |  39%
-  ordinary text without R code
-
-  |                                                                              |..............................                                        |  43%
-label: import_mRNA_feature_data
-  |                                                                              |................................                                      |  46%
-  ordinary text without R code
-
-  |                                                                              |...................................                                   |  50%
-label: long_table
-  |                                                                              |......................................                                |  54%
-  ordinary text without R code
-
-  |                                                                              |........................................                              |  57%
-label: analyse_the_effect_of_coding_sequence_length
-  |                                                                              |..........................................                            |  61%
-  ordinary text without R code
-
-  |                                                                              |.............................................                         |  64%
-label: uORF_effect
-  |                                                                              |................................................                      |  68%
-  ordinary text without R code
-
-  |                                                                              |..................................................                    |  71%
-label: TOP_motifs (with options) 
-List of 2
- $ fig.width : num 7
- $ fig.height: num 5
-
-  |                                                                              |....................................................                  |  75%
-  ordinary text without R code
-
-  |                                                                              |.......................................................               |  79%
-label: proportion_of_mRNAs_with_TOP_motif
-  |                                                                              |..........................................................            |  82%
-  ordinary text without R code
-
-  |                                                                              |............................................................          |  86%
-label: top_senstivity_by_u_or_c
-  |                                                                              |..............................................................        |  89%
-  ordinary text without R code
-
-  |                                                                              |.................................................................     |  93%
-label: TOP_effect
-  |                                                                              |....................................................................  |  96%
-  ordinary text without R code
-
-  |                                                                              |......................................................................| 100%
-label: sessionInfo
-
-output file: s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.knit.md
-
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.utf8.md --to gfm --from markdown+autolink_bare_uris+tex_math_single_backslash --output s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.md --standalone --table-of-contents --toc-depth 2 --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/default.md 
-/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/bin/pandoc +RTS -K512m -RTS s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.md --to html4 --from gfm --output s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.html --standalone --self-contained --highlight-style pygments --template /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/preview.html --variable 'github-markdown-css:/camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/R/library/rmarkdown/rmarkdown/templates/github_document/resources/github.css' --email-obfuscation none --metadata pagetitle=PREVIEW 
-
-Preview created: s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.html
-
-Output created: s8-3-2-2-analysis-of-mTOR-dependent-translational-regulation-2.md
-> 
-> if(TRUE){
-+     full.rmd.path <- normalizePath(args[1])
-+ 
-+     doc.dir <- file.path(
-+         gsub("/R/", "/doc/", dirname(full.rmd.path))
-+     )
-+ 
-+     create.dir <- function(dir.name){
-+         if(dir.exists(dir.name) == FALSE) {
-+             dir.create(dir.name, recursive = TRUE)
-+         }
-+     }
-+ 
-+     create.dir(doc.dir)
-+ 
-+     ## Move knitr output files to doc dir
-+     non.rmd.files <- grep(
-+         list.files(
-+             dirname(full.rmd.path),
-+             pattern = gsub(".rmd", "", basename(full.rmd.path)),
-+             full.names = TRUE
-+         ),
-+         pattern = ".rmd$",
-+         inv = TRUE,
-+         value = TRUE
-+     )
-+ 
-+     non.rmd.files <- basename(non.rmd.files[!file.info(non.rmd.files)$isdir])
-+     
-+     file.rename(
-+         from = file.path(dirname(full.rmd.path), non.rmd.files),
-+         to = file.path(doc.dir, non.rmd.files)
-+     )
-+ 
-+     ## If figure directory exists
-+     non.rmd.dir <- file.path(gsub(".rmd", "_files", basename(full.rmd.path)))
-+ 
-+     if(dir.exists(file.path(dirname(full.rmd.path), non.rmd.dir))){
-+ 
-+         file.mv.cmd <- paste(
-+             "rsync", "--remove-source-files", "-r",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             file.path(doc.dir)
-+         )
-+ 
-+         system(file.mv.cmd)
-+ 
-+         empty.file.rm.cmd <- paste(
-+             "find",
-+             file.path(dirname(full.rmd.path), non.rmd.dir),
-+             "-type", "d",
-+             "-empty", "-delete"
-+         )
-+ 
-+         system(empty.file.rm.cmd)
-+         
-+     } else {"No output dir"}
-+     
-+ } else {
-+     "knitr output not moved"
-+ }
-> 

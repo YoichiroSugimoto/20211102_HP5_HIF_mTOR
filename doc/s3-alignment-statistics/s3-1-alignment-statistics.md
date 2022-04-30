@@ -1,7 +1,7 @@
 s3-1 Alignment statistics
 ================
 Yoichiro Sugimoto
-01 March, 2022
+28 April, 2022
 
   - [Overview](#overview)
   - [Functions to extract read
@@ -66,8 +66,11 @@ s2.2.4.2.gene.count.dedup.dir <- file.path(s2.2.4.gene.count.dir, "s2-2-4-2-gene
 
 s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+
 create.dirs(
-    c(s3.alignment.stats.dir)
+    c(s3.alignment.stats.dir, sq.dir, source.data.dir)
 )
 ```
 
