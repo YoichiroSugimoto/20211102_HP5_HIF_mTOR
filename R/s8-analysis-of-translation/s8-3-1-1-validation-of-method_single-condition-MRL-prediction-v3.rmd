@@ -589,26 +589,6 @@ all.uni.dev.cv.summary.dt %T>%
         legend.position = "bottom"
     )
 
-exportSourceData <- function(
-                             dt, original.colnames, export.colnames,
-                             export.file.name
-                             ){
-    export.dt <- copy(dt)
-    
-    setnames(
-        export.dt,
-        old = original.colnames,
-        new = export.colnames
-    )
-
-    fwrite(
-        export.dt[, export.colnames, with = FALSE],
-        file = file.path(source.data.by.panel.dir, export.file.name)
-    )
-
-    return()
-}
-
 temp <- exportSourceData(
     dt = all.uni.dev.cv.dt,
     original.colnames = c("segment", "simplified_feature_name", "iteration_n", "r_sq_cv"),

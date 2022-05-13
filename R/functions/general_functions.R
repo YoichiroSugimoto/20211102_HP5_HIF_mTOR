@@ -25,6 +25,24 @@ dropColumnDf <- function(df, drop.vec){
     df[ , !names(df) %in% c(drop.vec)]
 }
 
+exportSourceData <- function(
+                             dt, original.colnames, export.colnames,
+                             export.file.name
+                             ){
+    export.dt <- copy(dt)
+    
+    setnames(
+        export.dt,
+        old = original.colnames,
+        new = export.colnames
+    )
+    fwrite(
+        export.dt[, export.colnames, with = FALSE],
+        file = file.path(source.data.by.panel.dir, export.file.name)
+    )
+    return()
+}
+
 ## merge.dt.list <- function(dt.list){
 ##     ## https://gist.github.com/reinholdsson/67008ee3e671ff23b568
 ##     merged <- Reduce(function(...) merge(..., all = T), dt.list)
