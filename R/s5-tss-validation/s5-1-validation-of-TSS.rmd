@@ -57,7 +57,9 @@ s4.1.6.filtered.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-6-filtered-tss")
 s4.1.7.count.per.tss.dir <- file.path(s4.1.tss.def.dir, "s4-1-7-count-per-tss")
 
 ## create.dirs(c())
-
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 ```
 
@@ -164,7 +166,7 @@ dist.dt[, `:=`(
     N_proportion = N / sum(dist.dt[, N])
 )]
 
-ggplot(
+fig.1c.g <- ggplot(
     data = dist.dt[genomic_position > -150 & genomic_position < 250],
     aes(
         x = genomic_position,
@@ -178,11 +180,20 @@ ggplot(
     xlab("Genomic position of 5' terminal end of HP5 reads \nto annotated TSS") +
     ylab("Proportion of reads")
 
+print(fig.1c.g)
+
+fig.1c.sdt <- data.table(ggplot_build(fig.1c.g)$data[[2]])
+
+source.cols <- c("Position", "Proportion")
+setnames(fig.1c.sdt, old = c("x", "y"), new = source.cols)
+fig.1c.sdt[, Proportion := Proportion*100]
+
+fwrite(
+    fig.1c.sdt[, source.cols, with = FALSE],
+    file = file.path(source.data.by.panel.dir, "Fig.1c.csv")
+)
 
 ```
-
-
-
 
  
 # Session information
