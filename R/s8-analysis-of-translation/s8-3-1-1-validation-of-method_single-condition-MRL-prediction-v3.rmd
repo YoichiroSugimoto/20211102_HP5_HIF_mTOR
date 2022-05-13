@@ -66,6 +66,10 @@ s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
 s8.2.dte.iso.dir <- file.path(s8.dir, "s8-2-differentially-translated-isoforms")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
+
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -458,7 +462,8 @@ runAllUniGamCV <- function(run.index, sl.mrl.master.dt, input.name, all.test.fea
         rbindlist
 
     all.uni.dev.dt[, `:=`(
-        input_name = input.name
+        input_name = input.name,
+        iteration_n = run.index
     )]
 
     return(all.uni.dev.dt)
@@ -517,6 +522,36 @@ all.uni.dev.cv.summary.dt[, `:=`(
     )
 )]
 
+all.uni.dev.cv.dt <- all.uni.dev.cv.dt[
+  , feature_name := factor(
+        feature_name,
+        levels = all.test.features 
+    )][order(feature_name)]
+
+all.uni.dev.cv.dt[, `:=`(
+    simplified_feature_name = c(
+        "Length",
+        "uORF number",
+        "Structure (near cap)",
+        "Structure (distal to cap)",
+        "Kozak sequence",
+        "Length",
+        "Structure"
+    )  %>%
+        {rep(., each = 10)} %>%
+        factor(levels = c(
+                   "Kozak sequence",
+                   "Length",
+                   "uORF number",
+                   "Structure (near cap)",
+                   "Structure (distal to cap)",
+                   "Structure"                   
+               )),
+    segment = c(rep("5' UTR", times = 4*10), rep("CDS", times = 3*10))
+)]
+
+library("ggbeeswarm")
+
 all.uni.dev.cv.summary.dt %T>%
     print %>%
     ggplot(
@@ -526,6 +561,13 @@ all.uni.dev.cv.summary.dt %T>%
         )
     ) +
     geom_bar(stat = "identity", position = "dodge") +
+    geom_quasirandom(
+        data = all.uni.dev.cv.dt,
+        aes(y = r_sq_cv),
+        shape = 21,
+        fill = "gray60",
+        color = "black"
+    ) +
     geom_errorbar(
         aes(ymin = rsq_mean - rsq_sem, ymax = rsq_mean + rsq_sem),
         width = 0.5
@@ -539,13 +581,47 @@ all.uni.dev.cv.summary.dt %T>%
     ggsci::scale_fill_jama() +
     scale_x_discrete(guide = guide_axis(angle = 90)) +
     scale_y_continuous(
-        labels = scales::percent_format(accuracy = 1), limits = c(0, 0.3)
+        labels = scales::percent_format(accuracy = 1), limits = c(0, 0.35)
     ) +
     xlab("mRNA features") +
     ylab("R2") +
     theme(
         legend.position = "bottom"
     )
+
+exportSourceData <- function(
+                             dt, original.colnames, export.colnames,
+                             export.file.name
+                             ){
+    export.dt <- copy(dt)
+    
+    setnames(
+        export.dt,
+        old = original.colnames,
+        new = export.colnames
+    )
+
+    fwrite(
+        export.dt[, export.colnames, with = FALSE],
+        file = file.path(source.data.by.panel.dir, export.file.name)
+    )
+
+    return()
+}
+
+temp <- exportSourceData(
+    dt = all.uni.dev.cv.dt,
+    original.colnames = c("segment", "simplified_feature_name", "iteration_n", "r_sq_cv"),
+    export.colnames = c("Segment", "Feature_name", "Iteration", "R2"),
+    export.file.name = "Extended Data Fig. 3b raw.csv"
+)
+
+temp <- exportSourceData(
+    dt = all.uni.dev.cv.summary.dt,
+    original.colnames = c("segment", "simplified_feature_name", "rsq_mean", "rsq_sem"),
+    export.colnames = c("Segment", "Feature_name", "R2 (mean)", "R2 (s.e.m)"),
+    export.file.name = "Extended Data Fig. 3b stats.csv"
+)
 
 ```
 
@@ -805,20 +881,22 @@ rbind(
     use.names = TRUE, fill = TRUE
 ) %>% {.[order(cds_len_bin)]}
 
-merge(
+for.plot.cds.len.tss.level.mrl.master.dt <- merge(
     tss.level.mrl.master.dt[
         !is.na(cds_len_bin) & !is.na(MRL_base) &
         !(cds_len_bin %in% c("(17783, 31623]", "(31623, 56234]", "(56234, 1e+05]"))
     ],
     cds.bin.wilp.dt,
     by = "cds_len_bin", all.x = TRUE
-) %>%
-    ggplot(
-        aes(
-            x = cds_len_bin,
-            y = MRL_base
-        )
-    ) +
+)
+
+ggplot(
+    for.plot.cds.len.tss.level.mrl.master.dt,
+    aes(
+        x = cds_len_bin,
+        y = MRL_base
+    )
+) +
     geom_boxplot(
         aes(
             group = cds_len_bin
@@ -874,6 +952,7 @@ ggplot(
     ) +
     ylab("MRL in RCC4 VHL") +
     xlab("RNA structure (near cap)")
+
 
 ## In comparison to the most structured bin
 tss.level.mrl.master.dt %$%

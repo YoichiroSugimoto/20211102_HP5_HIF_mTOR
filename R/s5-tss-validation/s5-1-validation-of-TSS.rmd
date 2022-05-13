@@ -186,7 +186,6 @@ fig.1c.sdt <- data.table(ggplot_build(fig.1c.g)$data[[2]])
 
 source.cols <- c("Position", "Proportion")
 setnames(fig.1c.sdt, old = c("x", "y"), new = source.cols)
-fig.1c.sdt[, Proportion := Proportion*100]
 
 fwrite(
     fig.1c.sdt[, source.cols, with = FALSE],

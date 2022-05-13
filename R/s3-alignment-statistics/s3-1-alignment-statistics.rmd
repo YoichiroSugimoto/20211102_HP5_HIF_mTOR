@@ -73,9 +73,12 @@ s3.alignment.stats.dir <- file.path(results.dir, "s3-alignment-statistics")
 
 sq.dir <- file.path(results.dir, "sq-for-publication")
 source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 create.dirs(
-    c(s3.alignment.stats.dir, sq.dir, source.data.dir)
+    c(
+        s3.alignment.stats.dir, sq.dir,
+        source.data.dir, source.data.by.panel.dir)
 )
 
 ```
