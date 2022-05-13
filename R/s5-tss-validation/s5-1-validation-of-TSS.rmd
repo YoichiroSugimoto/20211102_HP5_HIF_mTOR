@@ -184,12 +184,11 @@ print(fig.1c.g)
 
 fig.1c.sdt <- data.table(ggplot_build(fig.1c.g)$data[[2]])
 
-source.cols <- c("Position", "Proportion")
-setnames(fig.1c.sdt, old = c("x", "y"), new = source.cols)
-
-fwrite(
-    fig.1c.sdt[, source.cols, with = FALSE],
-    file = file.path(source.data.by.panel.dir, "Fig.1c.csv")
+temp <- exportSourceData(
+    dt = fig.1c.sdt,
+    original.colnames = c("x", "y"),
+    export.colnames = c("Position", "Proportion"),
+    export.file.name = "Fig. 1c.csv"
 )
 
 ```
