@@ -42,6 +42,10 @@ s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
+
 set.seed(0)
 
 ```
@@ -1111,12 +1115,11 @@ plotExamples <- function(gene.id, m.count.per.fraction.dt, m.tss.count.per.fract
         ]
     )
     
-    return()
+    return(tss.poly.dt)
 }
 
 
 ```
-
 
 ## Plot examples
 
@@ -1130,16 +1133,120 @@ selected.gene.id <- c(
     "DERA" = "ENSG00000023697"
 )
 
-temp <- lapply(
+tss.poly.dt <- lapply(
     selected.gene.id,
     plotExamples,
     m.count.per.fraction.dt = m.count.per.fraction.dt,
     m.tss.count.per.fraction.dt = m.tss.count.per.fraction.dt,
     m.rcc4.tss.de.res.dt = m.rcc4.tss.de.res.dt
+) %>% rbindlist
+
+tss.poly.dt[, `:=`(
+    gene_id = str_split_fixed(tss_name, "_", n = 2)[, 1],
+    ribo_fraction = gsub("ribo", "", fraction)
+)]
+
+temp <- exportSourceData(
+    dt = tss.poly.dt[gene_name == "MXI1"],
+    original.colnames = c(
+        "gene_id", "gene_name", "tss_name",
+        "ribo_fraction",
+        "mean_ratio", "sd_ratio",
+        "normalized_count_1", "normalized_count_3", "normalized_count_4"
+    ),
+    export.colnames = c(
+        "gene_id", "gene_name", "TSS_name",
+        "Polysome fraction",
+        "Proportion (mean)", "Proportion (sd)",
+        "Normalized mRNA abundance (clone 1)", "Normalized mRNA abundance (clone 3)", "Normalized mRNA abundance (clone 4)"
+    ),
+    export.file.name = "Fig. 4e.csv"
+)
+
+temp <- exportSourceData(
+    dt = tss.poly.dt[gene_name != "MXI1"],
+    original.colnames = c(
+        "gene_id", "gene_name", "tss_name",
+        "ribo_fraction",
+        "mean_ratio", "sd_ratio",
+        "normalized_count_1", "normalized_count_3", "normalized_count_4"
+    ),
+    export.colnames = c(
+        "gene_id", "gene_name", "TSS_name",
+        "Polysome fraction",
+        "Proportion (mean)", "Proportion (sd)",
+        "Normalized mRNA abundance (clone 1)", "Normalized mRNA abundance (clone 3)", "Normalized mRNA abundance (clone 4)"
+    ),
+    export.file.name = "Extended Data Fig. 9b middle.csv"
 )
 
 ```
 
+# Plot MXI1 gene translational change
+
+
+```{r plot_MXI1_gene}
+
+gene.poly.dt <- m.count.per.fraction.dt[gene_id == "ENSG00000119950"]
+
+gene.poly.dt[, `:=`(
+    ribo_fraction = gsub("ribo", "", fraction)
+)]
+
+ggplot(
+    data = gene.poly.dt,
+    aes(
+        x = fraction,
+        y = mean_ratio,
+        color = VHL,
+        group = VHL
+    )
+) +
+    geom_ribbon(
+        aes(
+            ymin = lower_ratio_range, ymax = upper_ratio_range, fill = VHL
+        ),
+        color = NA, alpha = 0.2
+    ) +
+    geom_line(
+        size = 1.25
+    ) +
+    ylab("% of mRNA in each polysome fraction in RCC-4") +
+    xlab("Fraction") +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    scale_fill_manual(
+        values = c("VHL" = "black", "noVHL" = "darkgreen")
+    ) +
+    geom_hline(yintercept = 0) +
+    coord_cartesian(ylim = c(0, 0.4)) +
+    scale_color_manual(
+        values = c("VHL" = "black", "noVHL" = "darkgreen")
+    ) +
+    theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        aspect.ratio = 2
+    ) +
+    ggtitle("MXI1 (gene)")
+
+temp <- exportSourceData(
+    dt = gene.poly.dt,
+    original.colnames = c(
+        "gene_id", "gene_name", 
+        "ribo_fraction",
+        "mean_ratio", "sd_ratio",
+        "normalized_count_1", "normalized_count_3", "normalized_count_4"
+    ),
+    export.colnames = c(
+        "gene_id", "gene_name", 
+        "Polysome fraction",
+        "Proportion (mean)", "Proportion (sd)",
+        "Normalized mRNA abundance (clone 1)", "Normalized mRNA abundance (clone 3)", "Normalized mRNA abundance (clone 4)"
+    ),
+    export.file.name = "Fig. 4b.csv"
+)
+
+
+```
 
 
 

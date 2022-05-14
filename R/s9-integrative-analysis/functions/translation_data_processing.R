@@ -107,7 +107,6 @@ plotTrslDistByIntervention <- function(m.all.de.dte.res.dt, show.quantile = TRUE
     return()
 }
 
-
 proportionPerFraction <- function(count.per.fraction.dt, ref.col = "gene_id", data.col.grep = "^RCC4"){
 
     base.cols <- c("gene_id", "gene_name", "biotype")
@@ -152,23 +151,22 @@ proportionPerFraction <- function(count.per.fraction.dt, ref.col = "gene_id", da
         upper_ratio_range = mean(ratio_across_fraction) + sd(ratio_across_fraction)
     ), by = list(get(ref.col), gene_id, gene_name, sample_group, fraction)]
 
-    ## By fractions (only useful for TSS data)
-    m.count.per.fraction.dt[, `:=`(
-        sum_by_fraction = sum(normalized_count, na.rm = TRUE)
-    ), by = list(gene_id, gene_name, sample_group, clone, fraction)]
-
-    m.count.per.fraction.dt[, `:=`(
-        ratio_by_fraction = normalized_count / sum_by_fraction
-    )]
-
-    m.count.per.fraction.dt[, `:=`(
-        mean_ratio_by_fraction = mean(ratio_by_fraction),
-        sd_ratio_by_fraction = sd(ratio_by_fraction),
-        lower_ratio_range_by_fraction = mean(ratio_by_fraction) - sd(ratio_by_fraction),
-        upper_ratio_range_by_fraction = mean(ratio_by_fraction) + sd(ratio_by_fraction)
-    ), by = list(get(ref.col), gene_id, gene_name, sample_group, fraction)]
-
-    m.count.per.fraction.dt <- m.count.per.fraction.dt[clone == 3]
-
-    return(m.count.per.fraction.dt)
+    d.count.per.fraction.dt <- dcast(
+        m.count.per.fraction.dt,
+        paste(
+            paste(
+                unique(ref.col, "gene_id"),
+                "gene_name", "sample_group", "cell", "VHL", "EIF4E2",
+                "treatment", "fraction",
+                "mean_ratio", "sd_ratio",
+                "lower_ratio_range", "upper_ratio_range",
+                sep = " + "
+            ),
+            "~",
+            "clone"
+        ),
+        value.var = c("normalized_count", "ratio_across_fraction")
+    )
+    
+    return(d.count.per.fraction.dt)
 }

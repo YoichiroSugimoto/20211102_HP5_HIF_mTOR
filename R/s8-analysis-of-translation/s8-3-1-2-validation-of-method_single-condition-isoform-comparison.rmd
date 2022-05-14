@@ -59,6 +59,10 @@ s8.dir <- file.path(results.dir, "s8-analysis-of-translation")
 s8.2.dte.iso.dir <- file.path(s8.dir, "s8-2-differentially-translated-isoforms")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
+
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
 
@@ -162,7 +166,10 @@ wilcoxTestForIsoformComparison <- function(sl.feature, bin.mrl.iso.master.dt){
     long.bin.mrl.iso.master.dt <- melt(
         diff.bin.mrl.iso.master.dt,
         id.vars = "gene_id",
-        measure.vars = c(paste0(sl.feature, "_higher_TE"), paste0(sl.feature, "_lower_TE"))
+        measure.vars = c(
+            paste0(sl.feature, "_higher_TE"),
+            paste0(sl.feature, "_lower_TE")
+        )
     ) %>%
         {.[
            , TE_higher := variable == paste0(sl.feature, "_higher_TE")
