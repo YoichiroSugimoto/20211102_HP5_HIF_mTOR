@@ -62,6 +62,7 @@ s10.dir <- file.path(results.dir, "s10-additional-analysis")
 
 sq.dir <- file.path(results.dir, "sq-for-publication")
 source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 create.dirs(c(
     s10.dir
@@ -216,11 +217,9 @@ venn.dt <- merge(
     all.y = TRUE
 )
 
-openxlsx::write.xlsx(
-    list("Supplementary Fig. 4a" = venn.dt),
-    file = file.path(
-        source.data.dir, "Supplementary Fig. 4 source data.xlsx"
-    )
+fwrite(
+    venn.dt,
+    file = file.path(source.data.by.panel.dir, "Extended Data Fig. 4a.csv")
 )
 
 print("Sanity check: overlap between Hsieh and Larsson, reported by Larsson et al.")

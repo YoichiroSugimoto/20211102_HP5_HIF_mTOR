@@ -58,7 +58,9 @@ s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
 create.dirs(c(
 ))
 
-
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 ## Load differential expression analysis
 source(file.path("../s6-differential-expression-and-tss-usage/functions/load_total_analysis_results.R"), chdir = TRUE)
@@ -115,12 +117,12 @@ rcc4.tss.de.res.dt[
 tss.per.gene.dts <- list(
     DEK = data.table(
         gene_name = "DEK",
-        tss_class = c("dist", "proxy"),
+        tss_class = c("upstream", "downstream"),
         tss_name = c("ENSG00000124795_1", "ENSG00000124795_2")
     ),
     EIF5A = data.table(
         gene_name = "EIF5A",
-        tss_class = c("dist", "dist", "proxy"),
+        tss_class = c("upstream", "upstream", "downstream"),
         tss_name = c(
             "ENSG00000132507_1",
             "ENSG00000132507_2",
@@ -129,7 +131,7 @@ tss.per.gene.dts <- list(
     ),
     RBCK1 = data.table(
         gene_name = "RBCK1",
-        tss_class = c("dist", "both", "both"),
+        tss_class = c("upstream", "both", "both"),
         tss_name = c(
             "ENSG00000125826_2",
             "ENSG00000125826_3",
@@ -138,7 +140,7 @@ tss.per.gene.dts <- list(
     ),
     TPGS2 = data.table(
         gene_name = "TPGS2",
-        tss_class = c("dist", "both"),
+        tss_class = c("upstream", "both"),
         tss_name = c("ENSG00000134779_1", "ENSG00000134779_2")
     )
 )
@@ -176,6 +178,7 @@ calcNormCountStats <- function(norm.count.dt, ref.col = "tss_name", grep.col = "
         value.name = "norm_count"
     ) %>%
         {.[, `:=`(
+             cell = str_split_fixed(sample_name, "_", n = 8)[, 1],
              VHL = str_split_fixed(sample_name, "_", n = 8)[, 2],
              EIF4E2 = str_split_fixed(sample_name, "_", n = 8)[, 3],
              clone = str_split_fixed(sample_name, "_", n = 8)[, 5],
@@ -188,12 +191,26 @@ calcNormCountStats <- function(norm.count.dt, ref.col = "tss_name", grep.col = "
         by = list(get(ref.col), VHL, EIF4E2, clone, treatment) 
     ][, norm_count_ratio := norm_count / norm_count_sum]
     
-    norm.count.summary.dt <- m.norm.count.dt[, list(
+    m.norm.count.dt[, `:=`(
         norm_count_ratio_mean = mean(norm_count_ratio),
         norm_count_ratio_sd = sd(norm_count_ratio)
     ), by = list(get(ref.col), VHL, EIF4E2, treatment, fraction)]
 
-    setnames(norm.count.summary.dt, old = "get", new = ref.col)
+    norm.count.summary.dt <- dcast(
+        m.norm.count.dt,
+        paste(
+            paste(
+                unique(ref.col, "gene_id"),
+                "cell", "VHL", "EIF4E2",
+                "treatment", "fraction",
+                "norm_count_ratio_mean", "norm_count_ratio_sd",
+                sep = " + "
+            ),
+            "~",
+            "clone"
+        ),
+        value.var = c("norm_count", "norm_count_ratio")
+    )
     
     return(norm.count.summary.dt)
 }
@@ -209,6 +226,27 @@ norm.count.summary.dt[, `:=`(
     type = str_split_fixed(tss_name, "_", n = 2)[, 2],
     experiment = "HP5\n(average of 3 clones)"
 )]
+
+for.export.norm.count.summary.dt <- copy(norm.count.summary.dt)
+
+for.export.norm.count.summary.dt[, experiment := "HP5"]
+
+temp <- exportSourceData(
+    dt = for.export.norm.count.summary.dt,
+    original.colnames = c(
+        "experiment", "gene", "type",
+        "norm_count_ratio_mean", "norm_count_ratio_sd",
+        "norm_count_1", "norm_count_3", "norm_count_4"
+    ),
+    export.colnames = c(
+        "Experiment", "gene", "TSS type",
+        "Proportion (mean)", "Proportion (sd)",
+        "mRNA abundance (clone 1)", "mRNA abundance (clone 3)", "mRNA abundance (clone 4)"
+    ),
+    export.file.name =
+        "Extended Data Fig. 3a HP5 stats.csv"
+)
+
 
 ```
 
@@ -228,10 +266,84 @@ qpcr.res.dt <- rbind(
   , c("fraction", "gene", "type", "Ct", "replicate"), with = FALSE
 ][!is.na(fraction)]
 
+qpcr.res.dt[, `:=`(
+    type = case_when(
+        type == "dist" ~ "upstream",
+        type == "proxy" ~ "downstream",
+        TRUE ~ type
+    )
+)]
+
+## Export Ct value as the source data
+ct.raw.for.export.dt <- dcast(
+    qpcr.res.dt,
+    gene + type + fraction ~ replicate,
+    value.var = "Ct"
+) 
+
+ct.raw.for.export.dt <- ct.raw.for.export.dt[
+    order(
+        match(gene, names(tss.per.gene.dts)),
+        match(type, c("upstream", "downstream", "both", "all"))
+    )
+]
+
+temp <- exportSourceData(
+    dt = ct.raw.for.export.dt,
+    original.colnames = c(
+        "gene", "type", "fraction", "1", "2"
+    ),
+    export.colnames = c(
+        "gene", "TSS type", "Polysome fraction", "Ct for replicate 1", "Ct for replicate 2"
+    ),
+    export.file.name = "Extended Data Fig. 3a qPCR raw.csv"
+)
+### Up to here: export for source data
+
+## Calculation of primer efficiency
 qpcr.standard.dt <- rbind(
     read_excel(qpcr.res.file, sheet = "standard_1") %>% data.table,
     read_excel(qpcr.res.file, sheet = "standard_2") %>% data.table
 )[, c("dilution", "gene", "type", "Ct"), with = FALSE]
+
+qpcr.standard.summary.dt <- qpcr.standard.dt[
+  , replicate := 1:.N, by = list(gene, type, dilution)
+]
+
+qpcr.standard.dt[, `:=`(
+    type = case_when(
+        type == "dist" ~ "upstream",
+        type == "proxy" ~ "downstream",
+        TRUE ~ type
+    )
+)]
+
+## Export Ct value as the source data (qPCR standard)
+std.ct.raw.for.export.dt <- dcast(
+    qpcr.standard.dt,
+    gene + type + dilution ~ replicate,
+    value.var = "Ct"
+) 
+
+std.ct.raw.for.export.dt <- std.ct.raw.for.export.dt[
+    order(
+        match(gene, names(tss.per.gene.dts)),
+        match(type, c("upstream", "downstream", "both", "all"))
+    )
+]
+
+temp <- exportSourceData(
+    dt = std.ct.raw.for.export.dt,
+    original.colnames = c(
+        "gene", "type", "dilution", "1", "2"
+    ),
+    export.colnames = c(
+        "gene", "TSS type", "Dilution", "Ct for replicate 1", "Ct for replicate 2"
+    ),
+    export.file.name =
+        "Extended Data Fig. 3a qPCR for standard curve raw.csv"
+)
+### Up to here: export for source data
 
 qpcr.standard.summary.dt <- qpcr.standard.dt[, list(
     Ct_mean = mean(Ct),
@@ -290,11 +402,39 @@ all.quant.dt[
     , norm_input_ratio := norm_input / norm_input_sum
 ]
 
-qpcr.all.quant.res.dt <- all.quant.dt[, list(
+all.quant.dt[, `:=`(
     norm_count_ratio_mean = mean(norm_input_ratio),
     norm_count_ratio_sd = sd(norm_input_ratio),
     experiment = "RT-qPCR\n(clone 1)"
 ), by = list(gene, type, fraction)]
+
+qpcr.all.quant.res.dt <- dcast(
+    all.quant.dt,
+    gene + type + fraction +
+    norm_count_ratio_mean + norm_count_ratio_sd + experiment ~
+        replicate,
+    value.var = c("norm_input", "norm_input_ratio")
+)
+
+for.export.qpcr.all.quant.res.dt <- copy(qpcr.all.quant.res.dt)
+for.export.qpcr.all.quant.res.dt[, experiment := "RT-qPCR"]
+
+temp <- exportSourceData(
+    dt = for.export.qpcr.all.quant.res.dt,
+    original.colnames = c(
+        "experiment", "gene", "type",
+        "norm_count_ratio_mean", "norm_count_ratio_sd",
+        "norm_input_1", "norm_input_2"
+    ),
+    export.colnames = c(
+        "Experiment", "gene", "TSS type",
+        "Proportion (mean)", "Proportion (sd)",
+        "mRNA abundance (replicate 1)", "mRNA abundance (replicate 2)"
+    ),
+    export.file.name =
+        "Extended Data Fig. 3a qPCR stats.csv"
+)
+
 
 ```
 
@@ -304,8 +444,10 @@ qpcr.all.quant.res.dt <- all.quant.dt[, list(
 ```{r comparison_HP5_and_RT-qPCR, fig.height = 5, fig.width = 7}
 
 all.res.dt <- rbind(
-    norm.count.summary.dt[, colnames(qpcr.all.quant.res.dt), with = FALSE],
-    qpcr.all.quant.res.dt
+    norm.count.summary.dt,
+    qpcr.all.quant.res.dt,
+    use.names = TRUE,
+    fill = TRUE
 )
 
 all.res.dt[
