@@ -193,7 +193,7 @@ ggplot(
     theme(aspect.ratio = 1.5) +
     scale_fill_bright(name = "Sensitivity of isoform to mTOR inhibition") +
     scale_x_discrete(guide = guide_axis(angle = 90)) +
-    coord_cartesian(ylim = c(0, 4.5)) +
+    coord_cartesian(ylim = c(0, 6.5)) +
     xlab("MRL log2 fold change difference between TSS isoforms") +
     ylab("TOP motif length")
 

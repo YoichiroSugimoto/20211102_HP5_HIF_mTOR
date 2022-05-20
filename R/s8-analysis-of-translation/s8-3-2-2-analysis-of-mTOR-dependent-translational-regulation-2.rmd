@@ -65,6 +65,10 @@ s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
 s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
+
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
 
@@ -196,6 +200,36 @@ torin.tx.trsl.dt <- torin.tx.trsl.dt[
 fwrite(
     torin.tx.trsl.dt,
     file.path(s8.3.dir, "torin-1-translation-change-summary.csv")
+)
+
+source.data.base.cols <- c("tss_name", "gene_id", "gene_name", "MRL_log2fc")
+
+temp <- exportSourceData(
+    dt = torin.tx.trsl.dt,
+    original.colnames = c(
+        source.data.base.cols, "MRL_base", "MRL_treated",
+        "tss_p1_pTOP", "tss_p2_pTOP", "tss_p3_pTOP",
+        "uORF_all", "cds_len"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "MRL without Torin 1", "MRL with Torin 1",
+        "TOP (from 1)", "TOP (from 2)", "TOP (from 3)",
+        "uORF number", "CDS length"
+    ),
+    export.file.name = "Fig. 2d-f.csv"
+)
+
+temp <- exportSourceData(
+    dt = torin.tx.trsl.dt,
+    original.colnames = c(
+        source.data.base.cols, "MRL_base", "MRL_treated",
+        "mean_tx_len"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "MRL without Torin 1", "MRL with Torin 1",
+        "transcript length"    
+    ),
+    export.file.name = "Extended Data Fig. 5c.csv"
 )
 
 

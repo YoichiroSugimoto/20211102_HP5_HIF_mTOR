@@ -63,6 +63,10 @@ s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
+
 create.dirs(
     c(
         s9.dir

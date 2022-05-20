@@ -589,19 +589,6 @@ all.uni.dev.cv.summary.dt %T>%
         legend.position = "bottom"
     )
 
-temp <- exportSourceData(
-    dt = all.uni.dev.cv.dt,
-    original.colnames = c("segment", "simplified_feature_name", "iteration_n", "r_sq_cv"),
-    export.colnames = c("Segment", "Feature_name", "Iteration", "R2"),
-    export.file.name = "Extended Data Fig. 3b raw.csv"
-)
-
-temp <- exportSourceData(
-    dt = all.uni.dev.cv.summary.dt,
-    original.colnames = c("segment", "simplified_feature_name", "rsq_mean", "rsq_sem"),
-    export.colnames = c("Segment", "Feature_name", "R2 (mean)", "R2 (s.e.m)"),
-    export.file.name = "Extended Data Fig. 3b stats.csv"
-)
 
 ```
 
@@ -772,18 +759,21 @@ uorf.test.res.dt[, sig_mark := case_when(
 
 print(uorf.test.res.dt)
 
-merge(
+for.plot.uorf.dt <- merge(
     tss.level.mrl.master.dt[!is.na(MRL_base)],
     uorf.test.res.dt,
     by = "uORF_capped",
     all.x = TRUE
 ) %>%
-    ggplot(
-        aes(
-            x = uORF_capped,
-            y = MRL_base
-        )
-    ) +
+    {.[!is.na(MRL_base)]}
+
+ggplot(
+    data = for.plot.uorf.dt,
+    aes(
+        x = uORF_capped,
+        y = MRL_base
+    )
+) +
     geom_boxplot(
         fill = "#4477AA",
         outlier.shape = NA
@@ -800,10 +790,21 @@ merge(
     xlab("uORF number")
 
 print("The sample numbers for the boxplots")
-tss.level.mrl.master.dt[
-    !is.na(MRL_base),
-    table(uORF_capped)
-]
+for.plot.uorf.dt[, table(uORF_capped)]
+
+base.export.cols <- c(
+    "tss_name" = "tss_name",
+    "gene_id" = "gene_id",
+    "gene_name" = "gene_name",
+    "MRL" = "MRL_base"
+)
+
+temp <- exportSourceData(
+    dt = for.plot.uorf.dt,
+    original.colnames = c(base.export.cols, "uORF_all", "uORF_capped"),
+    export.colnames = c(names(base.export.cols), "uORF number", "group"),
+    export.file.name = "Fig. 1e.csv"
+)
 
 
 ```
@@ -861,17 +862,20 @@ rbind(
     use.names = TRUE, fill = TRUE
 ) %>% {.[order(cds_len_bin)]}
 
-for.plot.cds.len.tss.level.mrl.master.dt <- merge(
+for.plot.cds.len.dt <- merge(
     tss.level.mrl.master.dt[
         !is.na(cds_len_bin) & !is.na(MRL_base) &
-        !(cds_len_bin %in% c("(17783, 31623]", "(31623, 56234]", "(56234, 1e+05]"))
+        !(
+            cds_len_bin %in%
+            c("(17783, 31623]", "(31623, 56234]", "(56234, 1e+05]")
+        )
     ],
     cds.bin.wilp.dt,
     by = "cds_len_bin", all.x = TRUE
 )
 
 ggplot(
-    for.plot.cds.len.tss.level.mrl.master.dt,
+    for.plot.cds.len.dt,
     aes(
         x = cds_len_bin,
         y = MRL_base
@@ -897,7 +901,14 @@ ggplot(
     xlab("CDS length [nts]")
 
 print("The sample numbers for the boxplots")
-tss.level.mrl.master.dt[!is.na(MRL_base), table(cds_len_bin)]
+for.plot.cds.len.dt[, table(cds_len_bin)]
+
+temp <- exportSourceData(
+    dt = for.plot.cds.len.dt,
+    original.colnames = c(base.export.cols, "cds_len", "cds_len_bin"),
+    export.colnames = c(names(base.export.cols), "CDS length", "group"),
+    export.file.name = "Fig. 1d.csv"
+)
 
 
 ```
@@ -964,6 +975,16 @@ tss.level.mrl.master.dt[
     !is.na(MRL_base),
     table(ref.structure.bin == rna_structure_bin)
 ]
+
+temp <- exportSourceData(
+    dt = tss.level.mrl.master.dt[
+        !is.na(rna_structure_bin) & !is.na(MRL_base)
+    ],
+    original.colnames = c(base.export.cols, "first75mer_mMFEpn_G4p", "rna_structure_bin"),
+    export.colnames = c(names(base.export.cols), "RNA structure (near cap)", "group"),
+    export.file.name = "Extended Data Fig. 3c.csv"
+)
+
 
 ```
 
@@ -1045,6 +1066,16 @@ merge(
     ) +
     ylab("MRL in RCC4 VHL") +
     xlab("Kozak consensus")
+
+temp <- exportSourceData(
+    dt = tss.level.mrl.master.dt[
+        !is.na(kozak_bin) & !is.na(MRL_base)
+    ],
+    original.colnames = c(base.export.cols, "tx_kozak_score", "kozak_bin"),
+    export.colnames = c(names(base.export.cols), "Kozak consensus", "group"),
+    export.file.name = "Extended Data Fig. 3d.csv"
+)
+
 
 ```
 
