@@ -52,6 +52,10 @@ s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
 
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
+
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -236,6 +240,16 @@ ggplot(
     xlab("mRNA log2 fold change upon VHL loss in RCC4") +
     ylab("MRL log2 fold change with Torin 1 in RCC4")
 
+for.source.data.cols.1 <- c("gene_id", "gene_name", "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL", "MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA", "VHL_target_RCC4")
+
+temp <- exportSourceData(
+    dt = th.all.de.dte.res.dt[, for.source.data.cols.1, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = for.source.data.cols.1,
+    export.colnames = c("gene_id", "gene_name", "mRNA log2fc upon VHL loss", "MRL log2fc with Torin 1", "HIF target class"),
+    export.file.name = "Fig. 5b.csv"
+)
+
 hif.related.genes <- c(
     "HIF1A", "EPAS1", "ARNT",
     "EGLN1", "EGLN2", "EGLN3", "HIF1AN"   
@@ -323,7 +337,7 @@ setnames(
 
 fwrite(
     trsl.change.by.class.dt,
-    file.path(s9.dir, "mTOR_sensitivity_of_HIF_targets_by_class.csv")    
+    file.path(s9.dir, "Supplementary Data 3.csv")    
 )
 
 ```
@@ -468,6 +482,23 @@ ggplot(
     xlab("Functional class") +
     ylab("log2(HIF2A binding / HIF1A binding)")
 
+hif.binding.and.trsl.dt[!is.na(HIF2A_enrichment_with_dist_th)][VHL_target_RCC4 == "VHL_loss_induced"]
+
+for.source.data.cols.2 <- c("gene_id", "gene_name", "mRNA_trsl_intersection_by_functions", "HIF2A_enrichment_with_dist_th")
+
+temp <- exportSourceData(
+    dt = hif.binding.and.trsl.dt[
+        VHL_target_RCC4 == "VHL_loss_induced" &
+        !is.na(HIF2A_enrichment_with_dist_th)
+    ][
+      , for.source.data.cols.2, with = FALSE
+    ] %>%
+        {.[complete.cases(.)]},
+    original.colnames = for.source.data.cols.2,
+    export.colnames = c("gene_id", "gene_name", "functional class", "log2(HIF2A/HIF1A)"),
+    export.file.name = "Fig. 5d.csv"
+)
+
 
 stats.hif.binding.and.trsl.dt <- hif.binding.and.trsl.dt[
     !is.na(HIF2A_enrichment_with_dist_th) &
@@ -541,6 +572,21 @@ ggplot(
     ylab("mRNA log2 fold change upon VHL loss in 786-O") +
     xlab("Functional class")
 
+for.source.data.cols.3 <- c("gene_id", "gene_name", "mRNA_trsl_intersection_by_functions", "log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL")
+
+temp <- exportSourceData(
+    dt = th.all.de.dte.res.dt[
+        !is.na(padj_786O_xx_HIF1B_N__noVHL_vs_VHL) &
+        VHL_target_RCC4 == "VHL_loss_induced"
+    ][
+      , for.source.data.cols.3, with = FALSE
+    ],
+    original.colnames = for.source.data.cols.3,
+    export.colnames = c("gene_id", "gene_name", "functional class", "mRNA log2fc"),
+    export.file.name = "Extended Data Fig. 10f.csv"
+)
+
+
 ## For statisitical analysis of mRNA induction in 786-O
 for.stat.th.all.de.dte.res.dt <- copy(
     th.all.de.dte.res.dt[
@@ -611,6 +657,16 @@ ggplot(
     theme(
         aspect.ratio = 1
     )
+
+
+for.source.data.cols.4 <- c("gene_id", "gene_name", "MRL_log2fc_RCC4_VHL_EIF4E2_yy_xx__Torin1_vs_NA", "MRL_log2fc_RCC4_noVHL_EIF4E2_yy_xx__Torin1_vs_NA")
+
+temp <- exportSourceData(
+    dt = th2.all.de.dte.res.dt[, for.source.data.cols.4, with = FALSE],
+    original.colnames = for.source.data.cols.4,
+    export.colnames = c("gene_id", "gene_name", "MRL log2fc (RCC4 VHL)", "MRL log2fc (RCC4)"),
+    export.file.name = "Fig. 5a.csv"
+)
 
 th2.all.de.dte.res.dt %$%
     cor.test(
@@ -867,7 +923,20 @@ ggplot(
     scale_x_discrete(guide = guide_axis(angle = 90), drop = FALSE) +
     expand_limits(y = c(0, 1.25))
 
+source.data.base.cols <- c("gene_id", "gene_name")
 
+temp <- exportSourceData(
+    dt = tx.meta.info.by.class.dt,
+    original.colnames = c(
+        source.data.base.cols, "mRNA_trsl_intersection_by_functions",
+        "uORF_all", "cds_len", "TOP_motif_length"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "Functional class",
+        "uORF number", "CDS length", "TOP motif length"
+    ),
+    export.file.name = "Extended Data Fig. 10e.csv"
+)
 
 ```
 

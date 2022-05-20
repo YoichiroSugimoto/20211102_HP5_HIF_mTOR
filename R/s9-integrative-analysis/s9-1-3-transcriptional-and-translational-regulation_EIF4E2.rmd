@@ -165,6 +165,24 @@ temp <- plotTrslDistByIntervention(
 print("The numbers of genes analysed:")
 m.all.de.dte.res.dt[, table(Intervention)] %>% print
 
+for.export.m.all.de.dte.res.dt <- copy(m.all.de.dte.res.dt) %>%
+    merge(
+        y = primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        by = "gene_id"
+    )
+
+for.export.m.all.de.dte.res.dt <- for.export.m.all.de.dte.res.dt[
+  , intervention := gsub("\\\n", "", Intervention)
+][order(Intervention)]
+
+temp <- exportSourceData(
+    dt = for.export.m.all.de.dte.res.dt,
+    original.colnames = c("gene_id", "gene_name", "MRL_log2FC", "intervention"),
+    export.colnames = c("gene_id", "gene_name", "MRL_log2fc", "intervention"),
+    export.file.name = "Fig. 3c.csv"
+)
+
+
 ```
 
 # Comparison of the effect of EIF4E2 KO with or without VHL
@@ -223,6 +241,16 @@ ggplot(
     ) +
     xlab("MRL log2 fold change\nupon EIF4E2 inactivation in 786-O VHL") +
     ylab("MRL log2 fold change\nupon EIF4E2 inactivation in 786-O")
+
+sl.source.cols <- c("gene_id", "gene_name", "MRL_log2fc_786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2", "MRL_log2fc_786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2")
+
+temp <- exportSourceData(
+    dt = eif4e2.dte.res.dt[, sl.source.cols, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = sl.source.cols,
+    export.colnames = c("gene_id", "gene_name", "786-O VHL", "786-O"),
+    export.file.name = "Extended Data Fig. 6c.csv"
+)
 
 
 ```

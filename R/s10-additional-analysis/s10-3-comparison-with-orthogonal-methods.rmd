@@ -491,6 +491,18 @@ hp5.vs.others.dt <- compareWithBase(
     ylim.range = c(-2, 0.5)
 )
 
+source.data.base.cols <- c("gene_id", "gene_name")
+
+temp <- exportSourceData(
+    dt = sl.rcc4.diff.trsl.dt,
+    original.colnames = c(
+        source.data.base.cols, "MRL_log2fc"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "MRL_log2fc"
+    ),
+    export.file.name = "Extended Data Fig. 4b HP5.csv"
+)
  
 ```
 
@@ -515,6 +527,22 @@ Hsieh.vs.others.dt <- compareWithBase(
     yaxis.title = "Translation efficiency log2 fold change with Torin 1\n(defined by Hsieh et al. data)",
     ylim.range = c(-3, 2)
 )
+
+temp <- exportSourceData(
+    dt = merge(
+        primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        Hsieh.all.dt[!is.na(trsl_eff_log2fc)],
+        by = "gene_id", all.y = TRUE
+    ),
+    original.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.file.name = "Extended Data Fig. 4b Hsieh.csv"
+)
+
 
 ```
 
@@ -541,8 +569,22 @@ Thoreen.vs.others.dt <- compareWithBase(
     ylim.range = c(-3, 2)
 )
 
-```
+temp <- exportSourceData(
+    dt = merge(
+        primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        Thoreen.all.dt[!is.na(trsl_eff_log2fc)],
+        by = "gene_id", all.y = TRUE
+    ),
+    original.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.file.name = "Extended Data Fig. 4b Thoreen.csv"
+)
 
+```
 
 # Orthogonal validation of mTOR dependency of HIF-target genes
 
