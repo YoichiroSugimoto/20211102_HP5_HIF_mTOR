@@ -63,32 +63,6 @@ source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 ```
 
-# Export filtered TSS data
-
-
-```{r export_filtered_tss}
-
-filtered.tss.dt <- file.path(
-    s4.1.6.filtered.tss.dir, "filtered-tss-with-quantile.csv"
-) %>%
-    fread
-
-temp <- exportSourceData(
-    dt = filtered.tss.dt,
-    original.colnames = c(
-        "tss_name", "gene_id", "gene_name",
-        "chr", "start", "end", "strand", "q25", "q50", "q75"
-    ),
-    export.colnames = c(
-        "tss_name", "gene_id", "gene_name",
-        "chromosome", "start", "end", "strand", "q25", "q50", "q75"
-    ),
-    export.file.name = "Fig. 1 all TSS.csv"
-)
-
-
-```
-
 
 # Analysis of HP5 identified TSS position to the annotated TSS
 

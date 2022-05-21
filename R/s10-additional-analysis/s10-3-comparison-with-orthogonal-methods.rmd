@@ -610,7 +610,7 @@ sl.rcc4.noVHL.diff.trsl.dt <- rcc4.noVHL.diff.trsl.dt[
 ```{r orthogonal_validation}
 
 mtor.hif.dt <- fread(
-    file.path(s9.dir, "mTOR_sensitivity_of_HIF_targets_by_class.csv")
+    file.path(s9.dir, "Supplementary Data 3.csv")
 )
 
 mtor.hif.dt <- mtor.hif.dt[Functional_classes != "Others"]

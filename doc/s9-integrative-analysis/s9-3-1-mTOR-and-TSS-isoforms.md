@@ -1,7 +1,7 @@
 s9-3-1 mTOR and TSS isoforms
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Environment setup and data
     preprocessing](#environment-setup-and-data-preprocessing)
@@ -50,6 +50,10 @@ s8.2.dte.iso.dir <- file.path(s8.dir, "s8-2-differentially-translated-isoforms")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 set.seed(0)
 ```
@@ -101,7 +105,7 @@ sig.rcc4.vhl.mrl.dt[, `:=`(
 sig.rcc4.vhl.mrl.dt[, `:=`(
     TSS_mTOR_group = case_when(
         MRL_log2fc == max_MRL_log2fc ~ "Resistant",
-        MRL_log2fc == min_MRL_log2fc ~ "Hypersensitive"
+        MRL_log2fc == min_MRL_log2fc ~ "Sensitive"
     ),
     dMRL_log2fc = max_MRL_log2fc - min_MRL_log2fc
 )]
@@ -152,7 +156,7 @@ runWilcox <- function(te.diff.class, d.sl.sig.rcc4.vhl.mrl.dt, sl.genes, test.co
     
     wil.p <-  test.dt %>%
     {wilcox.test(
-         .[, get(paste0(test.col, "_Hypersensitive"))],
+         .[, get(paste0(test.col, "_Sensitive"))],
          .[, get(paste0(test.col, "_Resistant"))],
          alternative = "two.sided",
          paired = TRUE
@@ -178,7 +182,7 @@ print("TOP motif length")
 
 ``` r
 diff.top.genes <- d.sl.sig.rcc4.vhl.mrl.dt[
-  TOP_motif_length_Hypersensitive != TOP_motif_length_Resistant, gene_id
+  TOP_motif_length_Sensitive != TOP_motif_length_Resistant, gene_id
 ]
 
 top.test.res.dt <- lapply(
@@ -221,7 +225,7 @@ ggplot(
     theme(aspect.ratio = 1.5) +
     scale_fill_bright(name = "Sensitivity of isoform to mTOR inhibition") +
     scale_x_discrete(guide = guide_axis(angle = 90)) +
-    coord_cartesian(ylim = c(0, 4.5)) +
+    coord_cartesian(ylim = c(0, 6.5)) +
     xlab("MRL log2 fold change difference between TSS isoforms") +
     ylab("TOP motif length")
 ```
@@ -237,7 +241,7 @@ print("uORF length")
 
 ``` r
 diff.uorf.genes <- d.sl.sig.rcc4.vhl.mrl.dt[
-  uORF_all_Hypersensitive != uORF_all_Resistant, gene_id
+  uORF_all_Sensitive != uORF_all_Resistant, gene_id
 ]
 
 uorf.test.res.dt <- lapply(
@@ -283,6 +287,27 @@ ggplot(
 ```
 
 ![](s9-3-1-mTOR-and-TSS-isoforms_files/figure-gfm/TSS_dependent_sensitivity_to_mTOR-2.png)<!-- -->
+
+``` r
+source.data.base.cols <- c("gene_id", "gene_name", "tss_name_Sensitive", "tss_name_Resistant", "MRL_log2fc_Sensitive", "MRL_log2fc_Resistant")
+
+temp <- exportSourceData(
+    dt = d.sl.sig.rcc4.vhl.mrl.dt[
+        gene_id %in% c(diff.top.genes, diff.uorf.genes)
+    ],
+    original.colnames = c(
+        source.data.base.cols,
+        "TOP_motif_length_Sensitive", "TOP_motif_length_Resistant",
+        "uORF_all_Sensitive", "uORF_all_Resistant"
+    ),
+    export.colnames = c(
+        source.data.base.cols,
+        "TOP motif length (Sensitive)", "TOP motif length (Resistant)",
+        "uORF number (Sensitive)", "uORF number (Resistant)"
+    ),
+    export.file.name = "Extended Data Fig. 5d.csv"
+)
+```
 
 # Session information
 

@@ -1,7 +1,7 @@
 s5-1 Validation of TSS
 ================
 Yoichiro Sugimoto
-18 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Analysis of HP5 identified TSS position to the annotated
@@ -247,7 +247,7 @@ sessionInfo()
     ## Running under: CentOS Linux 7 (Core)
     ## 
     ## Matrix products: default
-    ## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.2.1/lib/libopenblasp-r0.3.10.so
+    ## BLAS/LAPACK: /camp/lab/ratcliffep/home/users/sugimoy/CAMP_HPC/software/miniconda3_20200606/envs/five_prime_seq_for_VHL_loss_v0.1.1/lib/libopenblasp-r0.3.9.so
     ## 
     ## locale:
     ##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
@@ -277,7 +277,7 @@ sessionInfo()
     ## [25] rmarkdown_2.2              
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] httr_1.4.2             bit64_0.9-7            assertthat_0.2.1      
+    ##  [1] httr_1.4.1             bit64_0.9-7            assertthat_0.2.1      
     ##  [4] askpass_1.1            BiocFileCache_1.12.0   blob_1.2.1            
     ##  [7] GenomeInfoDbData_1.2.3 yaml_2.2.1             progress_1.2.2        
     ## [10] pillar_1.4.4           RSQLite_2.2.0          lattice_0.20-41       
@@ -286,11 +286,11 @@ sessionInfo()
     ## [19] pkgconfig_2.0.3        biomaRt_2.44.0         zlibbioc_1.34.0       
     ## [22] purrr_0.3.4            scales_1.1.1           BiocParallel_1.22.0   
     ## [25] tibble_3.0.1           openssl_1.4.1          generics_0.0.2        
-    ## [28] farver_2.0.3           ellipsis_0.3.1         withr_2.4.1           
+    ## [28] farver_2.0.3           ellipsis_0.3.1         withr_2.2.0           
     ## [31] crayon_1.3.4           memoise_1.1.0          evaluate_0.14         
     ## [34] tools_4.0.0            prettyunits_1.1.1      hms_0.5.3             
     ## [37] lifecycle_0.2.0        munsell_0.5.0          compiler_4.0.0        
-    ## [40] rlang_0.4.10           grid_4.0.0             RCurl_1.98-1.2        
+    ## [40] rlang_0.4.6            grid_4.0.0             RCurl_1.98-1.2        
     ## [43] rappdirs_0.3.1         bitops_1.0-6           labeling_0.3          
     ## [46] gtable_0.3.0           DBI_1.1.0              curl_4.3              
     ## [49] R6_2.4.1               bit_1.1-15.2           stringi_1.4.6         

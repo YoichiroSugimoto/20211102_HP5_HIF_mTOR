@@ -1,7 +1,7 @@
 s10-3 Comparison with orthgonal methods
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Environment setup](#environment-setup)
@@ -516,6 +516,21 @@ hp5.vs.others.dt <- compareWithBase(
     ##        Hsieh      Thoreen      Larsson       Morita 
     ## 8.953303e-51 4.180839e-42 9.927490e-12 1.361096e-04
 
+``` r
+source.data.base.cols <- c("gene_id", "gene_name")
+
+temp <- exportSourceData(
+    dt = sl.rcc4.diff.trsl.dt,
+    original.colnames = c(
+        source.data.base.cols, "MRL_log2fc"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "MRL_log2fc"
+    ),
+    export.file.name = "Extended Data Fig. 4b HP5.csv"
+)
+```
+
 ## Using Hsieh et al. data as the base
 
 ``` r
@@ -549,6 +564,23 @@ Hsieh.vs.others.dt <- compareWithBase(
     ## [1] "The statistical significance"
     ##        Hsieh      Thoreen      Larsson       Morita 
     ## 9.726852e-78 9.195979e-41 3.160438e-02 5.268393e-01
+
+``` r
+temp <- exportSourceData(
+    dt = merge(
+        primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        Hsieh.all.dt[!is.na(trsl_eff_log2fc)],
+        by = "gene_id", all.y = TRUE
+    ),
+    original.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.file.name = "Extended Data Fig. 4b Hsieh.csv"
+)
+```
 
 ## Using Thoreen et al. data as the base
 
@@ -584,6 +616,23 @@ Thoreen.vs.others.dt <- compareWithBase(
     ##         Hsieh       Thoreen       Larsson        Morita 
     ##  4.506924e-37 8.200258e-125  1.796886e-02  9.686585e-01
 
+``` r
+temp <- exportSourceData(
+    dt = merge(
+        primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        Thoreen.all.dt[!is.na(trsl_eff_log2fc)],
+        by = "gene_id", all.y = TRUE
+    ),
+    original.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "trsl_eff_log2fc"
+    ),
+    export.file.name = "Extended Data Fig. 4b Thoreen.csv"
+)
+```
+
 # Orthogonal validation of mTOR dependency of HIF-target genes
 
 ``` r
@@ -603,7 +652,7 @@ sl.rcc4.noVHL.diff.trsl.dt <- rcc4.noVHL.diff.trsl.dt[
 
 ``` r
 mtor.hif.dt <- fread(
-    file.path(s9.dir, "mTOR_sensitivity_of_HIF_targets_by_class.csv")
+    file.path(s9.dir, "Supplementary Data 3.csv")
 )
 
 mtor.hif.dt <- mtor.hif.dt[Functional_classes != "Others"]

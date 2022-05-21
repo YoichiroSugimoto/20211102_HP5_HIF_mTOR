@@ -1,7 +1,7 @@
 s8-3-2-1 Analysis of mTOR-dependent translational regulation (1/2)
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Evaluation of translation changes by mTOR inhibition (gene
@@ -71,6 +71,10 @@ s8.1.dir <- file.path(s8.dir, "s8-1-differentially-translated-mRNAs")
 s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
 s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 sample.dt <- fread(sample.file)
 sample.names <- sample.dt[, sample_name]
@@ -150,6 +154,17 @@ ggplot(
 
 ![](s8-3-2-1-analysis-of-mTOR-dependent-translational-regulation-1_files/figure-gfm/plot_differential_translation_data-1.png)<!-- -->
 
+``` r
+source.data.base.cols <- c("gene_id", "gene_name")
+
+temp <- exportSourceData(
+    dt = torin.gene.trsl.dt,
+    original.colnames = c(source.data.base.cols, "MRL_base", "MRL_treated"),
+    export.colnames = c(source.data.base.cols, "without Torin 1", "with Torin 1"),
+    export.file.name = "Fig. 2b.csv"
+)
+```
+
 # Analysis of changes in translational efficiency as a function of the functional classes of mRNAs
 
 ``` r
@@ -183,6 +198,13 @@ plotTrslChangeByClass <- function(trsl.dt, s8.3.dir, plot.ylab, sig.th = 0.05){
         use.names = TRUE
     )
 
+    temp <- exportSourceData(
+        dt = mrna.class.trsl.dt,
+        original.colnames = c(source.data.base.cols, "term_name", "term_group", "MRL_log2fc"),
+        export.colnames = c(source.data.base.cols, "functional class", "group", "MRL_log2fc"),
+        export.file.name = "Fig. 2c.csv"
+    )
+        
     calcWilP <- function(sl.term, mrna.class.trsl.dt){
         dt <- data.table(
             term_name = sl.term,

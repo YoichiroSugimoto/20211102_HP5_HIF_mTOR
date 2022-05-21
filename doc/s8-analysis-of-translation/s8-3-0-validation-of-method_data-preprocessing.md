@@ -1,7 +1,7 @@
 s8-3-0 Validation of method (data preprocessing)
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [KEGG information extraction](#kegg-information-extraction)

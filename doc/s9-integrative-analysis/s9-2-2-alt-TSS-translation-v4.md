@@ -1,7 +1,7 @@
 s9-2-2 The effect of alternate TSS usage on translation
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Environment setup and data
     preprocessing](#environment-setup-and-data-preprocessing)
@@ -707,6 +707,24 @@ ggplot(
 
 ![](s9-2-2-alt-TSS-translation-v4_files/figure-gfm/sequence_features-1.png)<!-- -->
 
+``` r
+source.data.base.cols <- c("gene_id", "gene_name")
+
+temp <- exportSourceData(
+    dt = bin.mrl.alt.other.dt[
+        alt_TSS_diff_poly == "Different" &
+        !is.na(d_uORF)
+    ],
+    original.colnames = c(
+        source.data.base.cols, "MRL_log2fc_alt_others", "d_uORF"
+    ),
+    export.colnames = c(
+        source.data.base.cols, "MRL log2fc", "delta uORF number"
+    ),
+    export.file.name = "Extended Data Fig. 9a.csv"
+)
+```
+
 # Simulate MRL change with omitting a parameter
 
 Only genes with alternate TSS mRNA isoforms whose polysome distribution
@@ -851,7 +869,7 @@ setnames(
 fwrite(
     for.export.dt,
     file.path(
-        s9.dir, "alternate_TSS_and_translation_in_RCC4.csv"
+        s9.dir, "Supplementary Data 2.csv"
     )
 )
 ```
@@ -1033,6 +1051,13 @@ measured.vs.estimated.dt %$%
     ## 0.544684
 
 ``` r
+temp <- exportSourceData(
+    dt = measured.vs.estimated.dt,
+    original.colnames = c("gene_id", "gene_name", "gene_MRL_log2fc", "simulated_gene_MRL_log2fc_alt_TSS_dep", "simulated_gene_MRL_log2fc_alt_TSS_indep"),
+    export.colnames = c("gene_id", "gene_name", "measured", "simulated (i)", "simulated (ii)"),
+    export.file.name = "Fig. 4a.csv"
+)
+
 cocor::cocor(
            formula = ~ gene_MRL_log2fc + simulated_gene_MRL_log2fc_alt_TSS_indep |
                gene_MRL_log2fc + simulated_gene_MRL_log2fc_alt_TSS_dep,

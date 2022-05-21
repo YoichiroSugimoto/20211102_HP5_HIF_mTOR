@@ -2,7 +2,7 @@ s9-1-2 Intersection of transcriptional and translational regulation by
 the HIF pathway
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Pre-processed data import](#pre-processed-data-import)
@@ -88,6 +88,10 @@ s8.1.2.dir <- file.path(s8.1.dir, "tx-level-dte")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 sample.file <- file.path("../../data/sample_data/processed_sample_file.csv")
 sample.dt <- fread(sample.file)
@@ -246,7 +250,9 @@ plotMRL_mRNA_analysis <- function(
 
     print(absmrl.scatter.g)
 
-    return()
+    return(
+        list(mrl.log2fc.res = trsl.input.dt, mrl.res = input.de.dte.res.dt)
+    )
 }
 ```
 
@@ -257,7 +263,7 @@ t1.all.de.dte.res.dt <- all.de.dte.res.dt[
     gene_id %in% all.filtered.gene.dt[RCC4_noVHL_NA == TRUE, gene_id]
 ]
 
-temp <- plotMRL_mRNA_analysis(
+rcc4.analysis.res <- plotMRL_mRNA_analysis(
     input.de.dte.res.dt = t1.all.de.dte.res.dt,
     mrl.log2fc.colname = "MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     abs.mrl.colname = "MRL_treated_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
@@ -308,6 +314,29 @@ temp <- plotMRL_mRNA_analysis(
 
 ![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/plot_for_r4-3.png)<!-- -->
 
+``` r
+sl.source.cols <- c("gene_id", "gene_name", "MRL_log2fc_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL", "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL") 
+
+temp <- exportSourceData(
+    dt = rcc4.analysis.res$mrl.log2fc.res[, sl.source.cols, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = sl.source.cols,
+    export.colnames = c("gene_id", "gene_name", "MRL_log2fc", "mRNA_log2fc"),
+    export.file.name = "Fig. 3b RCC4.csv"
+)
+
+
+sl.source.cols <- c("gene_id", "gene_name", "MRL_treated_RCC4_xx_EIF4E2_yy_NA__noVHL_vs_VHL", "log2fc_RCC4_xx_HIF1B_N__noVHL_vs_VHL") 
+
+temp <- exportSourceData(
+    dt = rcc4.analysis.res$mrl.res[, sl.source.cols, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = sl.source.cols,
+    export.colnames = c("gene_id", "gene_name", "MRL", "mRNA_log2fc"),
+    export.file.name = "Extended Data Fig. 6b RCC4.csv"
+)
+```
+
 ## Analysis of 786-O
 
 ``` r
@@ -317,7 +346,7 @@ h2a.all.de.dte.res.dt <- h2a.all.de.dte.res.dt[
     gene_id %in% all.filtered.gene.dt[c786O_noVHL_EIF4E2_yy_NA == TRUE, gene_id]
 ]
 
-temp <- plotMRL_mRNA_analysis(
+c786o.analysis.res <- plotMRL_mRNA_analysis(
     input.de.dte.res.dt = h2a.all.de.dte.res.dt,
     mrl.log2fc.colname = "MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
     abs.mrl.colname = "MRL_treated_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL",
@@ -367,6 +396,29 @@ temp <- plotMRL_mRNA_analysis(
     ## Warning: Removed 5 rows containing missing values (geom_point).
 
 ![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/similar_analysis_with_786O-3.png)<!-- -->
+
+``` r
+sl.source.cols <- c("gene_id", "gene_name", "MRL_log2fc_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL", "log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL") 
+
+temp <- exportSourceData(
+    dt = c786o.analysis.res$mrl.log2fc.res[, sl.source.cols, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = sl.source.cols,
+    export.colnames = c("gene_id", "gene_name", "MRL_log2fc", "mRNA_log2fc"),
+    export.file.name = "Fig. 3b 786-O.csv"
+)
+
+
+sl.source.cols <- c("gene_id", "gene_name", "MRL_treated_786O_xx_EIF4E2_yy_NA__noVHL_vs_VHL", "log2fc_786O_xx_HIF1B_N__noVHL_vs_VHL") 
+
+temp <- exportSourceData(
+    dt = c786o.analysis.res$mrl.res[, sl.source.cols, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = sl.source.cols,
+    export.colnames = c("gene_id", "gene_name", "MRL", "mRNA_log2fc"),
+    export.file.name = "Extended Data Fig. 6b 786-O.csv"
+)
+```
 
 # Comparison of the effect size of translational regulation by the HIF and mTOR pathway
 
@@ -438,6 +490,25 @@ temp <- plotTrslDistByIntervention(
     ## Warning: Removed 8 rows containing non-finite values (stat_bin).
 
 ![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/compare_the_effect_size-1.png)<!-- -->
+
+``` r
+for.export.m.all.de.dte.res.dt <- copy(m.all.de.dte.res.dt) %>%
+    merge(
+        y = primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        by = "gene_id"
+    )
+
+for.export.m.all.de.dte.res.dt <- for.export.m.all.de.dte.res.dt[
+  , intervention := gsub("\\\n", "", Intervention)
+][order(Intervention)]
+
+temp <- exportSourceData(
+    dt = for.export.m.all.de.dte.res.dt,
+    original.colnames = c("gene_id", "gene_name", "MRL_log2FC", "intervention"),
+    export.colnames = c("gene_id", "gene_name", "MRL_log2fc", "intervention"),
+    export.file.name = "Fig. 3a, d.csv"
+)
+```
 
 # Analysis of the effect of HIF activation on the mTOR pathway activity
 
@@ -865,6 +936,15 @@ merge(
     ## Warning: Removed 10 rows containing missing values (geom_text).
 
 ![](s9-1-2-transcriptional-and-translational-regulation_VHL_files/figure-gfm/top_motif_length_vs_VHL_loss_trsl-1.png)<!-- -->
+
+``` r
+temp <- exportSourceData(
+    dt = top.vhl.loss.dt,
+    original.colnames = c("cell_name", "tss_name", "gene_id", "gene_name", "MRL_log2fc", "tss_p1_pTOP"),
+    export.colnames = c("cell_name", "tss_name", "gene_id", "gene_name", "MRL_log2fc", "TOP motif length"),
+    export.file.name = "Fig. 3e.csv"
+)
+```
 
 # Session information
 

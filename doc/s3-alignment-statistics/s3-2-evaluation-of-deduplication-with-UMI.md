@@ -1,7 +1,7 @@
 s3-2 Evaluation of UMI based deduplication
 ================
 Yoichiro Sugimoto
-17 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Set-up](#set-up)

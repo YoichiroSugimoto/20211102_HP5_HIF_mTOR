@@ -10,7 +10,7 @@
 # sbatch --dependency=afterok:24925466 /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/master_scripts/sub_master_scripts/5_run_individual_rmds_sbatch.sh
 
 source /camp/home/sugimoy/.bashrc
-conda activate five_prime_seq_for_VHL_loss_v0.2.1
+conda activate five_prime_seq_for_VHL_loss_v0.1.1
 
 cd /camp/home/sugimoy/home/CAMP_HPC/projects/20211102_HP5_HIF_mTOR/R/s5-tss-validation
 

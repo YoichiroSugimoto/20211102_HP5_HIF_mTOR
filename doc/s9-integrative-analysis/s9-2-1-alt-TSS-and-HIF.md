@@ -1,7 +1,7 @@
 s9-2-1 Analysis of HIF dependent alternate TSS usage
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Environment setup and data
@@ -42,6 +42,10 @@ s4.3.tx.info.dir <- file.path(s4.tss.dir, "s4-3-transcript-info")
 s4.3.1.tx.info.rcc4.dir <- file.path(s4.3.tx.info.dir, "s4-3-1-transcript-info-for-RCC4")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 set.seed(0)
 ```
@@ -282,6 +286,22 @@ cowplot::plot_grid(plotlist = temp, nrow = 1)
     ## `geom_smooth()` using formula 'y ~ x'
 
 ![](s9-2-1-alt-TSS-and-HIF_files/figure-gfm/cross_sample_comparison-1.png)<!-- -->
+
+``` r
+for.export.base.comp.tss.ratio.res.dt <- copy(base.comp.tss.ratio.res.dt)
+for.export.base.comp.tss.ratio.res.dt[, `:=`(
+    cell = gsub("_HIF1B_N$", "", comparison_base) %>%
+        {gsub("_HIF1B$", "", .)} %>%
+        {gsub("_N$", "", .)}
+)]
+
+temp <- exportSourceData(
+    dt = for.export.base.comp.tss.ratio.res.dt[order(cell)],
+    original.colnames = c("gene_id", "gene_name", "tss_name", "cell", "compared_elements", "dProportion", "base_dProportion"),
+    export.colnames = c("gene_id", "gene_name", "alternate_tss_name", "cell", "comparison", "delta_roportion", "delta_proportion_RCC4"),
+    export.file.name = "Extended Data Fig. 7.csv"
+)
+```
 
 # Session information
 

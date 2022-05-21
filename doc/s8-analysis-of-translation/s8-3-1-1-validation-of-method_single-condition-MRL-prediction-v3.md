@@ -2,7 +2,7 @@ s8-3-1-1 Validation of method (single condition / prediction of MRL by
 GAM)
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Master table preparation](#master-table-preparation)
@@ -895,22 +895,6 @@ all.uni.dev.cv.summary.dt %T>%
 
 ![](s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3_files/figure-gfm/eval_mRNA_feature_contribution-1.png)<!-- -->
 
-``` r
-temp <- exportSourceData(
-    dt = all.uni.dev.cv.dt,
-    original.colnames = c("segment", "simplified_feature_name", "iteration_n", "r_sq_cv"),
-    export.colnames = c("Segment", "Feature_name", "Iteration", "R2"),
-    export.file.name = "Extended Data Fig. 3b raw.csv"
-)
-
-temp <- exportSourceData(
-    dt = all.uni.dev.cv.summary.dt,
-    original.colnames = c("segment", "simplified_feature_name", "rsq_mean", "rsq_sem"),
-    export.colnames = c("Segment", "Feature_name", "R2 (mean)", "R2 (s.e.m)"),
-    export.file.name = "Extended Data Fig. 3b stats.csv"
-)
-```
-
 # MRL prediction from the selected mRNA features using GAM
 
 ## Preliminary analysis of variable correlations
@@ -1097,18 +1081,21 @@ print(uorf.test.res.dt)
     ## 3: 4.425246e-127          3+       **
 
 ``` r
-merge(
+for.plot.uorf.dt <- merge(
     tss.level.mrl.master.dt[!is.na(MRL_base)],
     uorf.test.res.dt,
     by = "uORF_capped",
     all.x = TRUE
 ) %>%
-    ggplot(
-        aes(
-            x = uORF_capped,
-            y = MRL_base
-        )
-    ) +
+    {.[!is.na(MRL_base)]}
+
+ggplot(
+    data = for.plot.uorf.dt,
+    aes(
+        x = uORF_capped,
+        y = MRL_base
+    )
+) +
     geom_boxplot(
         fill = "#4477AA",
         outlier.shape = NA
@@ -1136,15 +1123,28 @@ print("The sample numbers for the boxplots")
     ## [1] "The sample numbers for the boxplots"
 
 ``` r
-tss.level.mrl.master.dt[
-    !is.na(MRL_base),
-    table(uORF_capped)
-]
+for.plot.uorf.dt[, table(uORF_capped)]
 ```
 
     ## uORF_capped
     ##    0    1    2   3+ 
     ## 6794 2706 1325 1443
+
+``` r
+base.export.cols <- c(
+    "tss_name" = "tss_name",
+    "gene_id" = "gene_id",
+    "gene_name" = "gene_name",
+    "MRL" = "MRL_base"
+)
+
+temp <- exportSourceData(
+    dt = for.plot.uorf.dt,
+    original.colnames = c(base.export.cols, "uORF_all", "uORF_capped"),
+    export.colnames = c(names(base.export.cols), "uORF number", "group"),
+    export.file.name = "Fig. 1e.csv"
+)
+```
 
 ## CDS length
 
@@ -1211,17 +1211,20 @@ rbind(
     ## 9: (17783, 31623]  5.751682e-01  5.751682e-01     <NA>
 
 ``` r
-for.plot.cds.len.tss.level.mrl.master.dt <- merge(
+for.plot.cds.len.dt <- merge(
     tss.level.mrl.master.dt[
         !is.na(cds_len_bin) & !is.na(MRL_base) &
-        !(cds_len_bin %in% c("(17783, 31623]", "(31623, 56234]", "(56234, 1e+05]"))
+        !(
+            cds_len_bin %in%
+            c("(17783, 31623]", "(31623, 56234]", "(56234, 1e+05]")
+        )
     ],
     cds.bin.wilp.dt,
     by = "cds_len_bin", all.x = TRUE
 )
 
 ggplot(
-    for.plot.cds.len.tss.level.mrl.master.dt,
+    for.plot.cds.len.dt,
     aes(
         x = cds_len_bin,
         y = MRL_base
@@ -1256,16 +1259,25 @@ print("The sample numbers for the boxplots")
     ## [1] "The sample numbers for the boxplots"
 
 ``` r
-tss.level.mrl.master.dt[!is.na(MRL_base), table(cds_len_bin)]
+for.plot.cds.len.dt[, table(cds_len_bin)]
 ```
 
     ## cds_len_bin
     ##     (100, 178]     (178, 316]     (316, 562]    (562, 1000]   (1000, 1778] 
     ##             41            468           1344           3082           4100 
     ##   (1778, 3162]   (3162, 5623]  (5623, 10000] (10000, 17783] (17783, 31623] 
-    ##           2309            731            162             30              1 
+    ##           2309            731            162             30              0 
     ## (31623, 56234] (56234, 1e+05] 
     ##              0              0
+
+``` r
+temp <- exportSourceData(
+    dt = for.plot.cds.len.dt,
+    original.colnames = c(base.export.cols, "cds_len", "cds_len_bin"),
+    export.colnames = c(names(base.export.cols), "CDS length", "group"),
+    export.file.name = "Fig. 1d.csv"
+)
+```
 
 ## RNA structure near cap
 
@@ -1365,6 +1377,17 @@ tss.level.mrl.master.dt[
     ## 
     ## FALSE  TRUE 
     ##  9812  2454
+
+``` r
+temp <- exportSourceData(
+    dt = tss.level.mrl.master.dt[
+        !is.na(rna_structure_bin) & !is.na(MRL_base)
+    ],
+    original.colnames = c(base.export.cols, "first75mer_mMFEpn_G4p", "rna_structure_bin"),
+    export.colnames = c(names(base.export.cols), "RNA structure (near cap)", "group"),
+    export.file.name = "Extended Data Fig. 3c.csv"
+)
+```
 
 ## Kozak sequence score
 
@@ -1468,6 +1491,17 @@ merge(
     ## Warning: Removed 1 rows containing missing values (geom_text).
 
 ![](s8-3-1-1-validation-of-method_single-condition-MRL-prediction-v3_files/figure-gfm/kozak_score-1.png)<!-- -->
+
+``` r
+temp <- exportSourceData(
+    dt = tss.level.mrl.master.dt[
+        !is.na(kozak_bin) & !is.na(MRL_base)
+    ],
+    original.colnames = c(base.export.cols, "tx_kozak_score", "kozak_bin"),
+    export.colnames = c(names(base.export.cols), "Kozak consensus", "group"),
+    export.file.name = "Extended Data Fig. 3d.csv"
+)
+```
 
 # Session information
 

@@ -1,7 +1,7 @@
 s3-1 Alignment statistics
 ================
 Yoichiro Sugimoto
-17 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Functions to extract read
@@ -368,7 +368,7 @@ createReadNumberDt <- function(all.rnums, no.rRNA.rnums, sum.rrna.ercc.count.dt,
     )]
     
     file.path(
-        s3.alignment.stats.dir, paste0(out.prefix, "alignment-statistics.csv")
+        s3.alignment.stats.dir, paste0(out.prefix, "Extended Data 1 alignment stats.csv")
     ) %>%
         {fwrite(
              for.export.annotated.rnums.dt[

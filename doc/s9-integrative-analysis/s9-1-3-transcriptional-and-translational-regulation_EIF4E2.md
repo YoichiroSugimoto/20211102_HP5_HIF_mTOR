@@ -1,7 +1,7 @@
 s9-1-3 Analysis of translational regulation by the HIF2A/EIF4E2 axis
 ================
 Yoichiro Sugimoto
-19 May, 2022
+21 May, 2022
 
   - [Overview](#overview)
   - [Pre-processed data import](#pre-processed-data-import)
@@ -70,6 +70,10 @@ s8.1.1.dir <- file.path(s8.1.dir, "gene-level-dte")
 s8.3.dir <- file.path(s8.dir, "s8-3-validation-of-method")
 
 s9.dir <- file.path(results.dir, "s9-integrative-analysis")
+
+sq.dir <- file.path(results.dir, "sq-for-publication")
+source.data.dir <- file.path(sq.dir, "sq1-source-data")
+source.data.by.panel.dir <- file.path(source.data.dir, "by_panel")
 
 create.dirs(
     c(
@@ -179,6 +183,25 @@ m.all.de.dte.res.dt[, table(Intervention)] %>% print
     ## 786-O VHL:\nEIF4E2 KO     786-O:\nEIF4E2 KO 
     ##                  8040                  8008
 
+``` r
+for.export.m.all.de.dte.res.dt <- copy(m.all.de.dte.res.dt) %>%
+    merge(
+        y = primary.tx.dt[!duplicated(gene_id), .(gene_id, gene_name)],
+        by = "gene_id"
+    )
+
+for.export.m.all.de.dte.res.dt <- for.export.m.all.de.dte.res.dt[
+  , intervention := gsub("\\\n", "", Intervention)
+][order(Intervention)]
+
+temp <- exportSourceData(
+    dt = for.export.m.all.de.dte.res.dt,
+    original.colnames = c("gene_id", "gene_name", "MRL_log2FC", "intervention"),
+    export.colnames = c("gene_id", "gene_name", "MRL_log2fc", "intervention"),
+    export.file.name = "Fig. 3c.csv"
+)
+```
+
 # Comparison of the effect of EIF4E2 KO with or without VHL
 
 ``` r
@@ -259,6 +282,18 @@ ggplot(
     ## Warning: Removed 1 rows containing missing values (geom_point).
 
 ![](s9-1-3-transcriptional-and-translational-regulation_EIF4E2_files/figure-gfm/comparisons%20of%20the%20effect%20of%20EIF4E2%20KO-1.png)<!-- -->
+
+``` r
+sl.source.cols <- c("gene_id", "gene_name", "MRL_log2fc_786O_VHL_xx_yy_NA__noEIF4E2_vs_EIF4E2", "MRL_log2fc_786O_noVHL_xx_yy_NA__noEIF4E2_vs_EIF4E2")
+
+temp <- exportSourceData(
+    dt = eif4e2.dte.res.dt[, sl.source.cols, with = FALSE] %>%
+        {.[complete.cases(.)]},
+    original.colnames = sl.source.cols,
+    export.colnames = c("gene_id", "gene_name", "786-O VHL", "786-O"),
+    export.file.name = "Extended Data Fig. 6c.csv"
+)
+```
 
 # Session information
 
